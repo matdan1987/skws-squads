@@ -124,6 +124,16 @@
   .devhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
   .devhead h2{margin:0}
   .devhead span{font-size:12px;color:var(--muted)}
+  .logday{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin:14px 0 4px}
+  .logday:first-child{margin-top:0}
+  .log{display:grid;grid-template-columns:46px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .log:last-child{border-bottom:0}
+  .log time{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;padding-top:2px}
+  .log .tag{display:inline-block;font-size:11px;border-radius:99px;padding:1px 8px;margin-right:6px;border:1px solid var(--line);color:var(--muted);vertical-align:1px}
+  .log .tag.ok{color:var(--ok);border-color:rgba(61,220,151,.35)} .log .tag.adm{color:var(--accent);border-color:rgba(92,200,255,.35)}
+  .log .tag.warn{color:var(--warn);border-color:rgba(245,185,66,.35)}
+  .log a{color:var(--text);text-decoration:none;font-weight:600;cursor:pointer}
+  .log small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 </style>
 </head>
 <body>
@@ -139,6 +149,7 @@
   <div id="loginView" class="card login">
     <h2>Admin-Zugang</h2>
     <form id="loginForm">
+      <input id="actor" type="text" placeholder="Dein Name im Spiel (fürs Logbuch)" maxlength="40" autocomplete="nickname" style="margin-bottom:10px">
       <input id="pw" type="password" placeholder="Kennwort" autocomplete="current-password" style="margin-bottom:10px">
       <button class="btn" style="width:100%" type="submit" id="loginBtn">Anmelden</button>
     </form>
@@ -155,6 +166,7 @@
       <button data-tab="dev">Entwicklung</button>
       <button data-tab="exp">Export</button>
       <button data-tab="adm">Verwaltung</button>
+      <button data-tab="log">Logbuch</button>
     </div>
 
     <!-- Übersicht -->
@@ -296,6 +308,30 @@
       </div>
     </section>
 
+    <!-- Logbuch -->
+    <section id="tab-log" class="hide">
+      <div class="card">
+        <div class="formrow" style="margin:0">
+          <div><label for="logView">Ansicht</label>
+            <select id="logView"><option value="feed">Chronik</option><option value="last">Letzte Aktion je Person</option></select></div>
+          <div><label for="logFilter">Filter</label>
+            <select id="logFilter">
+              <option value="all">alles</option>
+              <option value="save">Meldungen</option>
+              <option value="changed">nur Meldungen mit Änderung</option>
+              <option value="admin">Verwaltung (R4/R5)</option>
+              <option value="login">Admin-Anmeldungen</option>
+              <option value="unsub">Abmeldungen Mail</option>
+              <option value="reminder">Erinnerungs-Mails</option>
+            </select></div>
+          <div style="grid-column:1/-1"><input id="logSearch" type="search" placeholder="Nach Name suchen…"></div>
+        </div>
+      </div>
+      <div class="card"><div id="logList"></div>
+        <div class="btnrow hide" id="logMoreRow"><button class="btn2" id="logMore">Ältere Einträge laden</button></div>
+      </div>
+    </section>
+
     <!-- Verwaltung -->
     <section id="tab-adm" class="hide">
       <div class="card">
@@ -333,7 +369,8 @@
   var RANKS = ['R5','R4','R3','R2','R1'];
   var DAY = 86400000, STALE_DAYS = 7;
   var $ = function(id){ return document.getElementById(id); };
-  var PW = null, D = null, curPlayer = null;
+  var PW = null, D = null, curPlayer = null, ACTOR = '';
+  try { ACTOR = localStorage.getItem('skws_admin_actor') || ''; } catch(e) {}
 
   function store(k, v){ try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch(e){ return null; } }
   function rpc(fn, body){
@@ -799,6 +836,89 @@
     return csv(rows);
   }
 
+  /* ---------- Logbuch ---------- */
+  var LOG = null, LOG_PAGE = 1000, logLoading = false;
+  function loadLog(more){
+    if (logLoading) return; logLoading = true;
+    if (!more) $('logList').innerHTML = '<div class="empty">Lade…</div>';
+    var before = more && LOG && LOG.length ? LOG[LOG.length - 1].id : null;
+    rpc('admin_log', { p_pw: PW, p_limit: LOG_PAGE, p_before: before }).then(function(rows){
+      rows.forEach(function(r){ r.t = new Date(r.at); r.details = r.details || {}; });
+      LOG = more ? LOG.concat(rows) : rows;
+      $('logMoreRow').classList.toggle('hide', rows.length < LOG_PAGE);
+      renderLog();
+    }).catch(function(){ $('logList').innerHTML = '<div class="empty">Logbuch konnte nicht geladen werden.</div>'; })
+      .then(function(){ logLoading = false; });
+  }
+  function who(n){ return n ? '<a data-name="' + esc(n) + '">' + esc(n) + '</a>' : ''; }
+  function logText(r){
+    var d = r.details, a = r.action;
+    if (a === 'save') {
+      if (d.first) return { tag:'ok', label:'Neu', text: who(r.target) + ' hat sich eingetragen', sub: 'Gesamt ' + fmt(d.total_new) + ' M' + (d.t1_new ? ' · T1 ' + fmt(d.t1_new) + ' M' : '') + (d.backfill ? ' · nachgetragen' : '') };
+      if (d.changed) {
+        var diff = Math.round((d.total_new - (d.total_old || 0)) * 100) / 100;
+        return { tag:'ok', label:'Update', text: who(r.target) + ' hat aktualisiert',
+          sub: 'Gesamt ' + fmt(d.total_old) + ' → ' + fmt(d.total_new) + ' M (' + (diff > 0 ? '+' : '') + fmt(diff) + ')' +
+               (d.t1_old !== d.t1_new ? ' · T1 ' + fmt(d.t1_old) + ' → ' + fmt(d.t1_new) : '') + (d.email_changed ? ' · E-Mail geändert' : '') };
+      }
+      return { tag:'', label:'Gespeichert', text: who(r.target) + ' hat gespeichert – ohne Änderung', sub: (d.email_changed ? 'E-Mail geändert · ' : '') + 'Gesamt ' + fmt(d.total_new) + ' M' };
+    }
+    if (a === 'unsub') return { tag:'warn', label:'Abgemeldet', text: who(r.target) + ' hat sich von der Mail-Erinnerung abgemeldet', sub: '' };
+    if (a === 'admin_login') return { tag:'adm', label:'Admin', text: who(r.actor) + ' hat sich im Admin-Bereich angemeldet', sub: '' };
+    if (a === 'admin_add') return { tag:'adm', label:'Verwaltung', text: who(r.actor) + ' hat ' + who(r.target) + (d.returned ? ' wieder aufgenommen' : ' hinzugefügt'), sub: 'Rang ' + (d.rank || '–') };
+    if (a === 'admin_leave') return { tag:'warn', label:'Verwaltung', text: who(r.actor) + ' hat ' + who(r.target) + ' als ausgeschieden markiert', sub: d.rank ? 'war ' + d.rank : '' };
+    if (a === 'admin_rejoin') return { tag:'adm', label:'Verwaltung', text: who(r.actor) + ' hat ' + who(r.target) + ' wieder aufgenommen', sub: '' };
+    if (a === 'admin_rank') return { tag:'adm', label:'Verwaltung', text: who(r.actor) + ' hat den Rang von ' + who(r.target) + ' geändert', sub: (d.from || '–') + ' → ' + (d.to || '–') };
+    if (a === 'admin_rename') return { tag:'adm', label:'Verwaltung', text: who(r.actor) + ' hat ' + esc(d.from || '') + ' umbenannt in ' + who(r.target), sub: '' };
+    if (a === 'reminder_sent') return { tag:'', label:'System', text: 'Wöchentliche Erinnerungs-Mail verschickt', sub: (d.count !== undefined ? d.count + ' Empfänger' : '') + (d.errors ? ' · ' + d.errors + ' Fehler' : '') };
+    return { tag:'', label: a, text: esc(r.actor || '') + ' ' + esc(r.target || ''), sub: '' };
+  }
+  function logMatch(r){
+    var f = $('logFilter').value, q = $('logSearch').value.trim().toLowerCase(), a = r.action;
+    if (f === 'save' && a !== 'save') return false;
+    if (f === 'changed' && !(a === 'save' && r.details.changed)) return false;
+    if (f === 'admin' && !(a.indexOf('admin_') === 0 && a !== 'admin_login')) return false;
+    if (f === 'login' && a !== 'admin_login') return false;
+    if (f === 'unsub' && a !== 'unsub') return false;
+    if (f === 'reminder' && a !== 'reminder_sent') return false;
+    if (q && ((r.actor || '') + ' ' + (r.target || '') + ' ' + JSON.stringify(r.details)).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  }
+  function dayLabel(t){
+    var k = dayKey(t), today = dayKey(new Date()), yest = dayKey(new Date(Date.now() - DAY));
+    return k === today ? 'Heute' : k === yest ? 'Gestern' : new Date(t).toLocaleDateString('de-DE', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
+  }
+  function renderLog(){
+    if (!LOG) return;
+    var view = $('logView').value, rows = LOG.filter(logMatch), h = '';
+    if (view === 'last') {
+      var seen = {}, list = [];
+      rows.forEach(function(r){
+        var person = (r.action === 'save' || r.action === 'unsub') ? r.target : r.actor;
+        if (!person || seen[person]) return; seen[person] = 1; list.push(r);
+      });
+      h = list.map(function(r){
+        var x = logText(r);
+        return '<div class="log"><time>' + fmtDate(r.t) + '<br>' + r.t.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + '</time><div><span class="tag ' + x.tag + '">' + x.label + '</span>' + x.text +
+          '<small>' + ago(r.t) + (x.sub ? ' · ' + x.sub : '') + '</small></div></div>';
+      }).join('');
+      var q = $('logSearch').value.trim().toLowerCase(), f = $('logFilter').value;
+      if (f === 'all' || f === 'save') {
+        var none = D.players.filter(function(p){ return !seen[p.name] && (!q || p.name.toLowerCase().indexOf(q) >= 0); });
+        if (none.length) h += '<div class="logday">Noch keine Aktion (' + none.length + ')</div><div class="chips">' + none.map(function(p){ return '<span class="chip" style="cursor:default">' + esc(p.name) + '</span>'; }).join('') + '</div>';
+      }
+    } else {
+      var lastDay = null;
+      rows.forEach(function(r){
+        var dl = dayLabel(r.t);
+        if (dl !== lastDay) { h += '<div class="logday">' + dl + '</div>'; lastDay = dl; }
+        var x = logText(r);
+        h += '<div class="log"><time>' + r.t.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + '</time><div><span class="tag ' + x.tag + '">' + x.label + '</span>' + x.text + (x.sub ? '<small>' + x.sub + '</small>' : '') + '</div></div>';
+      });
+    }
+    $('logList').innerHTML = h || '<div class="empty">Keine Einträge.</div>';
+  }
+
   /* ---------- Verwaltung ---------- */
   function rankSelect(p){
     return '<select class="rk" data-name="' + esc(p.name) + '">' + RANKS.map(function(r){ return '<option' + (r === p.rank ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select>';
@@ -822,7 +942,7 @@
   function note(txt, ok){ var n = $('admNote'); n.textContent = txt; n.className = 'note ' + (ok ? 'ok' : 'err'); }
   function memberAction(action, name, value, okText){
     note('…', true);
-    return rpc('admin_member', { p_pw: PW, p_action: action, p_name: name, p_value: value || null })
+    return rpc('admin_member', { p_pw: PW, p_action: action, p_name: name, p_value: value || null, p_actor: ACTOR || null })
       .then(function(){ return load(PW, true).then(function(){ showTab('adm'); note(okText, true); }); })
       .catch(function(err){
         var m = String(err && err.message);
@@ -835,7 +955,7 @@
   function showTab(name){
     var bs = document.querySelectorAll('#tabs button');
     for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-    ['ov','mem','hist','pl','dev','exp','adm'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+    ['ov','mem','hist','pl','dev','exp','adm','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
     store('skws_admin_tab', name);
     if (name === 'hist') renderHistory();
     if (name === 'ov') renderOverview();
@@ -843,6 +963,7 @@
     if (name === 'adm') renderAdmin();
     if (name === 'exp') renderExport();
     if (name === 'dev') renderDev();
+    if (name === 'log') loadLog(false);
   }
   function renderAll(){
     renderOverview(); renderMembers(); fillPlayerSelect();
@@ -851,7 +972,9 @@
   function load(pw, silent){
     $('loginBtn').disabled = true; $('loginMsg').textContent = '';
     return rpc('admin_data', { p_pw: pw }).then(function(raw){
+      var first = !PW && !silent;
       PW = pw; store('skws_admin_pw', pw); D = prep(raw);
+      if (first) rpc('admin_login', { p_pw: pw, p_actor: ACTOR || null }).catch(function(){});
       $('loginView').classList.add('hide'); $('app').classList.remove('hide');
       $('reload').classList.remove('hide'); $('logout').classList.remove('hide');
       renderAll();
@@ -861,7 +984,12 @@
     }).then(function(){ $('loginBtn').disabled = false; });
   }
 
-  $('loginForm').addEventListener('submit', function(e){ e.preventDefault(); load($('pw').value); });
+  $('actor').value = ACTOR;
+  $('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    ACTOR = $('actor').value.trim(); try { localStorage.setItem('skws_admin_actor', ACTOR); } catch(x) {}
+    load($('pw').value);
+  });
   $('logout').addEventListener('click', function(){ store('skws_admin_pw', null); location.reload(); });
   $('reload').addEventListener('click', function(){ if (PW) load(PW, true); });
   $('tabs').addEventListener('click', function(e){ var b = e.target.closest('button'); if (b) showTab(b.dataset.tab); });
@@ -873,6 +1001,14 @@
   $('plSelect').addEventListener('change', function(){ curPlayer = this.value; renderPlayer(); });
   $('admSearch').addEventListener('input', renderAdmin);
   $('selSearch').addEventListener('input', renderExport);
+  ['logView','logFilter'].forEach(function(id){ $(id).addEventListener('change', renderLog); });
+  $('logSearch').addEventListener('input', renderLog);
+  $('logMore').addEventListener('click', function(){ loadLog(true); });
+  $('logList').addEventListener('click', function(e){
+    var a = e.target.closest('a[data-name]'); if (!a) return;
+    if (!D.all.some(function(p){ return p.name === a.dataset.name; })) return;
+    curPlayer = a.dataset.name; $('plSelect').value = curPlayer; showTab('pl');
+  });
   ['devPeriod','devMetric','devBy'].forEach(function(id){ $(id).addEventListener('change', renderDev); });
   $('odList').addEventListener('click', function(e){ var r = e.target.closest('.dev'); if (!r) return; curPlayer = r.dataset.name; $('plSelect').value = curPlayer; showTab('pl'); });
   $('odCopy').addEventListener('click', function(){
