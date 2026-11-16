@@ -91,6 +91,26 @@
   td select.rk{width:auto;padding:4px 8px;font-size:13px;border-radius:8px}
   .note{min-height:20px;font-size:13px;margin-top:8px;font-weight:600}
   .note.ok{color:var(--ok)} .note.err{color:var(--err)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .chip{background:var(--bg2);border:1px solid var(--line);color:var(--muted);border-radius:99px;padding:5px 11px;font-size:13px;cursor:pointer}
+  .chip:hover{color:var(--text);border-color:var(--accent)}
+  .pick{max-height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;background:var(--bg2)}
+  .pick label{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer}
+  .pick label:last-child{border-bottom:0}
+  .pick input{width:18px;height:18px;padding:0;accent-color:var(--accent);flex:none}
+  .pick .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pick .meta{font-size:12px;color:var(--muted);white-space:nowrap}
+  .pick label.nodata .nm{color:var(--faint)}
+  .formrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .formrow label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+  .btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .btnrow .btn{flex:1;min-width:150px;font-size:14px;padding:11px 12px}
+  .btn2{flex:1;min-width:150px;border:1px solid var(--line);background:var(--bg2);color:var(--text);border-radius:12px;padding:11px 12px;font-weight:600;cursor:pointer;font-size:14px}
+  textarea{width:100%;min-height:160px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;color:var(--text);font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;padding:10px;resize:vertical}
+  .team{margin-top:12px}
+  .team h3{margin:0 0 6px;font-size:15px;display:flex;flex-direction:column;gap:2px}
+  .team h3 span{font-size:12px;color:var(--muted);font-weight:500}
+  .sub td{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -119,6 +139,7 @@
       <button data-tab="mem">Mitglieder</button>
       <button data-tab="hist">Verlauf</button>
       <button data-tab="pl">Spieler</button>
+      <button data-tab="exp">Export</button>
       <button data-tab="adm">Verwaltung</button>
     </div>
 
@@ -175,6 +196,63 @@
       <div class="card"><h2>Kampfkraft je Trupp</h2><div class="chart" id="chartPlayer"></div></div>
       <div class="card"><h2>Alle Meldungen</h2><div class="tw"><table id="plTable"></table></div></div>
     </section>
+    <!-- Export -->
+    <section id="tab-exp" class="hide">
+      <div class="card">
+        <h2>1 · Spieler auswählen (<span id="selCount">0</span>)</h2>
+        <div class="chips">
+          <button class="chip" data-sel="all">Alle</button>
+          <button class="chip" data-sel="none">Keine</button>
+          <button class="chip" data-sel="done">Nur eingetragene</button>
+          <button class="chip" data-sel="R5">+R5</button><button class="chip" data-sel="R4">+R4</button><button class="chip" data-sel="R3">+R3</button><button class="chip" data-sel="R2">+R2</button><button class="chip" data-sel="R1">+R1</button>
+          <button class="chip" data-sel="tank">+Panzer</button><button class="chip" data-sel="missile">+Rakete</button><button class="chip" data-sel="aircraft">+Flugzeug</button><button class="chip" data-sel="mixed">+Gemischt</button>
+        </div>
+        <input id="selSearch" type="search" placeholder="In der Liste suchen…" style="margin-bottom:8px">
+        <div class="pick" id="pickList"></div>
+        <p class="small muted" style="margin:8px 0 0">„+“ fügt eine Gruppe zur Auswahl hinzu (Typ = Truppentyp des T1). Einzelne Spieler per Häkchen an- oder abwählen.</p>
+      </div>
+
+      <div class="card">
+        <h2>2 · Exportieren</h2>
+        <div class="formrow">
+          <div><label for="expSort">Sortierung</label>
+            <select id="expSort"><option value="t1">T1 (stärkste zuerst)</option><option value="total">Gesamt (stärkste zuerst)</option><option value="rank">Rang, dann T1</option><option value="name">Name</option></select></div>
+          <div><label for="expCols">Inhalt</label>
+            <select id="expCols"><option value="all">T1–T4 + Gesamt</option><option value="t1">nur T1</option></select></div>
+        </div>
+        <div class="btnrow">
+          <button class="btn" id="expCsv">CSV für Excel herunterladen</button>
+          <button class="btn2" id="expCopy">Als Text kopieren</button>
+        </div>
+        <div class="note" id="expNote"></div>
+        <textarea id="expPreview" readonly></textarea>
+      </div>
+
+      <div class="card">
+        <h2>3 · Wüstensturm-Planer</h2>
+        <p class="small muted" style="margin:0 0 10px">Verteilt die ausgewählten Spieler mit Meldung automatisch auf Task Forces – Stammspieler zuerst, dann Ersatz.</p>
+        <div class="formrow">
+          <div><label for="dsTeams">Task Forces</label><select id="dsTeams"><option value="2">A + B</option><option value="1">nur A</option></select></div>
+          <div><label for="dsMetric">Grundlage</label><select id="dsMetric"><option value="t1">T1-Kampfkraft</option><option value="total">Gesamt-Kampfkraft</option></select></div>
+          <div><label for="dsStart">Stammspieler je Team</label><input id="dsStart" type="number" min="1" max="50" value="20" inputmode="numeric"></div>
+          <div><label for="dsSubs">Ersatz je Team</label><input id="dsSubs" type="number" min="0" max="30" value="10" inputmode="numeric"></div>
+        </div>
+        <div class="formrow" style="grid-template-columns:1fr">
+          <div><label for="dsMode">Verteilung</label>
+            <select id="dsMode"><option value="balanced">Ausgeglichen – A und B gleich stark</option><option value="topA">Stärkste in Team A, Rest in B</option></select></div>
+        </div>
+        <div class="btnrow">
+          <button class="btn" id="dsRun">Aufstellung berechnen</button>
+        </div>
+        <div id="dsResult"></div>
+        <div class="btnrow hide" id="dsActions">
+          <button class="btn2" id="dsCopy">Aufstellung als Text kopieren</button>
+          <button class="btn2" id="dsCsv">Aufstellung als CSV</button>
+        </div>
+        <div class="note" id="dsNote"></div>
+      </div>
+    </section>
+
     <!-- Verwaltung -->
     <section id="tab-adm" class="hide">
       <div class="card">
@@ -477,6 +555,130 @@
     $('plTable').innerHTML = t;
   }
 
+  /* ---------- Export ---------- */
+  var SEL = null, lastPlan = null;
+  function initSel(){ if (SEL) { var keep = {}; D.players.forEach(function(p){ if (SEL[p.name]) keep[p.name] = 1; }); SEL = keep; return; }
+    SEL = {}; D.players.forEach(function(p){ if (p.entry) SEL[p.name] = 1; }); }
+  function selected(){ return D.players.filter(function(p){ return SEL[p.name]; }); }
+  function metric(p, m){ return m === 'total' ? p.total : p.t1; }
+  function sortList(list, how){
+    var c = {
+      t1: function(a,b){ return b.t1 - a.t1 || b.total - a.total; },
+      total: function(a,b){ return b.total - a.total || b.t1 - a.t1; },
+      rank: function(a,b){ return RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank) || b.t1 - a.t1; },
+      name: function(a,b){ return a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); }
+    }[how];
+    return list.slice().sort(function(a,b){ return (!!b.entry - !!a.entry) || c(a,b); });
+  }
+  function typeShort(t){ return TROOPS_SHORT[t] || ''; }
+  function squadText(s){ return s && s.type ? fmt(s.power) + ' ' + typeShort(s.type) : '-'; }
+  function playerLine(p, cols){
+    if (!p.entry) return p.name + ' (' + p.rank + ') - keine Meldung';
+    var t = p.name + ' (' + p.rank + ') - T1 ' + squadText(sq(p.entry,0));
+    if (cols === 'all') { for (var i = 1; i < 4; i++) if (sq(p.entry,i).type) t += ' | T' + (i+1) + ' ' + squadText(sq(p.entry,i)); t += ' | Gesamt ' + fmt(p.total); }
+    return t;
+  }
+  function exportText(){
+    var list = sortList(selected(), $('expSort').value), cols = $('expCols').value;
+    var head = 'SKWS Squads - Stand ' + fmtDate(Date.now()) + ' - ' + list.length + ' Spieler';
+    return head + '\n\n' + list.map(function(p, i){ return (i + 1) + '. ' + playerLine(p, cols); }).join('\n');
+  }
+  function csvCell(v){ v = v === null || v === undefined ? '' : String(v); return /[";\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  function csvNum(v){ return v ? String(Math.round(v * 100) / 100).replace('.', ',') : ''; }
+  function csv(rows){ return rows.map(function(r){ return r.map(csvCell).join(';'); }).join('\r\n'); }
+  function playerRow(p){
+    var r = [p.rank, p.name];
+    for (var i = 0; i < 4; i++) { var s = sq(p.entry, i); r.push(s.type ? TROOPS[s.type] : '', s.type ? csvNum(s.power) : ''); }
+    r.push(p.entry ? csvNum(p.total) : '', p.entry ? fmtDateTime(p.updated) : 'keine Meldung');
+    return r;
+  }
+  var CSV_HEAD = ['Rang','Name','T1 Typ','T1 Kampfkraft (Mio.)','T2 Typ','T2 Kampfkraft (Mio.)','T3 Typ','T3 Kampfkraft (Mio.)','T4 Typ','T4 Kampfkraft (Mio.)','Gesamt (Mio.)','Stand'];
+  function download(name, text){
+    var blob = new Blob(['\ufeff' + text], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  function copyText(text, noteId){
+    function ok(){ var n = $(noteId); n.textContent = 'In die Zwischenablage kopiert.'; n.className = 'note ok'; }
+    function fallback(){ var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); ok(); } catch(e) { var n = $(noteId); n.textContent = 'Kopieren nicht möglich – bitte Text markieren und kopieren.'; n.className = 'note err'; } ta.remove(); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, fallback); else fallback();
+  }
+  function fileDate(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+
+  function renderExport(){
+    initSel();
+    var q = $('selSearch').value.trim().toLowerCase();
+    var list = D.players.slice().sort(function(a,b){ return RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank) || b.t1 - a.t1 || a.name.localeCompare(b.name); })
+      .filter(function(p){ return !q || p.name.toLowerCase().indexOf(q) >= 0; });
+    $('pickList').innerHTML = list.map(function(p){
+      return '<label class="' + (p.entry ? '' : 'nodata') + '"><input type="checkbox" data-name="' + esc(p.name) + '"' + (SEL[p.name] ? ' checked' : '') + '>' +
+        '<span class="nm">' + esc(p.name) + '</span><span class="meta">' + p.rank + ' · ' + (p.entry ? 'T1 ' + fmt(p.t1) + ' ' + typeShort(sq(p.entry,0).type) : 'keine Meldung') + '</span></label>';
+    }).join('') || '<div class="empty">Keine Treffer.</div>';
+    updateSelCount();
+  }
+  function updateSelCount(){ $('selCount').textContent = selected().length; $('expPreview').value = exportText(); $('expNote').textContent = ''; }
+
+  function planDesertStorm(){
+    var teams = +$('dsTeams').value, start = Math.max(1, +$('dsStart').value || 20), subs = Math.max(0, +$('dsSubs').value || 0);
+    var m = $('dsMetric').value, mode = $('dsMode').value;
+    var pool = selected().filter(function(p){ return p.entry; }).sort(function(a,b){ return metric(b,m) - metric(a,m) || b.total - a.total; });
+    var noData = selected().filter(function(p){ return !p.entry; });
+    var T = []; for (var i = 0; i < teams; i++) T.push({ name: 'Task Force ' + 'AB'[i], start: [], subs: [] });
+    var idx = 0;
+    function fill(slot, size){
+      var need = size * teams, chunk = pool.slice(idx, idx + need); idx += chunk.length;
+      if (mode === 'topA' || teams === 1) {
+        chunk.forEach(function(p, k){ T[Math.min(teams - 1, Math.floor(k / size))][slot].push(p); });
+      } else {
+        // Schlangen-Verteilung, dann gierig auf das schwächere Team, damit die Summen nah beieinander liegen
+        chunk.forEach(function(p){
+          var open = T.filter(function(t){ return t[slot].length < size; });
+          open.sort(function(a,b){ return sum(a.start.concat(a.subs), m) - sum(b.start.concat(b.subs), m) || a[slot].length - b[slot].length; });
+          open[0][slot].push(p);
+        });
+      }
+    }
+    fill('start', start); fill('subs', subs);
+    lastPlan = { teams: T, rest: pool.slice(idx), noData: noData, metric: m };
+    renderPlan();
+  }
+  function sum(list, m){ return list.reduce(function(a,p){ return a + metric(p, m); }, 0); }
+  function renderPlan(){
+    var P = lastPlan, m = P.metric, lbl = m === 'total' ? 'Gesamt' : 'T1';
+    var h = '';
+    P.teams.forEach(function(t){
+      var ss = sum(t.start, m);
+      h += '<div class="team"><h3>' + t.name + '<span>' + t.start.length + ' Stamm · ' + t.subs.length + ' Ersatz · Σ ' + lbl + ' Stamm ' + fmt(ss) + ' M · Ø ' + (t.start.length ? fmt(ss / t.start.length) : '–') + '</span></h3>';
+      h += '<div class="tw"><table><tr><th>#</th><th>Spieler</th><th>Rang</th><th class="n">T1</th><th class="n">Gesamt</th></tr>';
+      t.start.forEach(function(p, i){ h += '<tr><td class="muted">' + (i+1) + '</td><td>' + esc(p.name) + '</td><td class="muted">' + p.rank + '</td><td class="n">' + squadCell(sq(p.entry,0)) + '</td><td class="n">' + fmt(p.total) + '</td></tr>'; });
+      if (t.subs.length) h += '<tr class="rankhead"><td colspan="5">Ersatz</td></tr>';
+      t.subs.forEach(function(p, i){ h += '<tr class="sub"><td>E' + (i+1) + '</td><td>' + esc(p.name) + '</td><td>' + p.rank + '</td><td class="n">' + squadCell(sq(p.entry,0)) + '</td><td class="n">' + fmt(p.total) + '</td></tr>'; });
+      h += '</table></div></div>';
+    });
+    if (P.rest.length) h += '<p class="small muted" style="margin-top:12px">Nicht eingeplant (kein Platz mehr): ' + P.rest.map(function(p){ return esc(p.name); }).join(', ') + '</p>';
+    if (P.noData.length) h += '<p class="small muted">Ausgewählt, aber ohne Meldung: ' + P.noData.map(function(p){ return esc(p.name); }).join(', ') + '</p>';
+    $('dsResult').innerHTML = h || '<div class="empty">Keine ausgewählten Spieler mit Meldung.</div>';
+    $('dsActions').classList.toggle('hide', !P.teams.some(function(t){ return t.start.length; }));
+  }
+  function planText(){
+    var P = lastPlan, m = P.metric, out = ['SKWS Wuestensturm - Aufstellung ' + fmtDate(Date.now())];
+    P.teams.forEach(function(t){
+      out.push('', t.name + ' (Summe ' + (m === 'total' ? 'Gesamt' : 'T1') + ' ' + fmt(sum(t.start, m)) + ' M)', 'Stamm:');
+      t.start.forEach(function(p, i){ out.push((i+1) + '. ' + p.name + ' - T1 ' + squadText(sq(p.entry,0))); });
+      if (t.subs.length) { out.push('Ersatz:'); t.subs.forEach(function(p, i){ out.push('E' + (i+1) + '. ' + p.name + ' - T1 ' + squadText(sq(p.entry,0))); }); }
+    });
+    return out.join('\n');
+  }
+  function planCsv(){
+    var rows = [['Task Force','Rolle','Nr.'].concat(CSV_HEAD)];
+    lastPlan.teams.forEach(function(t){
+      t.start.forEach(function(p, i){ rows.push([t.name, 'Stamm', i+1].concat(playerRow(p))); });
+      t.subs.forEach(function(p, i){ rows.push([t.name, 'Ersatz', i+1].concat(playerRow(p))); });
+    });
+    return csv(rows);
+  }
+
   /* ---------- Verwaltung ---------- */
   function rankSelect(p){
     return '<select class="rk" data-name="' + esc(p.name) + '">' + RANKS.map(function(r){ return '<option' + (r === p.rank ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select>';
@@ -513,12 +715,13 @@
   function showTab(name){
     var bs = document.querySelectorAll('#tabs button');
     for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-    ['ov','mem','hist','pl','adm'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+    ['ov','mem','hist','pl','exp','adm'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
     store('skws_admin_tab', name);
     if (name === 'hist') renderHistory();
     if (name === 'ov') renderOverview();
     if (name === 'pl') renderPlayer();
     if (name === 'adm') renderAdmin();
+    if (name === 'exp') renderExport();
   }
   function renderAll(){
     renderOverview(); renderMembers(); fillPlayerSelect();
@@ -548,6 +751,27 @@
   });
   $('plSelect').addEventListener('change', function(){ curPlayer = this.value; renderPlayer(); });
   $('admSearch').addEventListener('input', renderAdmin);
+  $('selSearch').addEventListener('input', renderExport);
+  $('pickList').addEventListener('change', function(e){ var c = e.target; if (!c.dataset.name) return; if (c.checked) SEL[c.dataset.name] = 1; else delete SEL[c.dataset.name]; updateSelCount(); });
+  $('tab-exp').querySelector('.chips').addEventListener('click', function(e){
+    var b = e.target.closest('[data-sel]'); if (!b) return; var k = b.dataset.sel;
+    if (k === 'all') D.players.forEach(function(p){ SEL[p.name] = 1; });
+    else if (k === 'none') SEL = {};
+    else if (k === 'done') { SEL = {}; D.players.forEach(function(p){ if (p.entry) SEL[p.name] = 1; }); }
+    else D.players.forEach(function(p){ if (p.rank === k || (p.entry && sq(p.entry,0).type === k)) SEL[p.name] = 1; });
+    renderExport();
+  });
+  ['expSort','expCols'].forEach(function(id){ $(id).addEventListener('change', updateSelCount); });
+  $('expCsv').addEventListener('click', function(){
+    var list = sortList(selected(), $('expSort').value);
+    if (!list.length) { $('expNote').textContent = 'Bitte zuerst Spieler auswählen.'; $('expNote').className = 'note err'; return; }
+    download('SKWS-Squads-' + fileDate() + '.csv', csv([CSV_HEAD].concat(list.map(playerRow))));
+    $('expNote').textContent = 'CSV mit ' + list.length + ' Spielern erstellt.'; $('expNote').className = 'note ok';
+  });
+  $('expCopy').addEventListener('click', function(){ copyText(exportText(), 'expNote'); });
+  $('dsRun').addEventListener('click', planDesertStorm);
+  $('dsCopy').addEventListener('click', function(){ if (lastPlan) copyText(planText(), 'dsNote'); });
+  $('dsCsv').addEventListener('click', function(){ if (lastPlan) download('SKWS-Wuestensturm-' + fileDate() + '.csv', planCsv()); });
   $('addForm').addEventListener('submit', function(e){
     e.preventDefault();
     var n = $('addName').value.trim(); if (!n) return note('Bitte einen Namen eingeben.', false);
