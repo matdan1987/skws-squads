@@ -150,6 +150,7 @@ var LANG_NAMES = {
 
 var I18N = {
   de: {
+    errEmailTaken: "Diese E-Mail-Adresse wird schon von einem anderen Spieler verwendet.",
     nameSaved: "Dein Name wird auf diesem Gerät gemerkt.",
     adminBtn: "Admin-Bereich (R4/R5) öffnen",
     appRemTitle: "Erinnerung aufs Handy",
@@ -184,6 +185,7 @@ var I18N = {
     unsubDone: 'Du bekommst keine Erinnerungen mehr.', unsubFail: 'Link ungültig oder bereits abgemeldet.'
   },
   en: {
+    errEmailTaken: "This email address is already used by another player.",
     nameSaved: "Your name is remembered on this device.",
     adminBtn: "Open admin area (R4/R5)",
     appRemTitle: "Phone reminder",
@@ -218,6 +220,7 @@ var I18N = {
     unsubDone: 'You will no longer receive reminders.', unsubFail: 'Invalid link or already unsubscribed.'
   },
   fr: {
+    errEmailTaken: "Cette adresse e-mail est déjà utilisée par un autre joueur.",
     nameSaved: "Ton nom est mémorisé sur cet appareil.",
     adminBtn: "Ouvrir l'espace admin (R4/R5)",
     appRemTitle: "Rappel sur le téléphone",
@@ -252,6 +255,7 @@ var I18N = {
     unsubDone: 'Tu ne recevras plus de rappels.', unsubFail: 'Lien invalide ou déjà désinscrit.'
   },
   es: {
+    errEmailTaken: "Este correo ya lo usa otro jugador.",
     nameSaved: "Tu nombre se recuerda en este dispositivo.",
     adminBtn: "Abrir área de administración (R4/R5)",
     appRemTitle: "Recordatorio en el móvil",
@@ -286,6 +290,7 @@ var I18N = {
     unsubDone: 'Ya no recibirás recordatorios.', unsubFail: 'Enlace no válido o ya te has dado de baja.'
   },
   pt: {
+    errEmailTaken: "Este e-mail já é usado por outro jogador.",
     nameSaved: "Seu nome fica salvo neste dispositivo.",
     adminBtn: "Abrir área de administração (R4/R5)",
     appRemTitle: "Lembrete no celular",
@@ -320,6 +325,7 @@ var I18N = {
     unsubDone: 'Você não receberá mais lembretes.', unsubFail: 'Link inválido ou já cancelado.'
   },
   it: {
+    errEmailTaken: "Questo indirizzo e-mail è già usato da un altro giocatore.",
     nameSaved: "Il tuo nome viene ricordato su questo dispositivo.",
     adminBtn: "Apri area admin (R4/R5)",
     appRemTitle: "Promemoria sul telefono",
@@ -354,6 +360,7 @@ var I18N = {
     unsubDone: 'Non riceverai più promemoria.', unsubFail: 'Link non valido o già disiscritto.'
   },
   tr: {
+    errEmailTaken: "Bu e-posta adresi başka bir oyuncu tarafından kullanılıyor.",
     nameSaved: "Adın bu cihazda hatırlanır.",
     adminBtn: "Yönetici alanını aç (R4/R5)",
     appRemTitle: "Telefona hatırlatma",
@@ -388,6 +395,7 @@ var I18N = {
     unsubDone: 'Artık hatırlatma almayacaksın.', unsubFail: 'Geçersiz bağlantı veya abonelikten zaten çıkılmış.'
   },
   ru: {
+    errEmailTaken: "Этот e-mail уже использует другой игрок.",
     nameSaved: "Твоё имя сохраняется на этом устройстве.",
     adminBtn: "Открыть админ-раздел (R4/R5)",
     appRemTitle: "Напоминание на телефон",
@@ -422,6 +430,7 @@ var I18N = {
     unsubDone: 'Ты больше не будешь получать напоминания.', unsubFail: 'Ссылка недействительна или ты уже отписался.'
   },
   pl: {
+    errEmailTaken: "Ten adres e-mail jest już używany przez innego gracza.",
     nameSaved: "Twoje imię jest zapamiętywane na tym urządzeniu.",
     adminBtn: "Otwórz panel admina (R4/R5)",
     appRemTitle: "Przypomnienie na telefon",
@@ -603,6 +612,7 @@ function rpc(fn, body){
     if (m.indexOf('ERR_NAME') >= 0) return t('errName');
     if (m.indexOf('ERR_T1') >= 0) return t('errT1');
     if (m.indexOf('ERR_POWER') >= 0) return t('errPower');
+    if (m.indexOf('ERR_EMAIL_TAKEN') >= 0) return t('errEmailTaken');
     if (m.indexOf('ERR_EMAIL_REQ') >= 0) return t('errEmailReq');
     if (m.indexOf('ERR_EMAIL') >= 0) return t('errEmail');
     return t('errSave');
