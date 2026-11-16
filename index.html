@@ -102,11 +102,10 @@
       <div id="squads"></div>
 
       <div class="card">
-        <label class="l" for="email" data-t="emailTitle"></label>
+        <div class="sq-h"><label class="l" for="email" data-t="emailTitle" style="margin:0"></label><span class="tag req" data-t="required"></span></div>
         <div id="emailActive" class="ok-pill hide">● <span data-t="emailSaved"></span></div>
         <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com">
         <div class="hint" data-t="emailHint"></div>
-        <label class="chk hide" id="removeWrap"><input type="checkbox" id="removeEmail"><span data-t="removeEmail"></span></label>
       </div>
 
       <button class="btn" id="save" data-t="save"></button>
@@ -148,8 +147,9 @@ var I18N = {
     troopType: 'Truppentyp', power: 'Kampfkraft (Mio.)', powerHint: 'z. B. 25,4 für 25,4 Mio.',
     tank: 'Panzer', missile: 'Raketenwerfer', aircraft: 'Flugzeug', mixed: 'Gemischt', choose: '– wählen –',
     emailTitle: 'Wöchentliche Erinnerung',
-    emailHint: 'Optional: Trag deine E-Mail ein, dann erinnern wir dich einmal pro Woche ans Aktualisieren. Andere sehen deine Adresse nicht.',
+    emailHint: "Pflicht: Trag deine E-Mail ein – wir erinnern dich einmal pro Woche ans Aktualisieren. Andere sehen deine Adresse nicht.",
     email: 'E-Mail', emailSaved: 'Erinnerung ist aktiv. Feld leer lassen, um die gespeicherte Adresse zu behalten.',
+    errEmailReq: "Bitte gib deine E-Mail-Adresse ein.",
     removeEmail: 'Keine Erinnerungen mehr',
     save: 'Speichern', saving: 'Speichere…', saved: 'Gespeichert – danke!',
     lastUpdate: 'Zuletzt aktualisiert', loading: 'Lade…',
@@ -173,8 +173,9 @@ var I18N = {
     troopType: 'Troop type', power: 'Power (M)', powerHint: 'e.g. 25.4 for 25.4 M',
     tank: 'Tank', missile: 'Missile', aircraft: 'Aircraft', mixed: 'Mixed', choose: '– select –',
     emailTitle: 'Weekly reminder',
-    emailHint: "Optional: enter your email and we'll remind you once a week to update your values. Others can't see your address.",
+    emailHint: "Required: enter your email – we'll remind you once a week to update your values. Others can't see your address.",
     email: 'Email', emailSaved: 'Reminder is active. Leave empty to keep your saved address.',
+    errEmailReq: "Please enter your email address.",
     removeEmail: 'Stop reminders',
     save: 'Save', saving: 'Saving…', saved: 'Saved – thank you!',
     lastUpdate: 'Last updated', loading: 'Loading…',
@@ -198,8 +199,9 @@ var I18N = {
     troopType: 'Type de troupe', power: 'Puissance (M)', powerHint: 'ex. 25,4 pour 25,4 M',
     tank: 'Char', missile: 'Missile', aircraft: 'Avion', mixed: 'Mixte', choose: '– choisir –',
     emailTitle: 'Rappel hebdomadaire',
-    emailHint: 'Facultatif : indique ton e-mail et nous te rappellerons une fois par semaine de mettre à jour tes valeurs. Les autres ne voient pas ton adresse.',
+    emailHint: "Obligatoire : indique ton e-mail – nous te rappellerons une fois par semaine de mettre à jour tes valeurs. Les autres ne voient pas ton adresse.",
     email: 'E-mail', emailSaved: "Le rappel est actif. Laisse vide pour garder l'adresse enregistrée.",
+    errEmailReq: "Indique ton adresse e-mail.",
     removeEmail: 'Arrêter les rappels',
     save: 'Enregistrer', saving: 'Enregistrement…', saved: 'Enregistré – merci !',
     lastUpdate: 'Dernière mise à jour', loading: 'Chargement…',
@@ -223,8 +225,9 @@ var I18N = {
     troopType: 'Tipo de tropa', power: 'Poder (M)', powerHint: 'p. ej. 25,4 para 25,4 M',
     tank: 'Tanque', missile: 'Misil', aircraft: 'Avión', mixed: 'Mixto', choose: '– elegir –',
     emailTitle: 'Recordatorio semanal',
-    emailHint: 'Opcional: introduce tu correo y te recordaremos una vez por semana que actualices tus valores. Nadie más puede ver tu dirección.',
+    emailHint: "Obligatorio: introduce tu correo y te recordaremos una vez por semana que actualices tus valores. Nadie más puede ver tu dirección.",
     email: 'Correo', emailSaved: 'El recordatorio está activo. Déjalo vacío para conservar la dirección guardada.',
+    errEmailReq: "Introduce tu correo electrónico.",
     removeEmail: 'No más recordatorios',
     save: 'Guardar', saving: 'Guardando…', saved: '¡Guardado, gracias!',
     lastUpdate: 'Última actualización', loading: 'Cargando…',
@@ -248,8 +251,9 @@ var I18N = {
     troopType: 'Tipo de tropa', power: 'Poder (M)', powerHint: 'ex.: 25,4 para 25,4 M',
     tank: 'Tanque', missile: 'Míssil', aircraft: 'Aeronave', mixed: 'Misto', choose: '– escolher –',
     emailTitle: 'Lembrete semanal',
-    emailHint: 'Opcional: informe seu e-mail e lembraremos você uma vez por semana de atualizar seus valores. Ninguém mais vê seu endereço.',
+    emailHint: "Obrigatório: informe seu e-mail e lembraremos você uma vez por semana de atualizar seus valores. Ninguém mais vê seu endereço.",
     email: 'E-mail', emailSaved: 'Lembrete ativo. Deixe vazio para manter o endereço salvo.',
+    errEmailReq: "Informe seu e-mail.",
     removeEmail: 'Parar lembretes',
     save: 'Salvar', saving: 'Salvando…', saved: 'Salvo – obrigado!',
     lastUpdate: 'Última atualização', loading: 'Carregando…',
@@ -273,8 +277,9 @@ var I18N = {
     troopType: 'Tipo di truppa', power: 'Potenza (M)', powerHint: 'es. 25,4 per 25,4 M',
     tank: 'Carro armato', missile: 'Missile', aircraft: 'Aereo', mixed: 'Misto', choose: '– scegli –',
     emailTitle: 'Promemoria settimanale',
-    emailHint: 'Facoltativo: inserisci la tua e-mail e ti ricorderemo una volta a settimana di aggiornare i valori. Gli altri non vedono il tuo indirizzo.',
+    emailHint: "Obbligatoria: inserisci la tua e-mail e ti ricorderemo una volta a settimana di aggiornare i valori. Gli altri non vedono il tuo indirizzo.",
     email: 'E-mail', emailSaved: "Promemoria attivo. Lascia vuoto per mantenere l'indirizzo salvato.",
+    errEmailReq: "Inserisci il tuo indirizzo e-mail.",
     removeEmail: 'Basta promemoria',
     save: 'Salva', saving: 'Salvataggio…', saved: 'Salvato – grazie!',
     lastUpdate: 'Ultimo aggiornamento', loading: 'Caricamento…',
@@ -298,8 +303,9 @@ var I18N = {
     troopType: 'Birlik türü', power: 'Güç (M)', powerHint: 'ör. 25,4 M için 25,4',
     tank: 'Tank', missile: 'Füze', aircraft: 'Uçak', mixed: 'Karışık', choose: '– seç –',
     emailTitle: 'Haftalık hatırlatma',
-    emailHint: 'İsteğe bağlı: e-postanı gir, değerlerini güncellemen için sana haftada bir hatırlatma gönderelim. Adresini başkaları göremez.',
+    emailHint: "Zorunlu: e-postanı gir, değerlerini güncellemen için sana haftada bir hatırlatma gönderelim. Adresini başkaları göremez.",
     email: 'E-posta', emailSaved: 'Hatırlatma aktif. Kayıtlı adresi korumak için boş bırak.',
+    errEmailReq: "Lütfen e-posta adresini gir.",
     removeEmail: 'Hatırlatmaları durdur',
     save: 'Kaydet', saving: 'Kaydediliyor…', saved: 'Kaydedildi – teşekkürler!',
     lastUpdate: 'Son güncelleme', loading: 'Yükleniyor…',
@@ -323,8 +329,9 @@ var I18N = {
     troopType: 'Тип войск', power: 'Мощь (млн)', powerHint: 'напр. 25,4 для 25,4 млн',
     tank: 'Танки', missile: 'Ракеты', aircraft: 'Авиация', mixed: 'Смешанный', choose: '– выбрать –',
     emailTitle: 'Еженедельное напоминание',
-    emailHint: 'Необязательно: укажи e-mail, и мы раз в неделю напомним обновить данные. Другие не видят твой адрес.',
+    emailHint: "Обязательно: укажи e-mail, и мы раз в неделю напомним обновить данные. Другие не видят твой адрес.",
     email: 'E-mail', emailSaved: 'Напоминание включено. Оставь поле пустым, чтобы сохранить текущий адрес.',
+    errEmailReq: "Укажи свой адрес e-mail.",
     removeEmail: 'Отключить напоминания',
     save: 'Сохранить', saving: 'Сохранение…', saved: 'Сохранено – спасибо!',
     lastUpdate: 'Последнее обновление', loading: 'Загрузка…',
@@ -348,8 +355,9 @@ var I18N = {
     troopType: 'Typ wojsk', power: 'Moc (mln)', powerHint: 'np. 25,4 dla 25,4 mln',
     tank: 'Czołgi', missile: 'Rakiety', aircraft: 'Lotnictwo', mixed: 'Mieszany', choose: '– wybierz –',
     emailTitle: 'Cotygodniowe przypomnienie',
-    emailHint: 'Opcjonalnie: podaj e-mail, a raz w tygodniu przypomnimy ci o aktualizacji. Inni nie widzą twojego adresu.',
+    emailHint: "Wymagane: podaj e-mail, a raz w tygodniu przypomnimy ci o aktualizacji. Inni nie widzą twojego adresu.",
     email: 'E-mail', emailSaved: 'Przypomnienie jest aktywne. Zostaw puste, aby zachować zapisany adres.',
+    errEmailReq: "Podaj swój adres e-mail.",
     removeEmail: 'Wyłącz przypomnienia',
     save: 'Zapisz', saving: 'Zapisywanie…', saved: 'Zapisano – dzięki!',
     lastUpdate: 'Ostatnia aktualizacja', loading: 'Ładowanie…',
@@ -462,7 +470,7 @@ function rpc(fn, body){
       var p = s && s.power !== null && s.power !== undefined ? s.power : '';
       c.querySelector('.pow').value = p === '' ? '' : String(p).replace('.', LANG === 'en' ? '.' : ',');
     }
-    $('email').value = ''; $('removeEmail').checked = false;
+    $('email').value = '';
     if (e && e.lang && DATA.i18n[e.lang] && !store('skws_lang_manual')) setLang(e.lang, false);
     showMeta(); setMsg('');
   }
@@ -472,7 +480,6 @@ function rpc(fn, body){
     $('lastUpdate').classList.toggle('hide', !(e && e.updated));
     if (e && e.updated) $('lastUpdate').textContent = t('lastUpdate') + ': ' + fmtDate(e.updated);
     $('emailActive').classList.toggle('hide', !(e && e.hasEmail));
-    $('removeWrap').classList.toggle('hide', !(e && e.hasEmail));
   }
 
   function setMsg(txt, cls){ var m = $('msg'); m.textContent = txt || ''; m.className = 'msg' + (cls ? ' ' + cls : ''); }
@@ -498,7 +505,9 @@ function rpc(fn, body){
     }
     var email = $('email').value.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { err: t('errEmail') };
-    return { data: { name: name, squads: squads, email: email, removeEmail: $('removeEmail').checked, lang: LANG } };
+    var ex = DATA.entries[name];
+    if (!email && !(ex && ex.hasEmail)) return { err: t('errEmailReq') };
+    return { data: { name: name, squads: squads, email: email, removeEmail: false, lang: LANG } };
   }
 
   function errText(m){
@@ -508,6 +517,7 @@ function rpc(fn, body){
     if (m.indexOf('ERR_NAME') >= 0) return t('errName');
     if (m.indexOf('ERR_T1') >= 0) return t('errT1');
     if (m.indexOf('ERR_POWER') >= 0) return t('errPower');
+    if (m.indexOf('ERR_EMAIL_REQ') >= 0) return t('errEmailReq');
     if (m.indexOf('ERR_EMAIL') >= 0) return t('errEmail');
     return t('errSave');
   }
@@ -517,11 +527,11 @@ function rpc(fn, body){
     var r = collect();
     if (r.err) { setMsg(r.err, 'err'); return; }
     busy = true; $('save').disabled = true; $('save').textContent = t('saving'); setMsg('');
-    rpc('save_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_remove_email: r.data.removeEmail, p_lang: r.data.lang })
+    rpc('save_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_remove_email: false, p_lang: r.data.lang })
       .then(function(res){
         DATA.entries[r.data.name] = { squads: res.squads, hasEmail: res.hasEmail, lang: res.lang, updated: res.updated };
         done(); setMsg(t('saved'), 'ok');
-        $('email').value = ''; $('removeEmail').checked = false;
+        $('email').value = '';
         fillNames(); showMeta(); renderOverview();
       })
       .catch(function(err){ done(); setMsg(errText(err && err.message), 'err'); });
