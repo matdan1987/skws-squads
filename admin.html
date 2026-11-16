@@ -34,6 +34,10 @@
   .tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:14px;overflow-x:auto}
   .tabs button{flex:1;border:0;background:none;color:var(--muted);font-weight:600;padding:9px 10px;border-radius:9px;cursor:pointer;white-space:nowrap}
   .tabs button.on{background:var(--card);color:var(--text)}
+  @media(max-width:720px){
+    .tabs{display:grid;grid-template-columns:repeat(4,1fr);overflow:visible}
+    .tabs button{padding:9px 2px;font-size:13px;white-space:normal;line-height:1.2}
+  }
   .hide{display:none!important}
   .muted{color:var(--muted)} .small{font-size:12px}
   .msg{min-height:22px;margin-top:10px;font-weight:600;color:var(--err)}
