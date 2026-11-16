@@ -5,3 +5,8 @@
 - Seite: https://matdan1987.github.io/skws-squads/
 - Daten: Supabase-Projekt `skws-squads` (Zugriff nur über die Funktionen `get_init`, `save_entry`, `unsubscribe`; E-Mail-Adressen sind öffentlich nicht lesbar)
 - 9 Sprachen: DE, EN, FR, ES, PT, IT, TR, RU, PL
+
+## Android-App
+
+`android/` enthält eine schlanke App (WebView) für diese Seite inkl. Admin-Bereich, mit Speichern von CSV-Exporten nach `Downloads/SKWS` und Kopieren in die Zwischenablage.
+Download: https://github.com/matdan1987/skws-squads/releases/latest/download/SKWS-Squads.apk

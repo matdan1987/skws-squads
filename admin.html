@@ -712,6 +712,7 @@
   }
   var CSV_HEAD = ['Rang','Name','T1 Typ','T1 Kampfkraft (Mio.)','T2 Typ','T2 Kampfkraft (Mio.)','T3 Typ','T3 Kampfkraft (Mio.)','T4 Typ','T4 Kampfkraft (Mio.)','Gesamt (Mio.)','Stand'];
   function download(name, text){
+    if (window.SKWSAndroid && window.SKWSAndroid.saveFile) { window.SKWSAndroid.saveFile(name, '\ufeff' + text, 'text/csv'); return; }
     var blob = new Blob(['\ufeff' + text], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
     setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
@@ -720,6 +721,7 @@
     function ok(){ var n = $(noteId); n.textContent = 'In die Zwischenablage kopiert.'; n.className = 'note ok'; }
     function fallback(){ var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
       try { document.execCommand('copy'); ok(); } catch(e) { var n = $(noteId); n.textContent = 'Kopieren nicht möglich – bitte Text markieren und kopieren.'; n.className = 'note err'; } ta.remove(); }
+    if (window.SKWSAndroid && window.SKWSAndroid.copy) { window.SKWSAndroid.copy(text); ok(); return; }
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, fallback); else fallback();
   }
   function fileDate(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }

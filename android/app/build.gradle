@@ -1,0 +1,32 @@
+plugins { id 'com.android.application' }
+
+def ks = System.getenv('SKWS_KEYSTORE')
+
+android {
+    namespace 'de.matdan.skws'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'de.matdan.skws'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+    signingConfigs {
+        release {
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv('SKWS_KEYSTORE_PASSWORD')
+                keyAlias 'skws'
+                keyPassword System.getenv('SKWS_KEYSTORE_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (ks) signingConfig signingConfigs.release
+        }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
