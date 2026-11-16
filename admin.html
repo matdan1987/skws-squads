@@ -82,6 +82,14 @@
   .grid2{display:grid;grid-template-columns:1fr;gap:12px}
   @media(min-width:820px){.grid2{grid-template-columns:1fr 1fr}}
   .login{max-width:360px;margin:12vh auto 0}
+  .addrow{display:grid;grid-template-columns:1fr 84px;gap:8px} .addrow .btn{grid-column:1/-1}
+  @media(min-width:640px){.addrow{grid-template-columns:1fr 90px auto} .addrow .btn{grid-column:auto}}
+  .mini{background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:12px}
+  .mini.danger{color:var(--err);border-color:rgba(255,107,107,.35)}
+  .mini.okb{color:var(--ok);border-color:rgba(61,220,151,.35)}
+  td select.rk{width:auto;padding:4px 8px;font-size:13px;border-radius:8px}
+  .note{min-height:20px;font-size:13px;margin-top:8px;font-weight:600}
+  .note.ok{color:var(--ok)} .note.err{color:var(--err)}
 </style>
 </head>
 <body>
@@ -110,6 +118,7 @@
       <button data-tab="mem">Mitglieder</button>
       <button data-tab="hist">Verlauf</button>
       <button data-tab="pl">Spieler</button>
+      <button data-tab="adm">Verwaltung</button>
     </div>
 
     <!-- Übersicht -->
@@ -160,6 +169,28 @@
       <div class="tiles" id="plTiles"></div>
       <div class="card"><h2>Kampfkraft je Trupp</h2><div class="chart" id="chartPlayer"></div></div>
       <div class="card"><h2>Alle Meldungen</h2><div class="tw"><table id="plTable"></table></div></div>
+    </section>
+    <!-- Verwaltung -->
+    <section id="tab-adm" class="hide">
+      <div class="card">
+        <h2>Neues Mitglied</h2>
+        <form id="addForm" class="addrow">
+          <input id="addName" placeholder="Spielername (wie im Spiel)" maxlength="40" autocomplete="off">
+          <select id="addRank"><option>R1</option><option>R2</option><option>R3</option><option>R4</option><option>R5</option></select>
+          <button class="btn" type="submit">Hinzufügen</button>
+        </form>
+        <div class="note" id="admNote"></div>
+      </div>
+      <div class="card">
+        <h2>Aktive Mitglieder (<span id="admActiveCount"></span>)</h2>
+        <input id="admSearch" type="search" placeholder="Suchen…" style="margin-bottom:8px">
+        <div class="tw"><table id="admActive"></table></div>
+        <p class="small muted" style="margin:8px 0 0">Rang direkt ändern · „Umbenennen“, wenn jemand im Spiel seinen Namen ändert (Verlauf bleibt erhalten) · „Ausgeschieden“ entfernt den Spieler von der Eintragsseite und stoppt seine Erinnerungen.</p>
+      </div>
+      <div class="card">
+        <h2>Ausgeschiedene (<span id="admLeftCount"></span>)</h2>
+        <div class="tw"><table id="admLeft"></table></div>
+      </div>
     </section>
   </div>
 </div>
@@ -213,6 +244,7 @@
       var first = hs.length ? hs[0].total : null;
       return {
         name: m.name, rank: m.rank || '–', entry: e, total: total,
+        active: m.active !== false, leftAt: m.left_at ? new Date(m.left_at) : null,
         t1: e ? Number(sq(e,0).power || 0) : 0,
         delta: prev === null ? null : Math.round((total - prev) * 100) / 100,
         growth: first === null ? null : Math.round((total - first) * 100) / 100,
@@ -222,11 +254,13 @@
       };
     });
 
-    // Tageswerte der Allianz: je Tag der jeweils letzte bekannte Stand jedes Spielers
+    // Tageswerte der Allianz: je Tag der jeweils letzte bekannte Stand jedes Spielers (Ausgeschiedene ab Austrittstag nicht mehr)
+    var leftKey = {}; raw.members.forEach(function(m){ if (m.left_at) leftKey[m.name] = dayKey(m.left_at); });
     var days = [], latest = {}, i = 0;
     var keys = []; hist.forEach(function(h){ var k = dayKey(h.t); if (keys[keys.length-1] !== k) keys.push(k); });
     keys.forEach(function(k){
       while (i < hist.length && dayKey(hist[i].t) <= k) { latest[hist[i].name] = hist[i]; i++; }
+      Object.keys(latest).forEach(function(n){ if (leftKey[n] && leftKey[n] <= k) delete latest[n]; });
       var slots = [0,0,0,0], total = 0, count = 0;
       Object.keys(latest).forEach(function(n){
         var s = latest[n].squads || []; count++;
@@ -235,7 +269,14 @@
       var p = k.split('-');
       days.push({ key: k, x: new Date(+p[0], +p[1]-1, +p[2], 12), total: total, slots: slots, count: count });
     });
-    return { players: players, days: days, members: raw.members.length };
+    var lastLeft = Object.keys(leftKey).map(function(n){ return leftKey[n]; }).sort().pop();
+    if (lastLeft && days.length && lastLeft > days[days.length-1].key) {
+      var prev = days[days.length-1], k2 = lastLeft, slots = [0,0,0,0], tot = 0, cnt = 0;
+      Object.keys(latest).forEach(function(n){ if (leftKey[n] && leftKey[n] <= k2) return; cnt++; var s = latest[n].squads || []; for (var j = 0; j < 4; j++) { var pw = Number((s[j] || {}).power || 0); slots[j] += pw; tot += pw; } });
+      var q = k2.split('-'); days.push({ key: k2, x: new Date(+q[0], +q[1]-1, +q[2], 12), total: tot, slots: slots, count: cnt });
+    }
+    var act = players.filter(function(p){ return p.active; });
+    return { all: players, players: act, left: players.filter(function(p){ return !p.active; }), days: days, members: act.length };
   }
 
   /* ---------- Liniendiagramm (SVG) ---------- */
@@ -401,14 +442,14 @@
   /* ---------- Spieler ---------- */
   function fillPlayerSelect(){
     var sel = $('plSelect');
-    var list = D.players.slice().sort(function(a,b){ return a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); });
+    var list = D.all.slice().sort(function(a,b){ return (b.active - a.active) || a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); });
     sel.innerHTML = '<option value="">– Spieler wählen –</option>' + list.map(function(p){
-      return '<option value="' + esc(p.name) + '">' + esc(p.name) + ' (' + p.rank + ')' + (p.entry ? '' : ' – fehlt') + '</option>';
+      return '<option value="' + esc(p.name) + '">' + esc(p.name) + ' (' + p.rank + ')' + (!p.active ? ' – ausgeschieden' : p.entry ? '' : ' – fehlt') + '</option>';
     }).join('');
     if (curPlayer) sel.value = curPlayer;
   }
   function renderPlayer(){
-    var p = D.players.filter(function(x){ return x.name === curPlayer; })[0];
+    var p = D.all.filter(function(x){ return x.name === curPlayer; })[0];
     if (!p) { $('plTiles').innerHTML = ''; $('chartPlayer').innerHTML = '<div class="empty">Spieler oben auswählen.</div>'; $('plTable').innerHTML = ''; return; }
     if (!p.entry) { $('plTiles').innerHTML = tile('Rang', p.rank, 'noch keine Meldung'); $('chartPlayer').innerHTML = '<div class="empty">Keine Daten.</div>'; $('plTable').innerHTML = ''; return; }
     $('plTiles').innerHTML =
@@ -428,15 +469,48 @@
     $('plTable').innerHTML = t;
   }
 
+  /* ---------- Verwaltung ---------- */
+  function rankSelect(p){
+    return '<select class="rk" data-name="' + esc(p.name) + '">' + RANKS.map(function(r){ return '<option' + (r === p.rank ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select>';
+  }
+  function renderAdmin(){
+    var q = $('admSearch').value.trim().toLowerCase();
+    var act = D.players.filter(function(p){ return !q || p.name.toLowerCase().indexOf(q) >= 0; })
+      .sort(function(a,b){ return RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank) || a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); });
+    $('admActiveCount').textContent = D.players.length;
+    $('admActive').innerHTML = act.map(function(p){
+      return '<tr><td class="sticky">' + esc(p.name) + '</td><td>' + rankSelect(p) + '</td><td style="text-align:right">' +
+        '<button class="mini" data-act="rename" data-name="' + esc(p.name) + '">Umbenennen</button> ' +
+        '<button class="mini danger" data-act="leave" data-name="' + esc(p.name) + '">Ausgeschieden</button></td></tr>';
+    }).join('') || '<tr><td class="muted">Keine Treffer.</td></tr>';
+    $('admLeftCount').textContent = D.left.length;
+    $('admLeft').innerHTML = D.left.slice().sort(function(a,b){ return (b.leftAt || 0) - (a.leftAt || 0); }).map(function(p){
+      return '<tr><td class="sticky">' + esc(p.name) + '</td><td class="muted">' + p.rank + '</td><td class="muted">seit ' + (p.leftAt ? fmtDate(p.leftAt) : '–') + '</td><td style="text-align:right">' +
+        '<button class="mini okb" data-act="rejoin" data-name="' + esc(p.name) + '">Wieder aufnehmen</button></td></tr>';
+    }).join('') || '<tr><td class="muted">Niemand.</td></tr>';
+  }
+  function note(txt, ok){ var n = $('admNote'); n.textContent = txt; n.className = 'note ' + (ok ? 'ok' : 'err'); }
+  function memberAction(action, name, value, okText){
+    note('…', true);
+    return rpc('admin_member', { p_pw: PW, p_action: action, p_name: name, p_value: value || null })
+      .then(function(){ return load(PW, true).then(function(){ showTab('adm'); note(okText, true); }); })
+      .catch(function(err){
+        var m = String(err && err.message);
+        note(m.indexOf('ERR_EXISTS') >= 0 ? 'Diesen Namen gibt es schon.' : m.indexOf('ERR_AUTH') >= 0 ? 'Nicht angemeldet – bitte neu anmelden.' :
+             m.indexOf('ERR_NAME') >= 0 ? 'Ungültiger Name.' : 'Fehler – bitte erneut versuchen.', false);
+      });
+  }
+
   /* ---------- Steuerung ---------- */
   function showTab(name){
     var bs = document.querySelectorAll('#tabs button');
     for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-    ['ov','mem','hist','pl'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+    ['ov','mem','hist','pl','adm'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
     store('skws_admin_tab', name);
     if (name === 'hist') renderHistory();
     if (name === 'ov') renderOverview();
     if (name === 'pl') renderPlayer();
+    if (name === 'adm') renderAdmin();
   }
   function renderAll(){
     renderOverview(); renderMembers(); fillPlayerSelect();
@@ -465,6 +539,25 @@
     curPlayer = tr.dataset.name; $('plSelect').value = curPlayer; showTab('pl');
   });
   $('plSelect').addEventListener('change', function(){ curPlayer = this.value; renderPlayer(); });
+  $('admSearch').addEventListener('input', renderAdmin);
+  $('addForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var n = $('addName').value.trim(); if (!n) return note('Bitte einen Namen eingeben.', false);
+    var r = $('addRank').value;
+    memberAction('add', n, r, n + ' wurde als ' + r + ' hinzugefügt.').then(function(){ $('addName').value = ''; });
+  });
+  $('admActive').addEventListener('change', function(e){
+    var s = e.target.closest('select.rk'); if (!s) return;
+    memberAction('rank', s.dataset.name, s.value, s.dataset.name + ' ist jetzt ' + s.value + '.');
+  });
+  $('tab-adm').addEventListener('click', function(e){
+    var b = e.target.closest('button[data-act]'); if (!b) return;
+    var n = b.dataset.name, a = b.dataset.act;
+    if (a === 'leave' && confirm(n + ' als ausgeschieden markieren?\nDer Spieler verschwindet von der Eintragsseite und bekommt keine Erinnerungen mehr. Sein Verlauf bleibt erhalten.'))
+      memberAction('leave', n, null, n + ' ist als ausgeschieden markiert.');
+    if (a === 'rejoin') memberAction('rejoin', n, null, n + ' ist wieder aktiv.');
+    if (a === 'rename') { var nn = prompt('Neuer Name für ' + n + ':', n); if (nn && nn.trim() && nn.trim() !== n) memberAction('rename', n, nn.trim(), n + ' heißt jetzt ' + nn.trim() + '.'); }
+  });
 
   var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (!D) return; var t = store('skws_admin_tab') || 'ov'; showTab(t); }, 200); });
   var saved = store('skws_admin_pw');
