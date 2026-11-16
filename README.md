@@ -9,4 +9,4 @@
 ## Android-App
 
 `android/` enthält eine schlanke App (WebView) für diese Seite inkl. Admin-Bereich, mit Speichern von CSV-Exporten nach `Downloads/SKWS` und Kopieren in die Zwischenablage.
-Download: https://github.com/matdan1987/skws-squads/releases/latest/download/SKWS-Squads.apk
+Download: https://matdan1987.github.io/skws-squads/SKWS-Squads.apk
