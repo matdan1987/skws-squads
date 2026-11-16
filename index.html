@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SKWS – Skywalkers · Squads</title>
+<meta name="theme-color" content="#070b14">
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --bg:#070b14; --bg2:#0d1424; --card:#111a2e; --line:#1f2b45; --text:#e6edf7; --muted:#8a9bb8;
+    --accent:#5cc8ff; --accent2:#7c5cff; --ok:#3ddc97; --err:#ff6b6b;
+    --tank:#4f9dff; --missile:#ff8a3d; --aircraft:#b98cff; --mixed:#9aa7bd;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  body{background:radial-gradient(1200px 500px at 50% -200px,#1a2a55 0%,transparent 70%),var(--bg);min-height:100vh}
+  .wrap{max-width:560px;margin:0 auto;padding:16px 14px 40px}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .logo{width:44px;height:44px;border-radius:12px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));font-weight:800;font-size:11px;letter-spacing:.02em;color:#06101f}
+  .htxt{flex:1;min-width:0}
+  .htxt .a{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+  .htxt h1{margin:0;font-size:20px;font-weight:700}
+  select,input{font:inherit;color:var(--text);background:var(--bg2);border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;width:100%;outline:none;-webkit-appearance:none;appearance:none}
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
+  select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(92,200,255,.15)}
+  #lang{width:auto;padding:8px 30px 8px 10px;font-size:13px}
+  .tabs{display:flex;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:14px}
+  .tabs button{flex:1;border:0;background:none;color:var(--muted);font:inherit;font-weight:600;padding:9px;border-radius:9px;cursor:pointer}
+  .tabs button.on{background:var(--card);color:var(--text);box-shadow:0 1px 0 rgba(255,255,255,.04) inset}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+  .intro{color:var(--muted);margin:0 0 12px}
+  label.l{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .sq-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .sq-h b{font-size:16px}
+  .tag{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+  .tag.req{border-color:rgba(92,200,255,.5);color:var(--accent)}
+  .sq.opt{opacity:.92}
+  .sq[data-type="tank"]{border-left:3px solid var(--tank)}
+  .sq[data-type="missile"]{border-left:3px solid var(--missile)}
+  .sq[data-type="aircraft"]{border-left:3px solid var(--aircraft)}
+  .sq[data-type="mixed"]{border-left:3px solid var(--mixed)}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  .meta{font-size:13px;color:var(--muted);margin:8px 0 0}
+  .chk{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;color:var(--muted)}
+  .chk input{width:18px;height:18px;padding:0;accent-color:var(--accent);-webkit-appearance:auto;appearance:auto}
+  .ok-pill{display:inline-block;font-size:12px;color:var(--ok);margin-bottom:8px}
+  .btn{width:100%;border:0;border-radius:12px;padding:14px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;color:#06101f;
+    background:linear-gradient(135deg,var(--accent),var(--accent2))}
+  .btn:disabled{opacity:.6;cursor:default}
+  .msg{min-height:22px;margin-top:10px;text-align:center;font-weight:600}
+  .msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
+  .hide{display:none!important}
+  .stat{display:flex;align-items:center;gap:12px}
+  .bar{flex:1;height:8px;border-radius:99px;background:var(--bg2);overflow:hidden}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:6px 4px;border-bottom:1px solid var(--line)}
+  td{padding:9px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+  th.n,td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .typ{font-size:12px;color:var(--muted)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chips span{font-size:13px;background:var(--bg2);border:1px solid var(--line);border-radius:99px;padding:3px 10px;color:var(--muted)}
+  .loading{text-align:center;color:var(--muted);padding:40px 0}
+  .spin{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;margin:0 auto 10px;animation:s 1s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">SKWS</div>
+    <div class="htxt"><div class="a" id="allianceName">SKWS – Skywalkers</div><h1 data-t="title">Squads</h1></div>
+    <select id="lang" aria-label="Language"></select>
+  </header>
+
+  <div id="loading" class="loading"><div class="spin"></div><span id="loadingTxt">…</span></div>
+
+  <div id="app" class="hide">
+    <div class="tabs">
+      <button id="tabForm" class="on" data-t="form"></button>
+      <button id="tabOverview" data-t="overview"></button>
+    </div>
+
+    <!-- Formular -->
+    <section id="formView">
+      <div class="card">
+        <p class="intro" data-t="intro"></p>
+        <label class="l" for="name" data-t="name"></label>
+        <input id="search" type="search" data-tp="search" autocomplete="off" style="margin-bottom:8px">
+        <select id="name"></select>
+        <div class="hint" data-t="notListed"></div>
+        <div class="meta hide" id="lastUpdate"></div>
+      </div>
+
+      <div id="squads"></div>
+
+      <div class="card">
+        <label class="l" for="email" data-t="emailTitle"></label>
+        <div id="emailActive" class="ok-pill hide">● <span data-t="emailSaved"></span></div>
+        <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com">
+        <div class="hint" data-t="emailHint"></div>
+        <label class="chk hide" id="removeWrap"><input type="checkbox" id="removeEmail"><span data-t="removeEmail"></span></label>
+      </div>
+
+      <button class="btn" id="save" data-t="save"></button>
+      <div class="msg" id="msg"></div>
+    </section>
+
+    <!-- Übersicht -->
+    <section id="overviewView" class="hide">
+      <div class="card">
+        <div class="stat"><b id="statTxt"></b><div class="bar"><i id="statBar" style="width:0"></i></div></div>
+      </div>
+      <div class="card" style="padding:8px 12px">
+        <table>
+          <thead><tr><th>#</th><th data-t="colName"></th><th class="n">T1</th><th class="n" data-t="total"></th></tr></thead>
+          <tbody id="ovBody"></tbody>
+        </table>
+      </div>
+      <div class="card" id="missingCard">
+        <label class="l" data-t="missing"></label>
+        <div class="chips" id="missingList"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+var LANG_NAMES = {
+  de: 'Deutsch', en: 'English', fr: 'Français', es: 'Español', pt: 'Português',
+  it: 'Italiano', tr: 'Türkçe', ru: 'Русский', pl: 'Polski'
+};
+
+var I18N = {
+  de: {
+    colName: 'Name',
+    title: 'Squad-Meldung',
+    intro: 'Wähle deinen Namen und trage deine Trupps ein. Du kannst die Angaben jederzeit aktualisieren.',
+    language: 'Sprache', name: 'Dein Name', namePlaceholder: '– Namen auswählen –', search: 'Suchen…',
+    squad: 'Trupp', required: 'Pflicht', optional: 'optional',
+    troopType: 'Truppentyp', power: 'Kampfkraft (Mio.)', powerHint: 'z. B. 25,4 für 25,4 Mio.',
+    tank: 'Panzer', missile: 'Raketenwerfer', aircraft: 'Flugzeug', mixed: 'Gemischt', choose: '– wählen –',
+    emailTitle: 'Wöchentliche Erinnerung',
+    emailHint: 'Optional: Trag deine E-Mail ein, dann erinnern wir dich einmal pro Woche ans Aktualisieren. Andere sehen deine Adresse nicht.',
+    email: 'E-Mail', emailSaved: 'Erinnerung ist aktiv. Feld leer lassen, um die gespeicherte Adresse zu behalten.',
+    removeEmail: 'Keine Erinnerungen mehr',
+    save: 'Speichern', saving: 'Speichere…', saved: 'Gespeichert – danke!',
+    lastUpdate: 'Zuletzt aktualisiert', loading: 'Lade…',
+    errLoad: 'Laden fehlgeschlagen. Bitte Seite neu laden.', errName: 'Bitte wähle deinen Namen.',
+    errT1: 'T1 braucht Truppentyp und Kampfkraft.',
+    errSquad: 'Trupp {n}: Typ und Kampfkraft beide ausfüllen oder beide leer lassen.',
+    errPower: 'Ungültige Kampfkraft.', errEmail: 'Ungültige E-Mail-Adresse.',
+    errSave: 'Speichern fehlgeschlagen. Bitte erneut versuchen.',
+    overview: 'Übersicht', form: 'Eintragen', submitted: '{x} von {y} eingetragen',
+    missing: 'Fehlt noch', notListed: 'Name fehlt? Melde dich bei R4/R5.', total: 'Gesamt',
+    mailSubject: '{alliance}: Bitte Squad-Werte aktualisieren',
+    mailBody: 'Hallo {name},\n\nkurze Erinnerung: Bitte prüfe deine Squad-Werte (Kampfkraft und Truppentyp) und aktualisiere sie bei Bedarf:\n{url}\n\nDanke!\n{alliance}\n\nKeine Erinnerungen mehr: {unsub}',
+    unsubDone: 'Du bekommst keine Erinnerungen mehr.', unsubFail: 'Link ungültig oder bereits abgemeldet.'
+  },
+  en: {
+    colName: 'Name',
+    title: 'Squad Report',
+    intro: 'Pick your name and enter your squads. You can update them any time.',
+    language: 'Language', name: 'Your name', namePlaceholder: '– Select your name –', search: 'Search…',
+    squad: 'Squad', required: 'required', optional: 'optional',
+    troopType: 'Troop type', power: 'Power (M)', powerHint: 'e.g. 25.4 for 25.4 M',
+    tank: 'Tank', missile: 'Missile', aircraft: 'Aircraft', mixed: 'Mixed', choose: '– select –',
+    emailTitle: 'Weekly reminder',
+    emailHint: "Optional: enter your email and we'll remind you once a week to update your values. Others can't see your address.",
+    email: 'Email', emailSaved: 'Reminder is active. Leave empty to keep your saved address.',
+    removeEmail: 'Stop reminders',
+    save: 'Save', saving: 'Saving…', saved: 'Saved – thank you!',
+    lastUpdate: 'Last updated', loading: 'Loading…',
+    errLoad: 'Loading failed. Please reload the page.', errName: 'Please select your name.',
+    errT1: 'T1 needs troop type and power.',
+    errSquad: 'Squad {n}: fill in both type and power, or leave both empty.',
+    errPower: 'Invalid power value.', errEmail: 'Invalid email address.',
+    errSave: 'Saving failed. Please try again.',
+    overview: 'Overview', form: 'Submit', submitted: '{x} of {y} submitted',
+    missing: 'Still missing', notListed: 'Name missing? Contact R4/R5.', total: 'Total',
+    mailSubject: '{alliance}: Please update your squad values',
+    mailBody: 'Hi {name},\n\nquick reminder: please check your squad values (power and troop type) and update them if needed:\n{url}\n\nThanks!\n{alliance}\n\nStop reminders: {unsub}',
+    unsubDone: 'You will no longer receive reminders.', unsubFail: 'Invalid link or already unsubscribed.'
+  },
+  fr: {
+    colName: 'Nom',
+    title: "Rapport d'escouades",
+    intro: 'Choisis ton nom et indique tes escouades. Tu peux les mettre à jour à tout moment.',
+    language: 'Langue', name: 'Ton nom', namePlaceholder: '– Choisis ton nom –', search: 'Rechercher…',
+    squad: 'Escouade', required: 'obligatoire', optional: 'facultatif',
+    troopType: 'Type de troupe', power: 'Puissance (M)', powerHint: 'ex. 25,4 pour 25,4 M',
+    tank: 'Char', missile: 'Missile', aircraft: 'Avion', mixed: 'Mixte', choose: '– choisir –',
+    emailTitle: 'Rappel hebdomadaire',
+    emailHint: 'Facultatif : indique ton e-mail et nous te rappellerons une fois par semaine de mettre à jour tes valeurs. Les autres ne voient pas ton adresse.',
+    email: 'E-mail', emailSaved: "Le rappel est actif. Laisse vide pour garder l'adresse enregistrée.",
+    removeEmail: 'Arrêter les rappels',
+    save: 'Enregistrer', saving: 'Enregistrement…', saved: 'Enregistré – merci !',
+    lastUpdate: 'Dernière mise à jour', loading: 'Chargement…',
+    errLoad: 'Échec du chargement. Recharge la page.', errName: 'Choisis ton nom.',
+    errT1: 'T1 nécessite un type de troupe et une puissance.',
+    errSquad: 'Escouade {n} : remplis le type et la puissance, ou laisse les deux vides.',
+    errPower: 'Puissance invalide.', errEmail: 'Adresse e-mail invalide.',
+    errSave: "Échec de l'enregistrement. Réessaie.",
+    overview: 'Aperçu', form: 'Saisir', submitted: '{x} sur {y} saisis',
+    missing: 'Manquent encore', notListed: 'Ton nom manque ? Contacte R4/R5.', total: 'Total',
+    mailSubject: '{alliance} : merci de mettre à jour tes escouades',
+    mailBody: "Salut {name},\n\npetit rappel : vérifie tes valeurs d'escouade (puissance et type de troupe) et mets-les à jour si besoin :\n{url}\n\nMerci !\n{alliance}\n\nArrêter les rappels : {unsub}",
+    unsubDone: 'Tu ne recevras plus de rappels.', unsubFail: 'Lien invalide ou déjà désinscrit.'
+  },
+  es: {
+    colName: 'Nombre',
+    title: 'Registro de escuadrones',
+    intro: 'Elige tu nombre e indica tus escuadrones. Puedes actualizarlos cuando quieras.',
+    language: 'Idioma', name: 'Tu nombre', namePlaceholder: '– Elige tu nombre –', search: 'Buscar…',
+    squad: 'Escuadrón', required: 'obligatorio', optional: 'opcional',
+    troopType: 'Tipo de tropa', power: 'Poder (M)', powerHint: 'p. ej. 25,4 para 25,4 M',
+    tank: 'Tanque', missile: 'Misil', aircraft: 'Avión', mixed: 'Mixto', choose: '– elegir –',
+    emailTitle: 'Recordatorio semanal',
+    emailHint: 'Opcional: introduce tu correo y te recordaremos una vez por semana que actualices tus valores. Nadie más puede ver tu dirección.',
+    email: 'Correo', emailSaved: 'El recordatorio está activo. Déjalo vacío para conservar la dirección guardada.',
+    removeEmail: 'No más recordatorios',
+    save: 'Guardar', saving: 'Guardando…', saved: '¡Guardado, gracias!',
+    lastUpdate: 'Última actualización', loading: 'Cargando…',
+    errLoad: 'Error al cargar. Recarga la página.', errName: 'Elige tu nombre.',
+    errT1: 'T1 necesita tipo de tropa y poder.',
+    errSquad: 'Escuadrón {n}: rellena tipo y poder, o deja ambos vacíos.',
+    errPower: 'Poder no válido.', errEmail: 'Correo no válido.',
+    errSave: 'Error al guardar. Inténtalo de nuevo.',
+    overview: 'Resumen', form: 'Registrar', submitted: '{x} de {y} registrados',
+    missing: 'Faltan', notListed: '¿No aparece tu nombre? Contacta con R4/R5.', total: 'Total',
+    mailSubject: '{alliance}: actualiza tus escuadrones',
+    mailBody: 'Hola {name},\n\nun recordatorio rápido: revisa los valores de tus escuadrones (poder y tipo de tropa) y actualízalos si hace falta:\n{url}\n\n¡Gracias!\n{alliance}\n\nNo más recordatorios: {unsub}',
+    unsubDone: 'Ya no recibirás recordatorios.', unsubFail: 'Enlace no válido o ya te has dado de baja.'
+  },
+  pt: {
+    colName: 'Nome',
+    title: 'Registro de esquadrões',
+    intro: 'Escolha seu nome e informe seus esquadrões. Você pode atualizar a qualquer momento.',
+    language: 'Idioma', name: 'Seu nome', namePlaceholder: '– Escolha seu nome –', search: 'Pesquisar…',
+    squad: 'Esquadrão', required: 'obrigatório', optional: 'opcional',
+    troopType: 'Tipo de tropa', power: 'Poder (M)', powerHint: 'ex.: 25,4 para 25,4 M',
+    tank: 'Tanque', missile: 'Míssil', aircraft: 'Aeronave', mixed: 'Misto', choose: '– escolher –',
+    emailTitle: 'Lembrete semanal',
+    emailHint: 'Opcional: informe seu e-mail e lembraremos você uma vez por semana de atualizar seus valores. Ninguém mais vê seu endereço.',
+    email: 'E-mail', emailSaved: 'Lembrete ativo. Deixe vazio para manter o endereço salvo.',
+    removeEmail: 'Parar lembretes',
+    save: 'Salvar', saving: 'Salvando…', saved: 'Salvo – obrigado!',
+    lastUpdate: 'Última atualização', loading: 'Carregando…',
+    errLoad: 'Falha ao carregar. Recarregue a página.', errName: 'Escolha seu nome.',
+    errT1: 'T1 precisa de tipo de tropa e poder.',
+    errSquad: 'Esquadrão {n}: preencha tipo e poder, ou deixe ambos vazios.',
+    errPower: 'Poder inválido.', errEmail: 'E-mail inválido.',
+    errSave: 'Falha ao salvar. Tente novamente.',
+    overview: 'Visão geral', form: 'Registrar', submitted: '{x} de {y} registrados',
+    missing: 'Faltam', notListed: 'Seu nome não está na lista? Fale com R4/R5.', total: 'Total',
+    mailSubject: '{alliance}: atualize seus esquadrões',
+    mailBody: 'Olá {name},\n\nlembrete rápido: confira os valores dos seus esquadrões (poder e tipo de tropa) e atualize se necessário:\n{url}\n\nObrigado!\n{alliance}\n\nParar lembretes: {unsub}',
+    unsubDone: 'Você não receberá mais lembretes.', unsubFail: 'Link inválido ou já cancelado.'
+  },
+  it: {
+    colName: 'Nome',
+    title: 'Registro squadre',
+    intro: 'Scegli il tuo nome e inserisci le tue squadre. Puoi aggiornarle in qualsiasi momento.',
+    language: 'Lingua', name: 'Il tuo nome', namePlaceholder: '– Scegli il tuo nome –', search: 'Cerca…',
+    squad: 'Squadra', required: 'obbligatoria', optional: 'facoltativa',
+    troopType: 'Tipo di truppa', power: 'Potenza (M)', powerHint: 'es. 25,4 per 25,4 M',
+    tank: 'Carro armato', missile: 'Missile', aircraft: 'Aereo', mixed: 'Misto', choose: '– scegli –',
+    emailTitle: 'Promemoria settimanale',
+    emailHint: 'Facoltativo: inserisci la tua e-mail e ti ricorderemo una volta a settimana di aggiornare i valori. Gli altri non vedono il tuo indirizzo.',
+    email: 'E-mail', emailSaved: "Promemoria attivo. Lascia vuoto per mantenere l'indirizzo salvato.",
+    removeEmail: 'Basta promemoria',
+    save: 'Salva', saving: 'Salvataggio…', saved: 'Salvato – grazie!',
+    lastUpdate: 'Ultimo aggiornamento', loading: 'Caricamento…',
+    errLoad: 'Caricamento non riuscito. Ricarica la pagina.', errName: 'Scegli il tuo nome.',
+    errT1: 'T1 richiede tipo di truppa e potenza.',
+    errSquad: 'Squadra {n}: compila tipo e potenza, oppure lascia vuoti entrambi.',
+    errPower: 'Potenza non valida.', errEmail: 'Indirizzo e-mail non valido.',
+    errSave: 'Salvataggio non riuscito. Riprova.',
+    overview: 'Panoramica', form: 'Inserisci', submitted: '{x} su {y} inseriti',
+    missing: 'Mancano ancora', notListed: 'Il tuo nome manca? Contatta R4/R5.', total: 'Totale',
+    mailSubject: '{alliance}: aggiorna le tue squadre',
+    mailBody: 'Ciao {name},\n\npromemoria veloce: controlla i valori delle tue squadre (potenza e tipo di truppa) e aggiornali se necessario:\n{url}\n\nGrazie!\n{alliance}\n\nBasta promemoria: {unsub}',
+    unsubDone: 'Non riceverai più promemoria.', unsubFail: 'Link non valido o già disiscritto.'
+  },
+  tr: {
+    colName: 'Ad',
+    title: 'Takım Bildirimi',
+    intro: 'Adını seç ve takımlarını gir. Bilgilerini istediğin zaman güncelleyebilirsin.',
+    language: 'Dil', name: 'Adın', namePlaceholder: '– Adını seç –', search: 'Ara…',
+    squad: 'Takım', required: 'zorunlu', optional: 'isteğe bağlı',
+    troopType: 'Birlik türü', power: 'Güç (M)', powerHint: 'ör. 25,4 M için 25,4',
+    tank: 'Tank', missile: 'Füze', aircraft: 'Uçak', mixed: 'Karışık', choose: '– seç –',
+    emailTitle: 'Haftalık hatırlatma',
+    emailHint: 'İsteğe bağlı: e-postanı gir, değerlerini güncellemen için sana haftada bir hatırlatma gönderelim. Adresini başkaları göremez.',
+    email: 'E-posta', emailSaved: 'Hatırlatma aktif. Kayıtlı adresi korumak için boş bırak.',
+    removeEmail: 'Hatırlatmaları durdur',
+    save: 'Kaydet', saving: 'Kaydediliyor…', saved: 'Kaydedildi – teşekkürler!',
+    lastUpdate: 'Son güncelleme', loading: 'Yükleniyor…',
+    errLoad: 'Yükleme başarısız. Lütfen sayfayı yenile.', errName: 'Lütfen adını seç.',
+    errT1: 'T1 için birlik türü ve güç gerekli.',
+    errSquad: 'Takım {n}: tür ve gücü birlikte doldur ya da ikisini de boş bırak.',
+    errPower: 'Geçersiz güç değeri.', errEmail: 'Geçersiz e-posta adresi.',
+    errSave: 'Kaydetme başarısız. Lütfen tekrar dene.',
+    overview: 'Genel bakış', form: 'Gir', submitted: '{y} kişiden {x} kişi girdi',
+    missing: 'Eksik olanlar', notListed: 'Adın listede yok mu? R4/R5 ile iletişime geç.', total: 'Toplam',
+    mailSubject: '{alliance}: Lütfen takım değerlerini güncelle',
+    mailBody: 'Merhaba {name},\n\nkısa bir hatırlatma: lütfen takım değerlerini (güç ve birlik türü) kontrol et ve gerekirse güncelle:\n{url}\n\nTeşekkürler!\n{alliance}\n\nHatırlatmaları durdur: {unsub}',
+    unsubDone: 'Artık hatırlatma almayacaksın.', unsubFail: 'Geçersiz bağlantı veya abonelikten zaten çıkılmış.'
+  },
+  ru: {
+    colName: 'Имя',
+    title: 'Отряды альянса',
+    intro: 'Выбери своё имя и укажи свои отряды. Данные можно обновить в любое время.',
+    language: 'Язык', name: 'Твоё имя', namePlaceholder: '– Выбери имя –', search: 'Поиск…',
+    squad: 'Отряд', required: 'обязательно', optional: 'необязательно',
+    troopType: 'Тип войск', power: 'Мощь (млн)', powerHint: 'напр. 25,4 для 25,4 млн',
+    tank: 'Танки', missile: 'Ракеты', aircraft: 'Авиация', mixed: 'Смешанный', choose: '– выбрать –',
+    emailTitle: 'Еженедельное напоминание',
+    emailHint: 'Необязательно: укажи e-mail, и мы раз в неделю напомним обновить данные. Другие не видят твой адрес.',
+    email: 'E-mail', emailSaved: 'Напоминание включено. Оставь поле пустым, чтобы сохранить текущий адрес.',
+    removeEmail: 'Отключить напоминания',
+    save: 'Сохранить', saving: 'Сохранение…', saved: 'Сохранено – спасибо!',
+    lastUpdate: 'Последнее обновление', loading: 'Загрузка…',
+    errLoad: 'Ошибка загрузки. Обнови страницу.', errName: 'Выбери своё имя.',
+    errT1: 'Для T1 нужны тип войск и мощь.',
+    errSquad: 'Отряд {n}: заполни тип и мощь или оставь оба поля пустыми.',
+    errPower: 'Неверное значение мощи.', errEmail: 'Неверный адрес e-mail.',
+    errSave: 'Ошибка сохранения. Попробуй ещё раз.',
+    overview: 'Обзор', form: 'Ввести', submitted: 'Заполнено: {x} из {y}',
+    missing: 'Ещё не заполнили', notListed: 'Нет твоего имени? Напиши R4/R5.', total: 'Всего',
+    mailSubject: '{alliance}: обнови данные отрядов',
+    mailBody: 'Привет, {name}!\n\nКороткое напоминание: проверь данные своих отрядов (мощь и тип войск) и обнови их при необходимости:\n{url}\n\nСпасибо!\n{alliance}\n\nОтключить напоминания: {unsub}',
+    unsubDone: 'Ты больше не будешь получать напоминания.', unsubFail: 'Ссылка недействительна или ты уже отписался.'
+  },
+  pl: {
+    colName: 'Imię',
+    title: 'Zgłoszenie oddziałów',
+    intro: 'Wybierz swoje imię i podaj swoje oddziały. Możesz je zaktualizować w każdej chwili.',
+    language: 'Język', name: 'Twoje imię', namePlaceholder: '– Wybierz imię –', search: 'Szukaj…',
+    squad: 'Oddział', required: 'wymagany', optional: 'opcjonalny',
+    troopType: 'Typ wojsk', power: 'Moc (mln)', powerHint: 'np. 25,4 dla 25,4 mln',
+    tank: 'Czołgi', missile: 'Rakiety', aircraft: 'Lotnictwo', mixed: 'Mieszany', choose: '– wybierz –',
+    emailTitle: 'Cotygodniowe przypomnienie',
+    emailHint: 'Opcjonalnie: podaj e-mail, a raz w tygodniu przypomnimy ci o aktualizacji. Inni nie widzą twojego adresu.',
+    email: 'E-mail', emailSaved: 'Przypomnienie jest aktywne. Zostaw puste, aby zachować zapisany adres.',
+    removeEmail: 'Wyłącz przypomnienia',
+    save: 'Zapisz', saving: 'Zapisywanie…', saved: 'Zapisano – dzięki!',
+    lastUpdate: 'Ostatnia aktualizacja', loading: 'Ładowanie…',
+    errLoad: 'Błąd ładowania. Odśwież stronę.', errName: 'Wybierz swoje imię.',
+    errT1: 'T1 wymaga typu wojsk i mocy.',
+    errSquad: 'Oddział {n}: wypełnij typ i moc albo zostaw oba puste.',
+    errPower: 'Nieprawidłowa moc.', errEmail: 'Nieprawidłowy adres e-mail.',
+    errSave: 'Błąd zapisu. Spróbuj ponownie.',
+    overview: 'Przegląd', form: 'Zgłoś', submitted: 'Zgłoszono: {x} z {y}',
+    missing: 'Brakuje jeszcze', notListed: 'Brak twojego imienia? Napisz do R4/R5.', total: 'Razem',
+    mailSubject: '{alliance}: zaktualizuj swoje oddziały',
+    mailBody: 'Cześć {name},\n\nkrótkie przypomnienie: sprawdź wartości swoich oddziałów (moc i typ wojsk) i w razie potrzeby je zaktualizuj:\n{url}\n\nDzięki!\n{alliance}\n\nWyłącz przypomnienia: {unsub}',
+    unsubDone: 'Nie będziesz już dostawać przypomnień.', unsubFail: 'Nieprawidłowy link lub już wypisano.'
+  }
+};
+
+
+var SB_URL = 'https://ulwuoxfglmlcdppdegml.supabase.co/rest/v1/rpc/';
+var SB_KEY = 'sb_publishable_f9uikP8ZEHD7leJtckyKbg_E-jLm_Nn';
+var ALLIANCE = 'SKWS – Skywalkers';
+function rpc(fn, body){
+  return fetch(SB_URL + fn, { method:'POST', headers:{ apikey: SB_KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body || {}) })
+    .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok) throw new Error((j && j.message) || 'ERR_SAVE'); return j; }); });
+}
+
+(function(){
+  var DATA = null, LANG = 'en', busy = false;
+  var $ = function(id){ return document.getElementById(id); };
+  var COLORS = { tank:'var(--tank)', missile:'var(--missile)', aircraft:'var(--aircraft)', mixed:'var(--mixed)' };
+
+  function store(k, v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k, v); }catch(e){ return null; } }
+
+  function t(k, vars){
+    var d = DATA ? DATA.i18n : {}, s = (d[LANG] && d[LANG][k]) || (d.en && d.en[k]) || k;
+    if (vars) for (var v in vars) s = s.split('{'+v+'}').join(vars[v]);
+    return s;
+  }
+  function fmtPow(n){
+    if (n === null || n === undefined || n === '') return '–';
+    return Number(n).toLocaleString(LANG, {maximumFractionDigits:2}) + ' M';
+  }
+  function fmtDate(iso){
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleString(LANG, {dateStyle:'medium', timeStyle:'short'}); }
+    catch(e){ return new Date(iso).toLocaleString(); }
+  }
+
+  /* ---------- Aufbau ---------- */
+  function buildSquads(){
+    var box = $('squads'); box.innerHTML = '';
+    for (var i = 0; i < DATA.squads; i++){
+      var c = document.createElement('div');
+      c.className = 'card sq' + (i ? ' opt' : ''); c.id = 'sq' + i; c.dataset.type = '';
+      c.innerHTML =
+        '<div class="sq-h"><b>T' + (i+1) + '</b><span class="tag' + (i ? '' : ' req') + '" data-t="' + (i ? 'optional' : 'required') + '"></span></div>' +
+        '<div class="row">' +
+          '<div><label class="l" data-t="troopType"></label><select class="type"></select></div>' +
+          '<div><label class="l" data-t="power"></label><input class="pow" type="text" inputmode="decimal" autocomplete="off"></div>' +
+        '</div>' + (i ? '' : '<div class="hint" data-t="powerHint"></div>');
+      (function(card){
+        card.querySelector('.type').addEventListener('change', function(){ card.dataset.type = this.value; });
+      })(c);
+      box.appendChild(c);
+    }
+  }
+
+  function fillTypeOptions(){
+    var sels = document.querySelectorAll('#squads .type');
+    for (var i = 0; i < sels.length; i++){
+      var s = sels[i], v = s.value;
+      s.innerHTML = '<option value="">' + t('choose') + '</option>' +
+        DATA.troops.map(function(k){ return '<option value="'+k+'">'+t(k)+'</option>'; }).join('');
+      s.value = v;
+    }
+  }
+
+  function fillNames(){
+    var sel = $('name'), cur = sel.value, q = $('search').value.trim().toLowerCase();
+    var list = DATA.members.slice().sort(function(a,b){ return a.localeCompare(b, undefined, {sensitivity:'base'}); });
+    sel.innerHTML = '';
+    var o = document.createElement('option'); o.value = ''; o.textContent = t('namePlaceholder'); sel.appendChild(o);
+    list.forEach(function(n){
+      if (q && n.toLowerCase().indexOf(q) < 0 && n !== cur) return;
+      var op = document.createElement('option');
+      op.value = n; op.textContent = n + (DATA.entries[n] ? '  ✓' : '');
+      sel.appendChild(op);
+    });
+    sel.value = cur;
+  }
+
+  function applyLang(){
+    document.documentElement.lang = LANG;
+    var els = document.querySelectorAll('[data-t]');
+    for (var i = 0; i < els.length; i++) els[i].textContent = t(els[i].dataset.t);
+    var ph = document.querySelectorAll('[data-tp]');
+    for (var j = 0; j < ph.length; j++) ph[j].placeholder = t(ph[j].dataset.tp);
+    var pows = document.querySelectorAll('#squads .pow');
+    for (var k = 0; k < pows.length; k++) pows[k].placeholder = LANG === 'en' ? '25.4' : '25,4';
+    fillTypeOptions(); fillNames(); showMeta(); renderOverview();
+    document.title = DATA.alliance + ' · ' + t('title');
+  }
+
+  /* ---------- Formular ---------- */
+  function loadMember(){
+    var n = $('name').value, e = DATA.entries[n];
+    for (var i = 0; i < DATA.squads; i++){
+      var c = $('sq'+i), s = e && e.squads[i];
+      c.querySelector('.type').value = (s && s.type) || '';
+      c.dataset.type = (s && s.type) || '';
+      var p = s && s.power !== null && s.power !== undefined ? s.power : '';
+      c.querySelector('.pow').value = p === '' ? '' : String(p).replace('.', LANG === 'en' ? '.' : ',');
+    }
+    $('email').value = ''; $('removeEmail').checked = false;
+    if (e && e.lang && DATA.i18n[e.lang] && !store('skws_lang_manual')) setLang(e.lang, false);
+    showMeta(); setMsg('');
+  }
+
+  function showMeta(){
+    var e = DATA && DATA.entries[$('name').value];
+    $('lastUpdate').classList.toggle('hide', !(e && e.updated));
+    if (e && e.updated) $('lastUpdate').textContent = t('lastUpdate') + ': ' + fmtDate(e.updated);
+    $('emailActive').classList.toggle('hide', !(e && e.hasEmail));
+    $('removeWrap').classList.toggle('hide', !(e && e.hasEmail));
+  }
+
+  function setMsg(txt, cls){ var m = $('msg'); m.textContent = txt || ''; m.className = 'msg' + (cls ? ' ' + cls : ''); }
+
+  function parsePow(v){
+    v = String(v || '').trim().replace(/\s/g,'').replace(/[mM]$/,'');
+    if (!v) return null;
+    if (/^\d{1,3}([.,]\d{3}){2,}$/.test(v)) v = v.replace(/[.,]/g,'');
+    var n = Number(v.replace(',', '.'));
+    return isFinite(n) && n > 0 ? n : NaN;
+  }
+
+  function collect(){
+    var name = $('name').value;
+    if (!name) return { err: t('errName') };
+    var squads = [];
+    for (var i = 0; i < DATA.squads; i++){
+      var c = $('sq'+i), type = c.querySelector('.type').value, raw = c.querySelector('.pow').value, p = parsePow(raw);
+      if (p !== null && isNaN(p)) return { err: t('errPower') };
+      if (i === 0 && (!type || p === null)) return { err: t('errT1') };
+      if (!!type !== (p !== null)) return { err: t('errSquad', {n: i+1}) };
+      squads.push({ type: type, power: p === null ? null : (p >= 10000 ? Math.round(p / 1e4) / 100 : p) });
+    }
+    var email = $('email').value.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { err: t('errEmail') };
+    return { data: { name: name, squads: squads, email: email, removeEmail: $('removeEmail').checked, lang: LANG } };
+  }
+
+  function errText(m){
+    m = String(m || '');
+    var sq = m.match(/ERR_SQUAD:(\d)/);
+    if (sq) return t('errSquad', {n: sq[1]});
+    if (m.indexOf('ERR_NAME') >= 0) return t('errName');
+    if (m.indexOf('ERR_T1') >= 0) return t('errT1');
+    if (m.indexOf('ERR_POWER') >= 0) return t('errPower');
+    if (m.indexOf('ERR_EMAIL') >= 0) return t('errEmail');
+    return t('errSave');
+  }
+
+  function save(){
+    if (busy) return;
+    var r = collect();
+    if (r.err) { setMsg(r.err, 'err'); return; }
+    busy = true; $('save').disabled = true; $('save').textContent = t('saving'); setMsg('');
+    rpc('save_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_remove_email: r.data.removeEmail, p_lang: r.data.lang })
+      .then(function(res){
+        DATA.entries[r.data.name] = { squads: res.squads, hasEmail: res.hasEmail, lang: res.lang, updated: res.updated };
+        done(); setMsg(t('saved'), 'ok');
+        $('email').value = ''; $('removeEmail').checked = false;
+        fillNames(); showMeta(); renderOverview();
+      })
+      .catch(function(err){ done(); setMsg(errText(err && err.message), 'err'); });
+    function done(){ busy = false; $('save').disabled = false; $('save').textContent = t('save'); }
+  }
+
+  /* ---------- Übersicht ---------- */
+  function renderOverview(){
+    if (!DATA) return;
+    var members = DATA.members, rows = [], missing = [];
+    members.forEach(function(n){
+      var e = DATA.entries[n];
+      if (!e) { missing.push(n); return; }
+      var total = 0; e.squads.forEach(function(s){ if (s.power) total += Number(s.power); });
+      rows.push({ name: n, t1: e.squads[0] || {}, total: total });
+    });
+    rows.sort(function(a,b){ return (b.t1.power||0) - (a.t1.power||0); });
+    var x = members.length - missing.length, y = members.length;
+    $('statTxt').textContent = t('submitted', {x: x, y: y});
+    $('statBar').style.width = (y ? Math.round(x / y * 100) : 0) + '%';
+
+    var tb = $('ovBody'); tb.innerHTML = '';
+    rows.forEach(function(r, i){
+      var tr = document.createElement('tr');
+      var td0 = document.createElement('td'); td0.textContent = i + 1; td0.className = 'typ';
+      var td1 = document.createElement('td'); td1.textContent = r.name;
+      var td2 = document.createElement('td'); td2.className = 'n';
+      var dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = COLORS[r.t1.type] || 'var(--mixed)';
+      dot.title = r.t1.type ? t(r.t1.type) : '';
+      td2.appendChild(dot); td2.appendChild(document.createTextNode(fmtPow(r.t1.power)));
+      var sub = document.createElement('div'); sub.className = 'typ'; sub.textContent = r.t1.type ? t(r.t1.type) : '';
+      td2.appendChild(sub);
+      var td3 = document.createElement('td'); td3.className = 'n'; td3.textContent = fmtPow(r.total);
+      tr.appendChild(td0); tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+      tb.appendChild(tr);
+    });
+
+    $('missingCard').classList.toggle('hide', !missing.length);
+    var ml = $('missingList'); ml.innerHTML = '';
+    missing.sort(function(a,b){ return a.localeCompare(b, undefined, {sensitivity:'base'}); }).forEach(function(n){
+      var s = document.createElement('span'); s.textContent = n; ml.appendChild(s);
+    });
+  }
+
+  function showTab(which){
+    $('tabForm').classList.toggle('on', which === 'form');
+    $('tabOverview').classList.toggle('on', which !== 'form');
+    $('formView').classList.toggle('hide', which !== 'form');
+    $('overviewView').classList.toggle('hide', which === 'form');
+  }
+
+  /* ---------- Sprache ---------- */
+  function setLang(l, manual){
+    if (!DATA.i18n[l]) l = 'en';
+    LANG = l; $('lang').value = l; store('skws_lang', l);
+    if (manual) store('skws_lang_manual', '1');
+    applyLang();
+  }
+
+  function pickLang(){
+    var saved = store('skws_lang');
+    if (saved && DATA.i18n[saved]) return saved;
+    var nav = (navigator.languages || [navigator.language || 'en']);
+    for (var i = 0; i < nav.length; i++){ var c = String(nav[i]).slice(0,2).toLowerCase(); if (DATA.i18n[c]) return c; }
+    return 'en';
+  }
+
+  /* ---------- Start ---------- */
+  function init(data){
+    DATA = data;
+    $('allianceName').textContent = DATA.alliance;
+    var ls = $('lang');
+    Object.keys(DATA.langs).forEach(function(k){
+      var o = document.createElement('option'); o.value = k; o.textContent = DATA.langs[k]; ls.appendChild(o);
+    });
+    buildSquads();
+    LANG = pickLang(); ls.value = LANG;
+    applyLang();
+    $('loading').classList.add('hide'); $('app').classList.remove('hide');
+
+    ls.addEventListener('change', function(){ setLang(this.value, true); });
+    $('search').addEventListener('input', fillNames);
+    $('name').addEventListener('change', function(){ store('skws_name', this.value); loadMember(); });
+    $('save').addEventListener('click', save);
+    $('tabForm').addEventListener('click', function(){ showTab('form'); });
+    $('tabOverview').addEventListener('click', function(){ showTab('overview'); });
+
+    var last = store('skws_name');
+    if (last && DATA.members.indexOf(last) >= 0){ $('name').value = last; loadMember(); }
+  }
+
+  var nl = (navigator.language || 'en').slice(0,2);
+  $('loadingTxt').textContent = ({de:'Lade…',fr:'Chargement…',es:'Cargando…',pt:'Carregando…',it:'Caricamento…',tr:'Yükleniyor…',ru:'Загрузка…',pl:'Ładowanie…'})[nl] || 'Loading…';
+
+  var qs = new URLSearchParams(location.search);
+  if (qs.get('unsub')) {
+    var ul = I18N[qs.get('lang')] ? qs.get('lang') : (I18N[nl] ? nl : 'en');
+    rpc('unsubscribe', { p_token: qs.get('unsub') })
+      .then(function(ok){ $('loadingTxt').textContent = ok ? I18N[ul].unsubDone : I18N[ul].unsubFail; })
+      .catch(function(){ $('loadingTxt').textContent = I18N[ul].unsubFail; });
+    document.querySelector('#loading .spin').style.display = 'none';
+    return;
+  }
+  rpc('get_init')
+    .then(function(res){
+      init({ alliance: ALLIANCE, members: res.members || [], entries: res.entries || {},
+             troops: ['tank','missile','aircraft','mixed'], squads: 4, langs: LANG_NAMES, i18n: I18N });
+    })
+    .catch(function(){ $('loadingTxt').textContent = 'Error – please reload / Fehler – bitte neu laden'; });
+})();
+</script>
+</body>
+</html>
