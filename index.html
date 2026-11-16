@@ -108,6 +108,14 @@
         <div class="hint" data-t="emailHint"></div>
       </div>
 
+      <div class="card hide" id="appRemCard">
+        <label class="l" data-t="appRemTitle"></label>
+        <label class="chk" style="margin-top:0;color:var(--text)"><input type="checkbox" id="appRem"><span data-t="appRemOn"></span></label>
+        <div class="hint" data-t="appRemHint"></div>
+        <div class="hint" id="appRemMsg" style="color:var(--warn)"></div>
+        <button type="button" id="appRemTest" style="margin-top:10px;background:var(--bg2);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer" data-t="appRemTest"></button>
+      </div>
+
       <button class="btn" id="save" data-t="save"></button>
       <div class="msg" id="msg"></div>
     </section>
@@ -140,6 +148,12 @@ var LANG_NAMES = {
 
 var I18N = {
   de: {
+    appRemTitle: "Erinnerung aufs Handy",
+    appRemHint: "Die App meldet sich, sobald deine Werte älter als 7 Tage sind.",
+    appRemOn: "Handy-Erinnerung aktiv",
+    appRemTest: "Test-Benachrichtigung",
+    appRemNoPerm: "Benachrichtigungen sind für die App blockiert – bitte in den Android-Einstellungen erlauben.",
+    appRemPickName: "Bitte zuerst oben deinen Namen wählen.",
     colName: 'Name',
     title: 'Squad-Meldung',
     intro: 'Wähle deinen Namen und trage deine Trupps ein. Du kannst die Angaben jederzeit aktualisieren.',
@@ -166,6 +180,12 @@ var I18N = {
     unsubDone: 'Du bekommst keine Erinnerungen mehr.', unsubFail: 'Link ungültig oder bereits abgemeldet.'
   },
   en: {
+    appRemTitle: "Phone reminder",
+    appRemHint: "The app notifies you as soon as your values are older than 7 days.",
+    appRemOn: "Phone reminder on",
+    appRemTest: "Test notification",
+    appRemNoPerm: "Notifications are blocked for the app – please allow them in Android settings.",
+    appRemPickName: "Please select your name above first.",
     colName: 'Name',
     title: 'Squad Report',
     intro: 'Pick your name and enter your squads. You can update them any time.',
@@ -192,6 +212,12 @@ var I18N = {
     unsubDone: 'You will no longer receive reminders.', unsubFail: 'Invalid link or already unsubscribed.'
   },
   fr: {
+    appRemTitle: "Rappel sur le téléphone",
+    appRemHint: "L'appli te prévient dès que tes valeurs ont plus de 7 jours.",
+    appRemOn: "Rappel activé",
+    appRemTest: "Notification de test",
+    appRemNoPerm: "Les notifications sont bloquées – autorise-les dans les réglages Android.",
+    appRemPickName: "Choisis d'abord ton nom en haut.",
     colName: 'Nom',
     title: "Rapport d'escouades",
     intro: 'Choisis ton nom et indique tes escouades. Tu peux les mettre à jour à tout moment.',
@@ -218,6 +244,12 @@ var I18N = {
     unsubDone: 'Tu ne recevras plus de rappels.', unsubFail: 'Lien invalide ou déjà désinscrit.'
   },
   es: {
+    appRemTitle: "Recordatorio en el móvil",
+    appRemHint: "La app te avisa cuando tus valores tengan más de 7 días.",
+    appRemOn: "Recordatorio activado",
+    appRemTest: "Notificación de prueba",
+    appRemNoPerm: "Las notificaciones están bloqueadas: permítelas en los ajustes de Android.",
+    appRemPickName: "Primero elige tu nombre arriba.",
     colName: 'Nombre',
     title: 'Registro de escuadrones',
     intro: 'Elige tu nombre e indica tus escuadrones. Puedes actualizarlos cuando quieras.',
@@ -244,6 +276,12 @@ var I18N = {
     unsubDone: 'Ya no recibirás recordatorios.', unsubFail: 'Enlace no válido o ya te has dado de baja.'
   },
   pt: {
+    appRemTitle: "Lembrete no celular",
+    appRemHint: "O app avisa quando seus valores tiverem mais de 7 dias.",
+    appRemOn: "Lembrete ativado",
+    appRemTest: "Notificação de teste",
+    appRemNoPerm: "As notificações estão bloqueadas – permita nas configurações do Android.",
+    appRemPickName: "Primeiro escolha seu nome acima.",
     colName: 'Nome',
     title: 'Registro de esquadrões',
     intro: 'Escolha seu nome e informe seus esquadrões. Você pode atualizar a qualquer momento.',
@@ -270,6 +308,12 @@ var I18N = {
     unsubDone: 'Você não receberá mais lembretes.', unsubFail: 'Link inválido ou já cancelado.'
   },
   it: {
+    appRemTitle: "Promemoria sul telefono",
+    appRemHint: "L'app ti avvisa quando i tuoi valori hanno più di 7 giorni.",
+    appRemOn: "Promemoria attivo",
+    appRemTest: "Notifica di prova",
+    appRemNoPerm: "Le notifiche sono bloccate – consentile nelle impostazioni di Android.",
+    appRemPickName: "Prima scegli il tuo nome in alto.",
     colName: 'Nome',
     title: 'Registro squadre',
     intro: 'Scegli il tuo nome e inserisci le tue squadre. Puoi aggiornarle in qualsiasi momento.',
@@ -296,6 +340,12 @@ var I18N = {
     unsubDone: 'Non riceverai più promemoria.', unsubFail: 'Link non valido o già disiscritto.'
   },
   tr: {
+    appRemTitle: "Telefona hatırlatma",
+    appRemHint: "Değerlerin 7 günden eskiyse uygulama sana bildirim gönderir.",
+    appRemOn: "Hatırlatma açık",
+    appRemTest: "Test bildirimi",
+    appRemNoPerm: "Bildirimler engellendi – lütfen Android ayarlarından izin ver.",
+    appRemPickName: "Önce yukarıdan adını seç.",
     colName: 'Ad',
     title: 'Takım Bildirimi',
     intro: 'Adını seç ve takımlarını gir. Bilgilerini istediğin zaman güncelleyebilirsin.',
@@ -322,6 +372,12 @@ var I18N = {
     unsubDone: 'Artık hatırlatma almayacaksın.', unsubFail: 'Geçersiz bağlantı veya abonelikten zaten çıkılmış.'
   },
   ru: {
+    appRemTitle: "Напоминание на телефон",
+    appRemHint: "Приложение напомнит, когда твоим данным будет больше 7 дней.",
+    appRemOn: "Напоминание включено",
+    appRemTest: "Тестовое уведомление",
+    appRemNoPerm: "Уведомления заблокированы – разреши их в настройках Android.",
+    appRemPickName: "Сначала выбери своё имя выше.",
     colName: 'Имя',
     title: 'Отряды альянса',
     intro: 'Выбери своё имя и укажи свои отряды. Данные можно обновить в любое время.',
@@ -348,6 +404,12 @@ var I18N = {
     unsubDone: 'Ты больше не будешь получать напоминания.', unsubFail: 'Ссылка недействительна или ты уже отписался.'
   },
   pl: {
+    appRemTitle: "Przypomnienie na telefon",
+    appRemHint: "Aplikacja przypomni, gdy twoje dane będą starsze niż 7 dni.",
+    appRemOn: "Przypomnienie włączone",
+    appRemTest: "Powiadomienie testowe",
+    appRemNoPerm: "Powiadomienia są zablokowane – zezwól na nie w ustawieniach Androida.",
+    appRemPickName: "Najpierw wybierz swoje imię powyżej.",
     colName: 'Imię',
     title: 'Zgłoszenie oddziałów',
     intro: 'Wybierz swoje imię i podaj swoje oddziały. Możesz je zaktualizować w każdej chwili.',
@@ -600,6 +662,32 @@ function rpc(fn, body){
     return 'en';
   }
 
+  /* ---------- Handy-Erinnerung (nur in der Android-App) ---------- */
+  var APP = window.SKWSAndroid && window.SKWSAndroid.getReminder ? window.SKWSAndroid : null;
+  function remState(){ try { return JSON.parse(APP.getReminder()); } catch(e){ return {}; } }
+  function showRem(){
+    if (!APP) return;
+    var st = remState(), msg = '';
+    $('appRemCard').classList.remove('hide');
+    $('appRem').checked = !!st.on;
+    if (st.on && !st.perm) msg = t('appRemNoPerm');
+    $('appRemMsg').textContent = msg;
+  }
+  function setupRem(){
+    if (!APP) return;
+    showRem();
+    $('appRem').addEventListener('change', function(){
+      var n = $('name').value;
+      if (this.checked && !n) { this.checked = false; $('appRemMsg').textContent = t('appRemPickName'); return; }
+      $('appRemMsg').textContent = '';
+      APP.setReminder(this.checked, n);
+      setTimeout(showRem, 1500); setTimeout(showRem, 5000);
+    });
+    $('appRemTest').addEventListener('click', function(){ APP.testNotification($('name').value || ''); setTimeout(showRem, 1500); });
+    $('name').addEventListener('change', function(){ var st = remState(); if (st.on && this.value) APP.setReminder(true, this.value); });
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) showRem(); });
+  }
+
   /* ---------- Start ---------- */
   function init(data){
     DATA = data;
@@ -620,6 +708,7 @@ function rpc(fn, body){
     $('tabForm').addEventListener('click', function(){ showTab('form'); });
     $('tabOverview').addEventListener('click', function(){ showTab('overview'); });
 
+    setupRem();
     var last = store('skws_name');
     if (last && DATA.members.indexOf(last) >= 0){ $('name').value = last; loadMember(); }
   }

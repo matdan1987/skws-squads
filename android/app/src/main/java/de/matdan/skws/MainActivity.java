@@ -116,6 +116,45 @@ public class MainActivity extends Activity {
         private final Activity act;
         Bridge(Activity a) { act = a; }
 
+        /** Status der Handy-Erinnerung als JSON: {"on":true,"name":"...","perm":true} */
+        @JavascriptInterface
+        public String getReminder() {
+            android.content.SharedPreferences p = act.getSharedPreferences(ReminderJob.PREFS, MODE_PRIVATE);
+            try {
+                return new org.json.JSONObject()
+                        .put("on", p.getBoolean("on", false))
+                        .put("name", p.getString("name", ""))
+                        .put("perm", ReminderJob.canNotify(act)).toString();
+            } catch (Exception e) { return "{}"; }
+        }
+
+        @JavascriptInterface
+        public void setReminder(boolean on, String name) {
+            act.getSharedPreferences(ReminderJob.PREFS, MODE_PRIVATE).edit()
+                    .putBoolean("on", on).putString("name", name == null ? "" : name).apply();
+            if (on) {
+                askPermission();
+                ReminderJob.schedule(act);
+                new Thread(() -> { try { ReminderJob.check(act); } catch (Exception ignored) { } }).start();
+            } else {
+                ReminderJob.cancel(act);
+            }
+        }
+
+        @JavascriptInterface
+        public void testNotification(String name) {
+            askPermission();
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(
+                    () -> ReminderJob.notify(act, name == null || name.isEmpty() ? "SKWS" : name, -2), 600);
+        }
+
+        private void askPermission() {
+            if (Build.VERSION.SDK_INT >= 33
+                    && act.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                act.runOnUiThread(() -> act.requestPermissions(new String[]{ android.Manifest.permission.POST_NOTIFICATIONS }, 1));
+            }
+        }
+
         @JavascriptInterface
         public void copy(String text) {
             act.runOnUiThread(() -> {
