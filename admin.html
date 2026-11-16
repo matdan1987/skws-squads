@@ -111,6 +111,19 @@
   .team h3{margin:0 0 6px;font-size:15px;display:flex;flex-direction:column;gap:2px}
   .team h3 span{font-size:12px;color:var(--muted);font-weight:500}
   .sub td{color:var(--muted)}
+  .dev{display:grid;grid-template-columns:22px 1fr auto;gap:4px 10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .dev:last-child{border-bottom:0}
+  .dev .pos{color:var(--faint);font-size:13px;text-align:right}
+  .dev .who{min-width:0}
+  .dev .who b{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dev .who span{font-size:12px;color:var(--muted)}
+  .dev .val{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .dev .val small{display:block;font-size:12px;color:var(--muted)}
+  .dev .track{grid-column:2 / 4;height:6px;background:var(--bg2);border-radius:3px;overflow:hidden}
+  .dev .track i{display:block;height:100%;border-radius:0 3px 3px 0}
+  .devhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .devhead h2{margin:0}
+  .devhead span{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -139,6 +152,7 @@
       <button data-tab="mem">Mitglieder</button>
       <button data-tab="hist">Verlauf</button>
       <button data-tab="pl">Spieler</button>
+      <button data-tab="dev">Entwicklung</button>
       <button data-tab="exp">Export</button>
       <button data-tab="adm">Verwaltung</button>
     </div>
@@ -196,6 +210,25 @@
       <div class="card"><h2>Kampfkraft je Trupp</h2><div class="chart" id="chartPlayer"></div></div>
       <div class="card"><h2>Alle Meldungen</h2><div class="tw"><table id="plTable"></table></div></div>
     </section>
+    <!-- Entwicklung -->
+    <section id="tab-dev" class="hide">
+      <div class="card">
+        <div class="formrow" style="margin:0">
+          <div><label for="devPeriod">Zeitraum</label>
+            <select id="devPeriod"><option value="7">letzte 7 Tage</option><option value="14" selected>letzte 14 Tage</option><option value="30">letzte 30 Tage</option><option value="0">seit erster Meldung</option></select></div>
+          <div><label for="devMetric">Grundlage</label>
+            <select id="devMetric"><option value="total">Gesamt</option><option value="t1">nur T1</option></select></div>
+          <div style="grid-column:1/-1"><label for="devBy">Rangfolge nach</label>
+            <select id="devBy"><option value="pct">Zuwachs in % (fair für Schwächere)</option><option value="abs">Zuwachs in Mio.</option></select></div>
+        </div>
+      </div>
+      <div class="tiles" id="devTiles"></div>
+      <div class="card"><div class="devhead"><h2 class="up">▲ Highlights – beste Entwicklung</h2><span id="devTopNote"></span></div><div id="devTop" style="margin-top:6px"></div></div>
+      <div class="card"><div class="devhead"><h2 class="down">▼ Lowlights – schwächste Entwicklung</h2><span id="devLowNote"></span></div><div id="devLow" style="margin-top:6px"></div></div>
+      <div class="card"><div class="devhead"><h2 class="stale">⏸ Stillstand – keine Veränderung</h2><span id="devStillNote"></span></div><div id="devStill" style="margin-top:6px"></div></div>
+      <p class="small muted" id="devFoot" style="margin:0 4px"></p>
+    </section>
+
     <!-- Export -->
     <section id="tab-exp" class="hide">
       <div class="card">
@@ -555,6 +588,65 @@
     $('plTable').innerHTML = t;
   }
 
+  /* ---------- Entwicklung ---------- */
+  function devStats(){
+    var days = +$('devPeriod').value, m = $('devMetric').value, cutoff = days ? Date.now() - days * DAY : null;
+    var val = function(sqs){ return m === 't1' ? Number(((sqs || [])[0] || {}).power || 0) : sumSquads(sqs); };
+    var rows = [], fresh = [];
+    D.players.forEach(function(p){
+      if (!p.entry || !p.history.length) return;
+      var hs = p.history, cur = val(p.entry.squads), base = null, baseT = null;
+      if (cutoff) { for (var i = hs.length - 1; i >= 0; i--) if (+hs[i].t <= cutoff) { base = val(hs[i].squads); baseT = hs[i].t; break; } }
+      else if (hs.length > 1 || (Date.now() - hs[0].t) > 7 * DAY) { base = val(hs[0].squads); baseT = hs[0].t; }
+      // letzter Zeitpunkt, an dem sich der Wert geändert hat
+      var lastChange = hs[0].t;
+      for (var k = 1; k < hs.length; k++) if (val(hs[k].squads) !== val(hs[k-1].squads)) lastChange = hs[k].t;
+      if (base === null) { fresh.push(p); return; }
+      var abs = Math.round((cur - base) * 100) / 100, pct = base ? abs / base * 100 : 0;
+      rows.push({ p: p, cur: cur, base: base, baseT: baseT, abs: abs, pct: pct, lastChange: lastChange, idle: Math.floor((Date.now() - lastChange) / DAY) });
+    });
+    return { rows: rows, fresh: fresh, days: days };
+  }
+  function devRow(r, i, max, by){
+    var v = by === 'pct' ? r.pct : r.abs, w = max ? Math.min(100, Math.abs(v) / max * 100) : 0;
+    var col = v > 0 ? 'var(--ok)' : v < 0 ? 'var(--err)' : 'var(--faint)';
+    var main = by === 'pct' ? (v > 0 ? '+' : '') + fmt(r.pct) + ' %' : (v > 0 ? '+' : '') + fmt(r.abs) + ' M';
+    var sub = by === 'pct' ? (r.abs > 0 ? '+' : '') + fmt(r.abs) + ' M' : (r.pct > 0 ? '+' : '') + fmt(r.pct) + ' %';
+    return '<div class="dev" data-name="' + esc(r.p.name) + '"><span class="pos">' + (i + 1) + '</span>' +
+      '<div class="who"><b>' + esc(r.p.name) + '</b><span>' + r.p.rank + ' · ' + fmt(r.base) + ' → ' + fmt(r.cur) + ' M</span></div>' +
+      '<div class="val ' + (v > 0 ? 'up' : v < 0 ? 'down' : 'muted') + '">' + (v > 0 ? '▲ ' : v < 0 ? '▼ ' : '') + main + '<small>' + sub + '</small></div>' +
+      '<div class="track"><i style="width:' + w + '%;background:' + col + '"></i></div></div>';
+  }
+  function renderDev(){
+    var S = devStats(), by = $('devBy').value, key = by === 'pct' ? 'pct' : 'abs';
+    var moving = S.rows.filter(function(r){ return r.abs !== 0; }), still = S.rows.filter(function(r){ return r.abs === 0; });
+    var up = moving.filter(function(r){ return r.abs > 0; }), down = moving.filter(function(r){ return r.abs < 0; });
+    var top = up.slice().sort(function(a,b){ return b[key] - a[key]; }).slice(0, 10);
+    var topNames = {}; top.forEach(function(r){ topNames[r.p.name] = 1; });
+    var low = moving.filter(function(r){ return !topNames[r.p.name]; }).sort(function(a,b){ return a[key] - b[key]; }).slice(0, 10);
+    var maxAll = Math.max.apply(null, moving.map(function(r){ return Math.abs(r[key]); }).concat([0]));
+    var avgPct = S.rows.length ? S.rows.reduce(function(a,r){ return a + r.pct; }, 0) / S.rows.length : 0;
+    var period = S.days ? 'in den letzten ' + S.days + ' Tagen' : 'seit der ersten Meldung';
+    $('devTiles').innerHTML =
+      tile('Ø Entwicklung', S.rows.length ? (avgPct > 0 ? '+' : '') + fmt(avgPct) + ' %' : '–', period) +
+      tile('Zuwachs', String(up.length), '<span class="up">▲</span> Spieler gewachsen') +
+      tile('Rückgang', String(down.length), down.length ? '<span class="down">▼</span> Werte gesunken' : 'niemand gesunken') +
+      tile('Stillstand', String(still.length), still.length ? '<span class="stale">⏸ unverändert</span>' : 'alle in Bewegung');
+    $('devTop').innerHTML = top.map(function(r, i){ return devRow(r, i, maxAll, by); }).join('') || '<div class="empty">Noch kein Zuwachs ' + period + '.</div>';
+    $('devTopNote').textContent = top.length ? 'Top ' + top.length : '';
+    $('devLow').innerHTML = low.map(function(r, i){ return devRow(r, i, maxAll, by); }).join('') || '<div class="empty">Keine Daten ' + period + '.</div>';
+    $('devLowNote').textContent = low.length ? 'schwächste ' + low.length : '';
+    $('devStill').innerHTML = still.sort(function(a,b){ return b.idle - a.idle || b.cur - a.cur; }).map(function(r, i){
+      var stale = r.p.stale;
+      return '<div class="dev" data-name="' + esc(r.p.name) + '"><span class="pos">' + (i + 1) + '</span>' +
+        '<div class="who"><b>' + esc(r.p.name) + '</b><span>' + r.p.rank + ' · ' + fmt(r.cur) + ' M</span></div>' +
+        '<div class="val stale">⏸ seit ' + r.idle + ' Tagen<small>' + (stale ? 'nicht aktualisiert' : 'neu gemeldet, gleicher Wert') + '</small></div></div>';
+    }).join('') || '<div class="empty">Niemand ohne Veränderung ' + period + '.</div>';
+    $('devStillNote').textContent = still.length ? 'längster Stillstand zuerst' : '';
+    $('devFoot').textContent = (S.fresh.length ? S.fresh.length + ' Spieler sind für diesen Zeitraum zu neu (erste Meldung innerhalb des Zeitraums) und fehlen in der Wertung. ' : '') +
+      'Spieler antippen für den Einzelverlauf.';
+  }
+
   /* ---------- Export ---------- */
   var SEL = null, lastPlan = null;
   function initSel(){ if (SEL) { var keep = {}; D.players.forEach(function(p){ if (SEL[p.name]) keep[p.name] = 1; }); SEL = keep; return; }
@@ -715,13 +807,14 @@
   function showTab(name){
     var bs = document.querySelectorAll('#tabs button');
     for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-    ['ov','mem','hist','pl','exp','adm'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+    ['ov','mem','hist','pl','dev','exp','adm'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
     store('skws_admin_tab', name);
     if (name === 'hist') renderHistory();
     if (name === 'ov') renderOverview();
     if (name === 'pl') renderPlayer();
     if (name === 'adm') renderAdmin();
     if (name === 'exp') renderExport();
+    if (name === 'dev') renderDev();
   }
   function renderAll(){
     renderOverview(); renderMembers(); fillPlayerSelect();
@@ -752,6 +845,8 @@
   $('plSelect').addEventListener('change', function(){ curPlayer = this.value; renderPlayer(); });
   $('admSearch').addEventListener('input', renderAdmin);
   $('selSearch').addEventListener('input', renderExport);
+  ['devPeriod','devMetric','devBy'].forEach(function(id){ $(id).addEventListener('change', renderDev); });
+  $('tab-dev').addEventListener('click', function(e){ var r = e.target.closest('.dev'); if (!r) return; curPlayer = r.dataset.name; $('plSelect').value = curPlayer; showTab('pl'); });
   $('pickList').addEventListener('change', function(e){ var c = e.target; if (!c.dataset.name) return; if (c.checked) SEL[c.dataset.name] = 1; else delete SEL[c.dataset.name]; updateSelCount(); });
   $('tab-exp').querySelector('.chips').addEventListener('click', function(e){
     var b = e.target.closest('[data-sel]'); if (!b) return; var k = b.dataset.sel;
