@@ -95,7 +95,9 @@
         <label class="l" for="name" data-t="name"></label>
         <input id="search" type="search" data-tp="search" autocomplete="off" style="margin-bottom:8px">
         <select id="name"></select>
+        <div class="hint hide" id="nameSaved" style="color:var(--ok)">✓ <span data-t="nameSaved"></span></div>
         <div class="hint" data-t="notListed"></div>
+        <a href="admin.html" id="adminBtn" class="hide" style="display:block;margin-top:10px;text-align:center;border:1px solid rgba(92,200,255,.45);color:var(--accent);border-radius:10px;padding:10px;text-decoration:none;font-weight:600;font-size:14px">🔒 <span data-t="adminBtn"></span></a>
         <div class="meta hide" id="lastUpdate"></div>
       </div>
 
@@ -148,6 +150,8 @@ var LANG_NAMES = {
 
 var I18N = {
   de: {
+    nameSaved: "Dein Name wird auf diesem Gerät gemerkt.",
+    adminBtn: "Admin-Bereich (R4/R5) öffnen",
     appRemTitle: "Erinnerung aufs Handy",
     appRemHint: "Die App meldet sich, sobald deine Werte älter als 7 Tage sind.",
     appRemOn: "Handy-Erinnerung aktiv",
@@ -180,6 +184,8 @@ var I18N = {
     unsubDone: 'Du bekommst keine Erinnerungen mehr.', unsubFail: 'Link ungültig oder bereits abgemeldet.'
   },
   en: {
+    nameSaved: "Your name is remembered on this device.",
+    adminBtn: "Open admin area (R4/R5)",
     appRemTitle: "Phone reminder",
     appRemHint: "The app notifies you as soon as your values are older than 7 days.",
     appRemOn: "Phone reminder on",
@@ -212,6 +218,8 @@ var I18N = {
     unsubDone: 'You will no longer receive reminders.', unsubFail: 'Invalid link or already unsubscribed.'
   },
   fr: {
+    nameSaved: "Ton nom est mémorisé sur cet appareil.",
+    adminBtn: "Ouvrir l'espace admin (R4/R5)",
     appRemTitle: "Rappel sur le téléphone",
     appRemHint: "L'appli te prévient dès que tes valeurs ont plus de 7 jours.",
     appRemOn: "Rappel activé",
@@ -244,6 +252,8 @@ var I18N = {
     unsubDone: 'Tu ne recevras plus de rappels.', unsubFail: 'Lien invalide ou déjà désinscrit.'
   },
   es: {
+    nameSaved: "Tu nombre se recuerda en este dispositivo.",
+    adminBtn: "Abrir área de administración (R4/R5)",
     appRemTitle: "Recordatorio en el móvil",
     appRemHint: "La app te avisa cuando tus valores tengan más de 7 días.",
     appRemOn: "Recordatorio activado",
@@ -276,6 +286,8 @@ var I18N = {
     unsubDone: 'Ya no recibirás recordatorios.', unsubFail: 'Enlace no válido o ya te has dado de baja.'
   },
   pt: {
+    nameSaved: "Seu nome fica salvo neste dispositivo.",
+    adminBtn: "Abrir área de administração (R4/R5)",
     appRemTitle: "Lembrete no celular",
     appRemHint: "O app avisa quando seus valores tiverem mais de 7 dias.",
     appRemOn: "Lembrete ativado",
@@ -308,6 +320,8 @@ var I18N = {
     unsubDone: 'Você não receberá mais lembretes.', unsubFail: 'Link inválido ou já cancelado.'
   },
   it: {
+    nameSaved: "Il tuo nome viene ricordato su questo dispositivo.",
+    adminBtn: "Apri area admin (R4/R5)",
     appRemTitle: "Promemoria sul telefono",
     appRemHint: "L'app ti avvisa quando i tuoi valori hanno più di 7 giorni.",
     appRemOn: "Promemoria attivo",
@@ -340,6 +354,8 @@ var I18N = {
     unsubDone: 'Non riceverai più promemoria.', unsubFail: 'Link non valido o già disiscritto.'
   },
   tr: {
+    nameSaved: "Adın bu cihazda hatırlanır.",
+    adminBtn: "Yönetici alanını aç (R4/R5)",
     appRemTitle: "Telefona hatırlatma",
     appRemHint: "Değerlerin 7 günden eskiyse uygulama sana bildirim gönderir.",
     appRemOn: "Hatırlatma açık",
@@ -372,6 +388,8 @@ var I18N = {
     unsubDone: 'Artık hatırlatma almayacaksın.', unsubFail: 'Geçersiz bağlantı veya abonelikten zaten çıkılmış.'
   },
   ru: {
+    nameSaved: "Твоё имя сохраняется на этом устройстве.",
+    adminBtn: "Открыть админ-раздел (R4/R5)",
     appRemTitle: "Напоминание на телефон",
     appRemHint: "Приложение напомнит, когда твоим данным будет больше 7 дней.",
     appRemOn: "Напоминание включено",
@@ -404,6 +422,8 @@ var I18N = {
     unsubDone: 'Ты больше не будешь получать напоминания.', unsubFail: 'Ссылка недействительна или ты уже отписался.'
   },
   pl: {
+    nameSaved: "Twoje imię jest zapamiętywane na tym urządzeniu.",
+    adminBtn: "Otwórz panel admina (R4/R5)",
     appRemTitle: "Przypomnienie na telefon",
     appRemHint: "Aplikacja przypomni, gdy twoje dane będą starsze niż 7 dni.",
     appRemOn: "Przypomnienie włączone",
@@ -539,6 +559,9 @@ function rpc(fn, body){
   }
 
   function showMeta(){
+    var nm = $('name').value;
+    $('nameSaved').classList.toggle('hide', !nm);
+    $('adminBtn').classList.toggle('hide', !(nm && DATA && (DATA.leaders || []).indexOf(nm) >= 0));
     var e = DATA && DATA.entries[$('name').value];
     $('lastUpdate').classList.toggle('hide', !(e && e.updated));
     if (e && e.updated) $('lastUpdate').textContent = t('lastUpdate') + ': ' + fmtDate(e.updated);
@@ -703,7 +726,7 @@ function rpc(fn, body){
 
     ls.addEventListener('change', function(){ setLang(this.value, true); });
     $('search').addEventListener('input', fillNames);
-    $('name').addEventListener('change', function(){ store('skws_name', this.value); loadMember(); });
+    $('name').addEventListener('change', function(){ store('skws_name', this.value); if (window.SKWSAndroid && window.SKWSAndroid.setName) { try { window.SKWSAndroid.setName(this.value); } catch(e){} } loadMember(); });
     $('save').addEventListener('click', save);
     $('tabForm').addEventListener('click', function(){ showTab('form'); });
     $('tabOverview').addEventListener('click', function(){ showTab('overview'); });
@@ -727,7 +750,7 @@ function rpc(fn, body){
   }
   rpc('get_init')
     .then(function(res){
-      init({ alliance: ALLIANCE, members: res.members || [], entries: res.entries || {},
+      init({ alliance: ALLIANCE, members: res.members || [], leaders: res.leaders || [], entries: res.entries || {},
              troops: ['tank','missile','aircraft','mixed'], squads: 4, langs: LANG_NAMES, i18n: I18N });
     })
     .catch(function(){ $('loadingTxt').textContent = 'Error – please reload / Fehler – bitte neu laden'; });

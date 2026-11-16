@@ -140,7 +140,7 @@
 <div class="wrap">
   <header>
     <div class="logo">SKWS</div>
-    <div class="htxt"><div class="a">SKWS – Skywalkers</div><h1>Admin · R4/R5</h1></div>
+    <div class="htxt"><div class="a">SKWS – Skywalkers</div><h1>Admin · <span id="who">R4/R5</span></h1></div>
     <button class="ghost hide" id="reload" title="Neu laden">↻</button>
     <button class="ghost hide" id="logout">Abmelden</button>
   </header>
@@ -151,6 +151,8 @@
     <form id="loginForm">
       <input id="actor" type="text" placeholder="Dein Name im Spiel (fürs Logbuch)" maxlength="40" autocomplete="nickname" style="margin-bottom:10px">
       <input id="pw" type="password" placeholder="Kennwort" autocomplete="current-password" style="margin-bottom:10px">
+      <label style="display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:14px;color:var(--muted);cursor:pointer">
+        <input type="checkbox" id="remember" checked style="width:18px;height:18px;padding:0;accent-color:var(--accent)"> Angemeldet bleiben (auf diesem Gerät)</label>
       <button class="btn" style="width:100%" type="submit" id="loginBtn">Anmelden</button>
     </form>
     <div class="msg" id="loginMsg"></div>
@@ -370,7 +372,11 @@
   var DAY = 86400000, STALE_DAYS = 7;
   var $ = function(id){ return document.getElementById(id); };
   var PW = null, D = null, curPlayer = null, ACTOR = '';
-  try { ACTOR = localStorage.getItem('skws_admin_actor') || ''; } catch(e) {}
+  function ls(k, v){ try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch(e){ return null; } }
+  // Name fürs Logbuch: eigener Admin-Name, sonst der auf der Eintragsseite gewählte Spielername
+  ACTOR = ls('skws_admin_actor') || ls('skws_name') || '';
+  function savedPw(){ return ls('skws_admin_pw_keep') || store('skws_admin_pw'); }
+  function forgetPw(){ ls('skws_admin_pw_keep', null); store('skws_admin_pw', null); }
 
   function store(k, v){ try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch(e){ return null; } }
   function rpc(fn, body){
@@ -973,13 +979,15 @@
     $('loginBtn').disabled = true; $('loginMsg').textContent = '';
     return rpc('admin_data', { p_pw: pw }).then(function(raw){
       var first = !PW && !silent;
-      PW = pw; store('skws_admin_pw', pw); D = prep(raw);
+      PW = pw; store('skws_admin_pw', pw); if (!silent) { if ($('remember').checked) ls('skws_admin_pw_keep', pw); else ls('skws_admin_pw_keep', null); }
+      D = prep(raw);
+      $('who').textContent = ACTOR ? ACTOR : 'R4/R5';
       if (first) rpc('admin_login', { p_pw: pw, p_actor: ACTOR || null }).catch(function(){});
       $('loginView').classList.add('hide'); $('app').classList.remove('hide');
       $('reload').classList.remove('hide'); $('logout').classList.remove('hide');
       renderAll();
     }).catch(function(err){
-      store('skws_admin_pw', null);
+      if (String(err && err.message).indexOf('ERR_AUTH') >= 0) forgetPw();
       if (!silent) $('loginMsg').textContent = String(err && err.message).indexOf('ERR_AUTH') >= 0 ? 'Kennwort falsch.' : 'Laden fehlgeschlagen – bitte erneut versuchen.';
     }).then(function(){ $('loginBtn').disabled = false; });
   }
@@ -987,10 +995,10 @@
   $('actor').value = ACTOR;
   $('loginForm').addEventListener('submit', function(e){
     e.preventDefault();
-    ACTOR = $('actor').value.trim(); try { localStorage.setItem('skws_admin_actor', ACTOR); } catch(x) {}
+    ACTOR = $('actor').value.trim() || ls('skws_name') || ''; ls('skws_admin_actor', ACTOR || null);
     load($('pw').value);
   });
-  $('logout').addEventListener('click', function(){ store('skws_admin_pw', null); location.reload(); });
+  $('logout').addEventListener('click', function(){ forgetPw(); location.reload(); });
   $('reload').addEventListener('click', function(){ if (PW) load(PW, true); });
   $('tabs').addEventListener('click', function(e){ var b = e.target.closest('button'); if (b) showTab(b.dataset.tab); });
   ['memSearch','memSort','memFilter'].forEach(function(id){ $(id).addEventListener(id === 'memSearch' ? 'input' : 'change', renderMembers); });
@@ -1061,7 +1069,7 @@
   });
 
   var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (!D) return; var t = store('skws_admin_tab') || 'ov'; showTab(t); }, 200); });
-  var saved = store('skws_admin_pw');
+  var saved = savedPw();
   if (saved) load(saved, true);
 })();
 </script>
