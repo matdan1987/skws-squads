@@ -164,6 +164,13 @@
         <div class="card"><h2>Truppentyp der T1-Trupps</h2><div id="troopBars"></div></div>
         <div class="card"><h2>Nach Rang</h2><div class="tw"><table id="rankTable"></table></div></div>
       </div>
+      <div class="card">
+        <div class="devhead"><h2 class="stale">⚠ Überfällig – seit über 7 Tagen nicht aktualisiert (<span id="odCount">0</span>)</h2></div>
+        <div id="odList" style="margin-top:6px"></div>
+        <details style="margin-top:4px"><summary>Noch nie eingetragen (<span id="neverCount">0</span>)</summary><div class="chips" id="neverList" style="margin-top:8px"></div></details>
+        <div class="btnrow"><button class="btn2" id="odCopy">Erinnerung für den Chat kopieren</button></div>
+        <div class="note" id="odNote"></div>
+      </div>
       <div class="card"><h2>Allianz-Kampfkraft gesamt (alle Trupps)</h2><div class="chart" id="chartOvTotal"></div></div>
     </section>
 
@@ -190,7 +197,7 @@
           </select>
         </div>
         <div class="tw"><table id="memTable"></table></div>
-        <p class="small muted" style="margin:8px 0 0">Kampfkraft in Mio., darunter der Truppentyp · Δ = Änderung der Gesamt-Kampfkraft seit der vorherigen Meldung · Zeile antippen für Details</p>
+        <p class="small muted" style="margin:8px 0 0">Unter dem Namen: letzte Aktualisierung (⚠ = über 7 Tage) · Kampfkraft in Mio., darunter der Truppentyp · Δ = Änderung der Gesamt-Kampfkraft seit der vorherigen Meldung · Zeile antippen für Details</p>
       </div>
     </section>
 
@@ -225,7 +232,10 @@
       <div class="tiles" id="devTiles"></div>
       <div class="card"><div class="devhead"><h2 class="up">▲ Highlights – beste Entwicklung</h2><span id="devTopNote"></span></div><div id="devTop" style="margin-top:6px"></div></div>
       <div class="card"><div class="devhead"><h2 class="down">▼ Lowlights – schwächste Entwicklung</h2><span id="devLowNote"></span></div><div id="devLow" style="margin-top:6px"></div></div>
-      <div class="card"><div class="devhead"><h2 class="stale">⏸ Stillstand – keine Veränderung</h2><span id="devStillNote"></span></div><div id="devStill" style="margin-top:6px"></div></div>
+      <div class="card"><div class="devhead"><h2 class="stale">⏸ Stillstand – aktualisiert, aber keine Veränderung</h2><span id="devStillNote"></span></div><div id="devStill" style="margin-top:6px"></div></div>
+      <div class="card"><div class="devhead"><h2 class="stale">⚠ Nicht aktualisiert im Zeitraum</h2><span>nicht bewertbar</span></div>
+        <p class="small muted" style="margin:6px 0 0">Diese Spieler haben im gewählten Zeitraum nichts gemeldet – ob sie gewachsen sind, ist unbekannt. Sie zählen deshalb weder als Stillstand noch als Lowlight.</p>
+        <div id="devIdle" style="margin-top:6px"></div></div>
       <p class="small muted" id="devFoot" style="margin:0 4px"></p>
     </section>
 
@@ -344,6 +354,8 @@
     var d = Math.floor((Date.now() - new Date(t)) / DAY);
     return d <= 0 ? 'heute' : d === 1 ? 'gestern' : 'vor ' + d + ' Tagen';
   }
+  function lastUpd(t){ return t ? fmtDate(t) + ' · ' + ago(t) : 'nie'; }
+  function daysSince(t){ return t ? Math.floor((Date.now() - new Date(t)) / DAY) : null; }
   function dayKey(t){ var d = new Date(t); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
   function sumSquads(sq){ var s = 0; (sq || []).forEach(function(x){ if (x && x.power) s += Number(x.power); }); return Math.round(s * 100) / 100; }
   function sq(e, i){ return (e && e.squads && e.squads[i]) || {}; }
@@ -484,7 +496,7 @@
       tile('Eingetragen', done.length + ' / ' + D.members, '<div class="bar"><i style="width:' + pct + '%"></i></div>') +
       tile('Allianz gesamt', fmtM(total), ref ? fmtDelta(last.total - ref.total) + ' M seit 7 Tagen' : 'alle Trupps aller Eingetragenen') +
       tile('Ø T1', done.length ? fmtM(t1sum / done.length) : '–', top ? 'stärkster T1: ' + esc(top.name) + ' (' + fmt(top.t1) + ')' : '') +
-      tile('Veraltet', String(stale), stale ? '<span class="stale">⚠ älter als ' + STALE_DAYS + ' Tage</span>' : 'alle aktuell');
+      tile('Überfällig', String(stale), stale ? '<span class="stale">⚠ über ' + STALE_DAYS + ' Tage nicht aktualisiert</span>' : 'alle aktuell');
 
     var counts = {}; TROOP_ORDER.forEach(function(k){ counts[k] = 0; });
     done.forEach(function(p){ var t = sq(p.entry, 0).type; if (counts[t] !== undefined) counts[t]++; });
@@ -502,6 +514,14 @@
       rows += '<tr><td>' + r + '</td><td class="n">' + d.length + ' / ' + all.length + '</td><td class="n">' + (d.length ? fmt(t1 / d.length) : '–') + '</td><td class="n">' + (tt ? fmt(tt) : '–') + '</td></tr>';
     });
     $('rankTable').innerHTML = rows;
+    var od = done.filter(function(p){ return p.stale; }).sort(function(a,b){ return a.updated - b.updated; });
+    var never = P.filter(function(p){ return !p.entry; });
+    $('odCount').textContent = od.length; $('neverCount').textContent = never.length;
+    $('odList').innerHTML = od.map(function(p){
+      return '<div class="dev" data-name="' + esc(p.name) + '"><span class="pos">' + p.rank + '</span><div class="who"><b>' + esc(p.name) + '</b><span>zuletzt am ' + fmtDate(p.updated) + '</span></div>' +
+        '<div class="val stale">⚠ seit ' + daysSince(p.updated) + ' Tagen<small>T1 ' + fmt(p.t1) + ' · Gesamt ' + fmt(p.total) + '</small></div></div>';
+    }).join('') || '<div class="empty" style="padding:12px 0">Alle Eingetragenen sind aktuell.</div>';
+    $('neverList').innerHTML = never.map(function(p){ return '<span class="chip" style="cursor:default">' + esc(p.name) + '</span>'; }).join('') || '<span class="small muted">Alle haben sich eingetragen.</span>';
     lineChart($('chartOvTotal'), [{ name:'Allianz gesamt', color:'var(--accent)', points: D.days.map(function(d){ return { x:d.x, y:Math.round(d.total*10)/10 }; }) }], { title:'Allianz-Kampfkraft' });
   }
   function tile(k, v, d){ return '<div class="tile"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="d">' + (d || '') + '</div></div>'; }
@@ -515,7 +535,7 @@
       name: function(a,b){ return a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); },
       updated: function(a,b){ return (b.updated || 0) - (a.updated || 0); }
     }[sort];
-    var h = '<tr><th class="sticky">Spieler</th><th class="n">T1</th><th class="n">T2</th><th class="n">T3</th><th class="n">T4</th><th class="n">Gesamt</th><th class="n">Δ</th><th>Stand</th></tr>';
+    var h = '<tr><th class="sticky">Spieler</th><th class="n">T1</th><th class="n">T2</th><th class="n">T3</th><th class="n">T4</th><th class="n">Gesamt</th><th class="n">Δ</th></tr>';
     RANKS.forEach(function(r){
       var list = D.players.filter(function(p){
         if (p.rank !== r) return false;
@@ -528,16 +548,15 @@
       }).sort(cmp);
       if (!list.length) return;
       var n = D.players.filter(function(p){ return p.rank === r; });
-      h += '<tr class="rankhead"><td class="sticky">' + r + '</td><td colspan="7">' + n.filter(function(p){ return p.entry; }).length + ' / ' + n.length + ' eingetragen</td></tr>';
+      h += '<tr class="rankhead"><td class="sticky">' + r + '</td><td colspan="6">' + n.filter(function(p){ return p.entry; }).length + ' / ' + n.length + ' eingetragen</td></tr>';
       list.forEach(function(p){
-        if (!p.entry) { h += '<tr class="missing"><td class="sticky">' + esc(p.name) + '</td><td colspan="7">— fehlt</td></tr>'; return; }
-        h += '<tr class="click" data-name="' + esc(p.name) + '"><td class="sticky">' + esc(p.name) + '</td>';
+        if (!p.entry) { h += '<tr class="missing"><td class="sticky">' + esc(p.name) + '</td><td colspan="6">— noch nie eingetragen</td></tr>'; return; }
+        h += '<tr class="click" data-name="' + esc(p.name) + '"><td class="sticky">' + esc(p.name) + '<div class="tl' + (p.stale ? ' stale' : '') + '">' + (p.stale ? '⚠ ' : '') + fmtDate(p.updated) + ' · ' + ago(p.updated) + '</div></td>';
         for (var i = 0; i < 4; i++) {
           var s = sq(p.entry, i);
           h += '<td class="n">' + squadCell(s) + '</td>';
         }
-        h += '<td class="n">' + fmt(p.total) + '</td><td class="n">' + (p.delta === null ? '<span class="muted">neu</span>' : fmtDelta(p.delta)) + '</td>';
-        h += '<td class="' + (p.stale ? 'stale' : 'muted') + '">' + (p.stale ? '⚠ ' : '') + ago(p.updated) + '</td></tr>';
+        h += '<td class="n">' + fmt(p.total) + '</td><td class="n">' + (p.delta === null ? '<span class="muted">neu</span>' : fmtDelta(p.delta)) + '</td></tr>';
       });
     });
     $('memTable').innerHTML = h;
@@ -592,9 +611,11 @@
   function devStats(){
     var days = +$('devPeriod').value, m = $('devMetric').value, cutoff = days ? Date.now() - days * DAY : null;
     var val = function(sqs){ return m === 't1' ? Number(((sqs || [])[0] || {}).power || 0) : sumSquads(sqs); };
-    var rows = [], fresh = [];
+    var rows = [], fresh = [], idleUpd = [];
     D.players.forEach(function(p){
       if (!p.entry || !p.history.length) return;
+      var updatedIn = cutoff ? +p.updated >= cutoff : !p.stale;
+      if (!updatedIn) { idleUpd.push(p); return; }
       var hs = p.history, cur = val(p.entry.squads), base = null, baseT = null;
       if (cutoff) { for (var i = hs.length - 1; i >= 0; i--) if (+hs[i].t <= cutoff) { base = val(hs[i].squads); baseT = hs[i].t; break; } }
       else if (hs.length > 1 || (Date.now() - hs[0].t) > 7 * DAY) { base = val(hs[0].squads); baseT = hs[0].t; }
@@ -605,7 +626,7 @@
       var abs = Math.round((cur - base) * 100) / 100, pct = base ? abs / base * 100 : 0;
       rows.push({ p: p, cur: cur, base: base, baseT: baseT, abs: abs, pct: pct, lastChange: lastChange, idle: Math.floor((Date.now() - lastChange) / DAY) });
     });
-    return { rows: rows, fresh: fresh, days: days };
+    return { rows: rows, fresh: fresh, idleUpd: idleUpd, days: days };
   }
   function devRow(r, i, max, by){
     var v = by === 'pct' ? r.pct : r.abs, w = max ? Math.min(100, Math.abs(v) / max * 100) : 0;
@@ -613,7 +634,7 @@
     var main = by === 'pct' ? (v > 0 ? '+' : '') + fmt(r.pct) + ' %' : (v > 0 ? '+' : '') + fmt(r.abs) + ' M';
     var sub = by === 'pct' ? (r.abs > 0 ? '+' : '') + fmt(r.abs) + ' M' : (r.pct > 0 ? '+' : '') + fmt(r.pct) + ' %';
     return '<div class="dev" data-name="' + esc(r.p.name) + '"><span class="pos">' + (i + 1) + '</span>' +
-      '<div class="who"><b>' + esc(r.p.name) + '</b><span>' + r.p.rank + ' · ' + fmt(r.base) + ' → ' + fmt(r.cur) + ' M</span></div>' +
+      '<div class="who"><b>' + esc(r.p.name) + '</b><span>' + r.p.rank + ' · ' + fmt(r.base) + ' → ' + fmt(r.cur) + ' M · aktualisiert ' + ago(r.p.updated) + '</span></div>' +
       '<div class="val ' + (v > 0 ? 'up' : v < 0 ? 'down' : 'muted') + '">' + (v > 0 ? '▲ ' : v < 0 ? '▼ ' : '') + main + '<small>' + sub + '</small></div>' +
       '<div class="track"><i style="width:' + w + '%;background:' + col + '"></i></div></div>';
   }
@@ -631,18 +652,23 @@
       tile('Ø Entwicklung', S.rows.length ? (avgPct > 0 ? '+' : '') + fmt(avgPct) + ' %' : '–', period) +
       tile('Zuwachs', String(up.length), '<span class="up">▲</span> Spieler gewachsen') +
       tile('Rückgang', String(down.length), down.length ? '<span class="down">▼</span> Werte gesunken' : 'niemand gesunken') +
-      tile('Stillstand', String(still.length), still.length ? '<span class="stale">⏸ unverändert</span>' : 'alle in Bewegung');
+      tile('Stillstand', String(still.length), still.length ? '<span class="stale">⏸ aktualisiert, aber unverändert</span>' : 'keiner') +
+      tile('Nicht aktualisiert', String(S.idleUpd.length), S.idleUpd.length ? '<span class="stale">⚠ keine Meldung ' + period + '</span>' : 'alle haben gemeldet');
     $('devTop').innerHTML = top.map(function(r, i){ return devRow(r, i, maxAll, by); }).join('') || '<div class="empty">Noch kein Zuwachs ' + period + '.</div>';
     $('devTopNote').textContent = top.length ? 'Top ' + top.length : '';
     $('devLow').innerHTML = low.map(function(r, i){ return devRow(r, i, maxAll, by); }).join('') || '<div class="empty">Keine Daten ' + period + '.</div>';
     $('devLowNote').textContent = low.length ? 'schwächste ' + low.length : '';
     $('devStill').innerHTML = still.sort(function(a,b){ return b.idle - a.idle || b.cur - a.cur; }).map(function(r, i){
-      var stale = r.p.stale;
       return '<div class="dev" data-name="' + esc(r.p.name) + '"><span class="pos">' + (i + 1) + '</span>' +
-        '<div class="who"><b>' + esc(r.p.name) + '</b><span>' + r.p.rank + ' · ' + fmt(r.cur) + ' M</span></div>' +
-        '<div class="val stale">⏸ seit ' + r.idle + ' Tagen<small>' + (stale ? 'nicht aktualisiert' : 'neu gemeldet, gleicher Wert') + '</small></div></div>';
+        '<div class="who"><b>' + esc(r.p.name) + '</b><span>' + r.p.rank + ' · ' + fmt(r.cur) + ' M · aktualisiert ' + ago(r.p.updated) + '</span></div>' +
+        '<div class="val stale">⏸ ' + (r.idle > 0 ? 'seit ' + r.idle + ' Tagen' : 'heute') + '<small>gleicher Wert gemeldet</small></div></div>';
     }).join('') || '<div class="empty">Niemand ohne Veränderung ' + period + '.</div>';
     $('devStillNote').textContent = still.length ? 'längster Stillstand zuerst' : '';
+    $('devIdle').innerHTML = S.idleUpd.sort(function(a,b){ return a.updated - b.updated; }).map(function(p, i){
+      return '<div class="dev" data-name="' + esc(p.name) + '"><span class="pos">' + (i + 1) + '</span>' +
+        '<div class="who"><b>' + esc(p.name) + '</b><span>' + p.rank + ' · zuletzt am ' + fmtDate(p.updated) + '</span></div>' +
+        '<div class="val stale">⚠ seit ' + daysSince(p.updated) + ' Tagen<small>Wert unbekannt</small></div></div>';
+    }).join('') || '<div class="empty">Alle haben ' + period + ' aktualisiert.</div>';
     $('devFoot').textContent = (S.fresh.length ? S.fresh.length + ' Spieler sind für diesen Zeitraum zu neu (erste Meldung innerhalb des Zeitraums) und fehlen in der Wertung. ' : '') +
       'Spieler antippen für den Einzelverlauf.';
   }
@@ -705,7 +731,7 @@
       .filter(function(p){ return !q || p.name.toLowerCase().indexOf(q) >= 0; });
     $('pickList').innerHTML = list.map(function(p){
       return '<label class="' + (p.entry ? '' : 'nodata') + '"><input type="checkbox" data-name="' + esc(p.name) + '"' + (SEL[p.name] ? ' checked' : '') + '>' +
-        '<span class="nm">' + esc(p.name) + '</span><span class="meta">' + p.rank + ' · ' + (p.entry ? 'T1 ' + fmt(p.t1) + ' ' + typeShort(sq(p.entry,0).type) : 'keine Meldung') + '</span></label>';
+        '<span class="nm">' + esc(p.name) + '</span><span class="meta' + (p.stale ? ' stale' : '') + '">' + p.rank + ' · ' + (p.entry ? 'T1 ' + fmt(p.t1) + ' ' + typeShort(sq(p.entry,0).type) + ' · ' + fmtDate(p.updated) : 'keine Meldung') + '</span></label>';
     }).join('') || '<div class="empty">Keine Treffer.</div>';
     updateSelCount();
   }
@@ -846,6 +872,16 @@
   $('admSearch').addEventListener('input', renderAdmin);
   $('selSearch').addEventListener('input', renderExport);
   ['devPeriod','devMetric','devBy'].forEach(function(id){ $(id).addEventListener('change', renderDev); });
+  $('odList').addEventListener('click', function(e){ var r = e.target.closest('.dev'); if (!r) return; curPlayer = r.dataset.name; $('plSelect').value = curPlayer; showTab('pl'); });
+  $('odCopy').addEventListener('click', function(){
+    var od = D.players.filter(function(p){ return p.entry && p.stale; }).map(function(p){ return p.name; });
+    var never = D.players.filter(function(p){ return !p.entry; }).map(function(p){ return p.name; });
+    if (!od.length && !never.length) { $('odNote').textContent = 'Niemand zu erinnern.'; $('odNote').className = 'note ok'; return; }
+    var t = 'SKWS - Erinnerung Squad-Meldung';
+    if (od.length) t += '\n\nBitte aktualisiert eure Werte (seit ueber 7 Tagen nicht aktualisiert) / Please update your values:\n' + od.join(', ');
+    if (never.length) t += '\n\nBitte tragt euch ein (noch keine Meldung) / Please enter your squads:\n' + never.join(', ');
+    copyText(t, 'odNote');
+  });
   $('tab-dev').addEventListener('click', function(e){ var r = e.target.closest('.dev'); if (!r) return; curPlayer = r.dataset.name; $('plSelect').value = curPlayer; showTab('pl'); });
   $('pickList').addEventListener('change', function(e){ var c = e.target; if (!c.dataset.name) return; if (c.checked) SEL[c.dataset.name] = 1; else delete SEL[c.dataset.name]; updateSelCount(); });
   $('tab-exp').querySelector('.chips').addEventListener('click', function(e){
