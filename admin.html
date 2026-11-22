@@ -111,6 +111,14 @@
   .btnrow .btn{flex:1;min-width:150px;font-size:14px;padding:11px 12px}
   .btn2{flex:1;min-width:150px;border:1px solid var(--line);background:var(--bg2);color:var(--text);border-radius:12px;padding:11px 12px;font-weight:600;cursor:pointer;font-size:14px}
   textarea{width:100%;min-height:160px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;color:var(--text);font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;padding:10px;resize:vertical}
+  .dscount{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .dscount div{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px}
+  .dscount b{display:block;font-size:15px}
+  .dscount .over{color:var(--err)}
+  .pick label select{width:auto;flex:none;padding:5px 8px;font-size:13px;border-radius:8px}
+  .pick label.as{background:rgba(92,200,255,.08)} .pick label.bs{background:rgba(168,120,255,.10)}
+  .phase{font-size:12px;color:var(--muted);margin-top:2px;white-space:normal}
+  .grp td{white-space:normal;vertical-align:top}
   .team{margin-top:12px}
   .team h3{margin:0 0 6px;font-size:15px;display:flex;flex-direction:column;gap:2px}
   .team h3 span{font-size:12px;color:var(--muted);font-weight:500}
@@ -171,6 +179,7 @@
       <button data-tab="pl">Spieler</button>
       <button data-tab="dev">Entwicklung</button>
       <button data-tab="exp">Export</button>
+      <button data-tab="ds">Wüstensturm</button>
       <button data-tab="adm">Verwaltung</button>
       <button data-tab="log">Logbuch</button>
     </div>
@@ -294,32 +303,62 @@
         <textarea id="expPreview" readonly></textarea>
       </div>
 
-      <div class="card">
-        <h2>3 · Wüstensturm-Planer</h2>
-        <p class="small muted" style="margin:0 0 10px">Verteilt die ausgewählten Spieler mit Meldung automatisch auf Task Forces – Stammspieler zuerst, dann Ersatz.</p>
-        <div class="formrow">
-          <div><label for="dsTeams">Task Forces</label><select id="dsTeams"><option value="2">A + B</option><option value="1">nur A</option></select></div>
-          <div><label for="dsMetric">Grundlage</label><select id="dsMetric"><option value="t1">T1-Kampfkraft</option><option value="total">Gesamt-Kampfkraft</option></select></div>
-          <div><label for="dsStart">Stammspieler je Team</label><input id="dsStart" type="number" min="1" max="50" value="20" inputmode="numeric"></div>
-          <div><label for="dsSubs">Ersatz je Team</label><input id="dsSubs" type="number" min="0" max="30" value="10" inputmode="numeric"></div>
-        </div>
-        <div class="formrow" style="grid-template-columns:1fr">
-          <div><label for="dsMode">Verteilung</label>
-            <select id="dsMode"><option value="balanced">Ausgeglichen – A und B gleich stark</option><option value="topA">Stärkste in Team A, Rest in B</option></select></div>
-        </div>
-        <div class="btnrow">
-          <button class="btn" id="dsRun">Aufstellung berechnen</button>
-        </div>
-        <div id="dsResult"></div>
-        <div class="btnrow hide" id="dsActions">
-          <button class="btn2" id="dsCopy">Aufstellung als Text kopieren</button>
-          <button class="btn2" id="dsCsv">Aufstellung als CSV</button>
-        </div>
-        <div class="note" id="dsNote"></div>
-      </div>
     </section>
 
     <!-- Logbuch -->
+    <!-- Wüstensturm -->
+    <section id="tab-ds" class="hide">
+      <div class="card">
+        <h2>1 · Runden</h2>
+        <p class="small muted" style="margin:0 0 10px">Die Spieler melden sich im Spiel an. Hier trägst du ein, wer bei Team A und B als Stamm- oder Ersatzspieler gemeldet ist – daraus entsteht der Einsatzplan.</p>
+        <div class="formrow">
+          <div><label for="dsTimeA">Team A – Uhrzeit</label><input id="dsTimeA" type="text" placeholder="z. B. Fr 14:00"></div>
+          <div><label for="dsTimeB">Team B – Uhrzeit</label><input id="dsTimeB" type="text" placeholder="z. B. Fr 21:00"></div>
+          <div><label for="dsOppA">Team A – Gegner (optional)</label><input id="dsOppA" type="text"></div>
+          <div><label for="dsOppB">Team B – Gegner (optional)</label><input id="dsOppB" type="text"></div>
+        </div>
+        <div class="formrow" style="grid-template-columns:1fr">
+          <div><label for="dsMetric">Stärke bewerten nach</label>
+            <select id="dsMetric"><option value="t1">T1-Kampfkraft (empfohlen)</option><option value="total">Gesamt T1–T4</option><option value="hero">Heldenkraft</option></select></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2 · Gemeldete Spieler</h2>
+        <div class="dscount" id="dsCount"></div>
+        <div class="toolbar"><input id="dsSearch" type="search" placeholder="Spieler suchen…"></div>
+        <div class="chips">
+          <button class="chip" id="dsOnlySel">nur Zugeordnete zeigen</button>
+          <button class="chip" id="dsClear">alle Zuordnungen löschen</button>
+        </div>
+        <div class="pick" id="dsList"></div>
+      </div>
+
+      <div class="card">
+        <h2>3 · Taktik &amp; Einsatzplan</h2>
+        <div class="btnrow"><button class="btn" id="dsRun">Taktik erstellen</button></div>
+        <div id="dsResult"></div>
+        <div class="hide" id="dsActions">
+          <div class="btnrow">
+            <button class="btn2" id="dsCopyA">Chat-Text Team A kopieren</button>
+            <button class="btn2" id="dsCopyB">Chat-Text Team B kopieren</button>
+          </div>
+          <div class="btnrow">
+            <button class="btn2" id="dsImgA">Bild-KI-Prompt Team A</button>
+            <button class="btn2" id="dsImgB">Bild-KI-Prompt Team B</button>
+          </div>
+          <p class="small muted" style="margin:6px 0 0">Bild-KI: Prompt kopieren, in z. B. ChatGPT oder Gemini einfügen und einen Screenshot der Wüstensturm-Karte aus dem Spiel anhängen – dann zeichnet sie die Namen an die richtigen Gebäude.</p>
+          <div class="btnrow" style="margin-top:12px">
+            <button class="btn" id="dsPublish">Für Spieler veröffentlichen</button>
+            <button class="btn2" id="dsUnpublish">Veröffentlichung zurücknehmen</button>
+          </div>
+          <p class="small muted" style="margin:6px 0 0">Veröffentlicht: Jeder Spieler sieht auf der Seite und in der App seinen eigenen Einsatz (Team, Uhrzeit, Aufgabe je Phase) in seiner Sprache.</p>
+        </div>
+        <div class="note" id="dsNote"></div>
+        <div class="small muted" id="dsPubInfo"></div>
+      </div>
+    </section>
+
     <section id="tab-log" class="hide">
       <div class="card">
         <div class="formrow" style="margin:0">
@@ -728,7 +767,7 @@
   }
 
   /* ---------- Export ---------- */
-  var SEL = null, lastPlan = null;
+  var SEL = null;
   function initSel(){ if (SEL) { var keep = {}; D.players.forEach(function(p){ if (SEL[p.name]) keep[p.name] = 1; }); SEL = keep; return; }
     SEL = {}; D.players.forEach(function(p){ if (p.entry) SEL[p.name] = 1; }); }
   function selected(){ return D.players.filter(function(p){ return SEL[p.name]; }); }
@@ -793,65 +832,192 @@
   }
   function updateSelCount(){ $('selCount').textContent = selected().length; $('expPreview').value = exportText(); $('expNote').textContent = ''; }
 
-  function planDesertStorm(){
-    var teams = +$('dsTeams').value, start = Math.max(1, +$('dsStart').value || 20), subs = Math.max(0, +$('dsSubs').value || 0);
-    var m = $('dsMetric').value, mode = $('dsMode').value;
-    var pool = selected().filter(function(p){ return p.entry; }).sort(function(a,b){ return metric(b,m) - metric(a,m) || b.total - a.total; });
-    var noData = selected().filter(function(p){ return !p.entry; });
-    var T = []; for (var i = 0; i < teams; i++) T.push({ name: 'Task Force ' + 'AB'[i], start: [], subs: [] });
-    var idx = 0;
-    function fill(slot, size){
-      var need = size * teams, chunk = pool.slice(idx, idx + need); idx += chunk.length;
-      if (mode === 'topA' || teams === 1) {
-        chunk.forEach(function(p, k){ T[Math.min(teams - 1, Math.floor(k / size))][slot].push(p); });
-      } else {
-        // Schlangen-Verteilung, dann gierig auf das schwächere Team, damit die Summen nah beieinander liegen
-        chunk.forEach(function(p){
-          var open = T.filter(function(t){ return t[slot].length < size; });
-          open.sort(function(a,b){ return sum(a.start.concat(a.subs), m) - sum(b.start.concat(b.subs), m) || a[slot].length - b[slot].length; });
-          open[0][slot].push(p);
-        });
-      }
-    }
-    fill('start', start); fill('subs', subs);
-    lastPlan = { teams: T, rest: pool.slice(idx), noData: noData, metric: m };
-    renderPlan();
+  /* ---------- Wüstensturm ---------- */
+  // Gleiche Gruppen/Schritte wie in index.html (dort übersetzt). Reihenfolge = Priorität: die Stärksten zuerst.
+  var DS_GROUPS = [
+    { k:'silo',  n:5, steps:[['take','ref1'],['rally','silo'],['hold','silo']] },
+    { k:'ref2',  n:2, steps:[['take','ref2'],['hold','ref2'],['hold','ref2']] },
+    { k:'ref1',  n:2, steps:[['help','ref2'],['move','ref1'],['hold','ref1']] },
+    { k:'info',  n:2, steps:[['take','info'],['move','arsenal'],['hold','arsenal']] },
+    { k:'hosp1', n:2, steps:[['take','hosp1'],['holdh','hosp1'],['holdh','hosp1']] },
+    { k:'hosp2', n:2, steps:[['take','hosp2'],['holdh','hosp2'],['holdh','hosp2']] },
+    { k:'sci',   n:1, steps:[['take','sci'],['iffree','merc'],['wells','wells']] },
+    { k:'hosp3', n:2, steps:[['take','hosp3'],['holdh','hosp3'],['reinforce','']] },
+    { k:'supp',  n:2, steps:[['defend',''],['reinforce',''],['wells','wells']] }
+  ];
+  var DS_GNAME = { silo:'Silo-Trupp', ref2:'Raffinerie-II-Trupp', ref1:'Raffinerie-I-Trupp', info:'Info-/Waffenlager-Trupp', hosp1:'Lazarett I', hosp2:'Lazarett II', sci:'Wissenschaft', hosp3:'Lazarett III', supp:'Unterstützung' };
+  var DS_B = { ref1:'Ölraffinerie I', ref2:'Ölraffinerie II', hosp1:'Feldlazarett I', hosp2:'Feldlazarett II', hosp3:'Feldlazarett III', sci:'Wissenschaftszentrum', info:'Infozentrum', arsenal:'Waffenlager', merc:'Söldnerfabrik', silo:'Atomsilo', wells:'Ölquellen' };
+  var DS_B_EN = { ref1:'Oil Refinery I', ref2:'Oil Refinery II', hosp1:'Field Hospital I', hosp2:'Field Hospital II', hosp3:'Field Hospital III', sci:'Science Hub', info:'Info Center', arsenal:'Arsenal', merc:'Mercenary Factory', silo:'Nuclear Silo', wells:'Oil Wells' };
+  var DS_A = { take:'{b} erobern und halten', help:'bei {b} mit erobern', move:'zu {b} wechseln, erobern und halten', hold:'{b} halten', holdh:'{b} halten, geheilte Truppen abholen', rally:'ab 9:30 sammeln, um 10:00 gemeinsam {b} erobern und halten', iffree:'{b} erobern, wenn frei – sonst verstärken, wo nötig', defend:'Basis verteidigen, Punkte-Kisten einsammeln', reinforce:'Kisten einsammeln, angegriffene Gebäude verstärken', wells:'{b} sammeln' };
+  var DS_PH_SHORT = ['Start (0–10 Min.)', 'Ab 10 Min.', 'Ab 13 Min.'];
+  var DS_PH = ['Phase 1 (Start, 0–10 Min.)', 'Phase 2 (ab 10 Min.)', 'Phase 3 (ab 13 Min.)'];
+  var DS_TIPS = [
+    'Gebäude bringen auch ohne Besatzung Punkte – nach dem Erobern nicht wild abziehen.',
+    'Nach 60 Sekunden werden 40 % der Punkte plünderbar: Gebäude halten, bei einem Wechsel die Punkte-Kisten mit dem Aufklärer einsammeln.',
+    'Geheilte Truppen regelmäßig im Lazarett abholen (Symbol unten links).',
+    'Teleport für Notfälle aufheben (Verteidigung, Silo).',
+    'Wer früher gehen muss: über die Punktetafel „Schlachtfeld verlassen“, damit ein Ersatzspieler nachrücken kann.'
+  ];
+  var DS_KEY = 'skws_ds', DS_ONLYSEL = false, DS_LAST = null, DS_PUB = null;
+  function dsState(){
+    var st = null; try { st = JSON.parse(ls(DS_KEY) || 'null'); } catch(e){}
+    st = st || {}; st.assign = st.assign || {}; st.time = st.time || {A:'',B:''}; st.opp = st.opp || {A:'',B:''}; st.metric = st.metric || 't1';
+    return st;
   }
-  function sum(list, m){ return list.reduce(function(a,p){ return a + metric(p, m); }, 0); }
-  function renderPlan(){
-    var P = lastPlan, m = P.metric, lbl = m === 'total' ? 'Gesamt' : 'T1';
-    var h = '';
-    P.teams.forEach(function(t){
-      var ss = sum(t.start, m);
-      h += '<div class="team"><h3>' + t.name + '<span>' + t.start.length + ' Stamm · ' + t.subs.length + ' Ersatz · Σ ' + lbl + ' Stamm ' + fmt(ss) + ' M · Ø ' + (t.start.length ? fmt(ss / t.start.length) : '–') + '</span></h3>';
-      h += '<div class="tw"><table><tr><th>#</th><th>Spieler</th><th>Rang</th><th class="n">T1</th><th class="n">Gesamt</th></tr>';
-      t.start.forEach(function(p, i){ h += '<tr><td class="muted">' + (i+1) + '</td><td>' + esc(p.name) + '</td><td class="muted">' + p.rank + '</td><td class="n">' + squadCell(sq(p.entry,0)) + '</td><td class="n">' + fmt(p.total) + '</td></tr>'; });
-      if (t.subs.length) h += '<tr class="rankhead"><td colspan="5">Ersatz</td></tr>';
-      t.subs.forEach(function(p, i){ h += '<tr class="sub"><td>E' + (i+1) + '</td><td>' + esc(p.name) + '</td><td>' + p.rank + '</td><td class="n">' + squadCell(sq(p.entry,0)) + '</td><td class="n">' + fmt(p.total) + '</td></tr>'; });
+  function dsSave(st){ try { ls(DS_KEY, JSON.stringify(st)); } catch(e){} }
+  function dsMetricVal(p, m){
+    if (!p.entry) return 0;
+    if (m === 'hero') return Number(p.entry.hero || 0);
+    return m === 'total' ? p.total : p.t1;
+  }
+  function dsMetricTxt(p, m){
+    if (!p.entry) return 'keine Meldung';
+    var v = dsMetricVal(p, m);
+    return (m === 'hero' ? 'Held ' : m === 'total' ? 'Ges. ' : 'T1 ') + (v ? fmt(v) + ' M' : '–');
+  }
+  function dsAct(step, B){ var t = DS_A[step[0]] || step[0]; return t.split('{b}').join(B[step[1]] || ''); }
+  function dsRender(){
+    if (!D) return;
+    var st = dsState();
+    $('dsTimeA').value = st.time.A; $('dsTimeB').value = st.time.B; $('dsOppA').value = st.opp.A; $('dsOppB').value = st.opp.B;
+    $('dsMetric').value = st.metric;
+    dsRenderList();
+    dsPubInfo();
+  }
+  function dsRenderList(){
+    var st = dsState(), m = st.metric, q = $('dsSearch').value.trim().toLowerCase();
+    var list = D.players.filter(function(p){ return p.active; }).slice().sort(function(a,b){ return dsMetricVal(b,m) - dsMetricVal(a,m) || a.name.localeCompare(b.name); });
+    var c = { AS:0, AE:0, BS:0, BE:0 };
+    list.forEach(function(p){ var v = st.assign[p.name]; if (c[v] !== undefined) c[v]++; });
+    function box(t){ var s = c[t+'S'], e = c[t+'E']; return '<div>Team ' + t + (st.time[t] ? ' · ' + esc(st.time[t]) : '') + '<b><span class="' + (s > 20 ? 'over' : '') + '">' + s + '/20 Stamm</span> · <span class="' + (e > 10 ? 'over' : '') + '">' + e + '/10 Ersatz</span></b></div>'; }
+    $('dsCount').innerHTML = box('A') + box('B');
+    $('dsOnlySel').textContent = DS_ONLYSEL ? 'alle Spieler zeigen' : 'nur Zugeordnete zeigen';
+    var opts = [['','–'],['AS','A Stamm'],['AE','A Ersatz'],['BS','B Stamm'],['BE','B Ersatz']];
+    $('dsList').innerHTML = list.filter(function(p){
+      if (DS_ONLYSEL && !st.assign[p.name]) return false;
+      return !q || p.name.toLowerCase().indexOf(q) >= 0;
+    }).map(function(p){
+      var v = st.assign[p.name] || '';
+      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
+        '<select data-ds="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
+    }).join('') || '<div class="empty">Keine Treffer.</div>';
+  }
+  function dsBuild(){
+    var st = dsState(), m = st.metric, by = {}; D.players.forEach(function(p){ by[p.name] = p; });
+    var plan = { at: new Date().toISOString(), metric: m, teams: {} }, warn = [];
+    ['A','B'].forEach(function(t){
+      function pick(r){ return Object.keys(st.assign).filter(function(n){ return st.assign[n] === t + r && by[n] && by[n].active; }).map(function(n){ return by[n]; })
+        .sort(function(a,b){ return dsMetricVal(b,m) - dsMetricVal(a,m) || a.name.localeCompare(b.name); }); }
+      var stamm = pick('S'), subs = pick('E');
+      if (!stamm.length && !subs.length) return;
+      var members = [], i = 0;
+      DS_GROUPS.forEach(function(g){ for (var k = 0; k < g.n && i < stamm.length; k++, i++) members.push([stamm[i].name, g.k]); });
+      for (; i < stamm.length; i++) members.push([stamm[i].name, 'supp']);
+      if (stamm.length > 20) warn.push('Team ' + t + ': ' + stamm.length + ' Stammspieler – im Spiel sind nur 20 gleichzeitig möglich.');
+      if (subs.length > 10) warn.push('Team ' + t + ': ' + subs.length + ' Ersatzspieler – im Spiel sind nur 10 möglich.');
+      var nod = stamm.concat(subs).filter(function(p){ return !p.entry; }).map(function(p){ return p.name; });
+      if (nod.length) warn.push('Team ' + t + ' ohne Meldung (als Schwächste eingeplant): ' + nod.join(', '));
+      plan.teams[t] = { time: st.time[t] || '', opp: st.opp[t] || '', m: members, s: subs.map(function(p){ return p.name; }) };
+    });
+    return { plan: plan, warn: warn, by: by };
+  }
+  function dsGroupsOf(team){
+    var out = []; DS_GROUPS.forEach(function(g){ var names = team.m.filter(function(x){ return x[1] === g.k; }).map(function(x){ return x[0]; }); if (names.length) out.push({ g: g, names: names }); });
+    return out;
+  }
+  function dsRun(){
+    var r = dsBuild(); DS_LAST = r;
+    var P = r.plan, m = P.metric, h = '';
+    ['A','B'].forEach(function(t){
+      var T = P.teams[t]; if (!T) return;
+      h += '<div class="team"><h3>Team ' + t + (T.time ? ' · ' + esc(T.time) : '') + (T.opp ? ' · gegen ' + esc(T.opp) : '') + '<span>' + T.m.length + ' Stamm · ' + T.s.length + ' Ersatz</span></h3>';
+      h += '<div class="tw"><table class="grp"><tr><th>Gruppe</th><th>Spieler</th><th>' + DS_PH[0] + '</th><th>' + DS_PH[1] + '</th><th>' + DS_PH[2] + '</th></tr>';
+      dsGroupsOf(T).forEach(function(x){
+        h += '<tr><td><b>' + DS_GNAME[x.g.k] + '</b></td><td>' + x.names.map(function(n){ return esc(n) + '<div class="phase">' + dsMetricTxt(r.by[n], m) + '</div>'; }).join('') + '</td>' +
+          x.g.steps.map(function(s){ return '<td>' + esc(dsAct(s, DS_B)) + '</td>'; }).join('') + '</tr>';
+      });
+      if (T.s.length) h += '<tr class="rankhead"><td colspan="5">Ersatz (Reihenfolge = wer zuerst nachrückt)</td></tr><tr><td colspan="5" style="white-space:normal">' + T.s.map(function(n, i){ return 'E' + (i+1) + ' ' + esc(n); }).join(' · ') + '</td></tr>';
       h += '</table></div></div>';
     });
-    if (P.rest.length) h += '<p class="small muted" style="margin-top:12px">Nicht eingeplant (kein Platz mehr): ' + P.rest.map(function(p){ return esc(p.name); }).join(', ') + '</p>';
-    if (P.noData.length) h += '<p class="small muted">Ausgewählt, aber ohne Meldung: ' + P.noData.map(function(p){ return esc(p.name); }).join(', ') + '</p>';
-    $('dsResult').innerHTML = h || '<div class="empty">Keine ausgewählten Spieler mit Meldung.</div>';
-    $('dsActions').classList.toggle('hide', !P.teams.some(function(t){ return t.start.length; }));
+    if (!Object.keys(P.teams).length) h = '<div class="empty">Bitte zuerst oben Spieler Team A oder B zuordnen.</div>';
+    else h += '<details style="margin-top:10px"><summary>Grundregeln, die im Chat-Text mitgeschickt werden</summary><ul class="small">' + DS_TIPS.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></details>';
+    if (r.warn.length) h = '<div class="note err">' + r.warn.map(esc).join('<br>') + '</div>' + h;
+    $('dsResult').innerHTML = h;
+    $('dsActions').classList.toggle('hide', !Object.keys(P.teams).length);
+    ['A','B'].forEach(function(t){ ['dsCopy','dsImg'].forEach(function(id){ $(id + t).classList.toggle('hide', !P.teams[t]); }); });
+    $('dsNote').textContent = ''; $('dsNote').className = 'note';
   }
-  function planText(){
-    var P = lastPlan, m = P.metric, out = ['SKWS Wuestensturm - Aufstellung ' + fmtDate(Date.now())];
-    P.teams.forEach(function(t){
-      out.push('', t.name + ' (Summe ' + (m === 'total' ? 'Gesamt' : 'T1') + ' ' + fmt(sum(t.start, m)) + ' M)', 'Stamm:');
-      t.start.forEach(function(p, i){ out.push((i+1) + '. ' + p.name + ' - T1 ' + squadText(sq(p.entry,0))); });
-      if (t.subs.length) { out.push('Ersatz:'); t.subs.forEach(function(p, i){ out.push('E' + (i+1) + '. ' + p.name + ' - T1 ' + squadText(sq(p.entry,0))); }); }
+  function dsChat(t){
+    var T = DS_LAST.plan.teams[t], out = ['SKWS Wüstensturm – Team ' + t + (T.time ? ' – ' + T.time : '') + (T.opp ? ' – gegen ' + T.opp : '')];
+    dsGroupsOf(T).forEach(function(x){
+      out.push('', '▶ ' + DS_GNAME[x.g.k] + ': ' + x.names.join(', '));
+      x.g.steps.forEach(function(s, i){ out.push('  ' + DS_PH_SHORT[i] + ': ' + dsAct(s, DS_B)); });
     });
+    if (T.s.length) out.push('', 'Ersatz (rücken in dieser Reihenfolge nach und übernehmen die Aufgabe des Ausgefallenen): ' + T.s.join(', '));
+    out.push('', 'Regeln:'); DS_TIPS.forEach(function(x){ out.push('• ' + x); });
+    out.push('', 'Deinen eigenen Einsatz siehst du auch auf der Squad-Seite: https://matdan1987.github.io/skws-squads/');
     return out.join('\n');
   }
-  function planCsv(){
-    var rows = [['Task Force','Rolle','Nr.'].concat(CSV_HEAD)];
-    lastPlan.teams.forEach(function(t){
-      t.start.forEach(function(p, i){ rows.push([t.name, 'Stamm', i+1].concat(playerRow(p))); });
-      t.subs.forEach(function(p, i){ rows.push([t.name, 'Ersatz', i+1].concat(playerRow(p))); });
+  function dsImgPrompt(t){
+    var T = DS_LAST.plan.teams[t], groups = dsGroupsOf(T), lines = [], seen = {};
+    [0,1,2].forEach(function(ph){
+      var byB = {}, order = [];
+      groups.forEach(function(x){
+        var s = x.g.steps[ph], b = s[1] || 'base';
+        if (!byB[b]) { byB[b] = []; order.push(b); }
+        byB[b] = byB[b].concat(x.names);
+      });
+      order.forEach(function(b){
+        var key = ph + b; if (seen[key]) return; seen[key] = 1;
+        lines.push('- Phase ' + (ph+1) + ' – ' + (b === 'base' ? 'Own base / support (defend base, collect point boxes, reinforce)' : DS_B_EN[b]) + (b === 'silo' && ph === 1 ? ' (rally at 9:30, attack together at 10:00)' : '') + ': ' + byB[b].join(', '));
+      });
     });
-    return csv(rows);
+    var title = 'SKWS – Desert Storm – Team ' + t + (T.time ? ' – ' + T.time : '');
+    return [
+      'Create a clean, easy-to-read tactical battle map for the mobile game "Last War: Survival", event "Desert Storm".',
+      'Use the attached screenshot of the in-game Desert Storm map as the layout reference: keep every building exactly where it is on the screenshot and draw the plan on top of it (top-down view, dark military style). If no screenshot is attached, draw a symmetric schematic map with our base at the bottom, the enemy base at the top and the Nuclear Silo in the center.',
+      'For every building that has players assigned, add a clear label box with the building name and the player names, plus an arrow from our base to the building. Color by phase: green = Phase 1 (minute 0–10), orange = Phase 2 (from minute 10, when Nuclear Silo, Arsenal and Mercenary Factory open), purple = Phase 3 (from minute 13, Oil Wells).',
+      '',
+      'Assignments:',
+      lines.join('\n'),
+      '',
+      'Add a legend box "Substitutes (in this order): ' + (T.s.join(', ') || '–') + '".',
+      'Title at the top: "' + title + '".',
+      'Spell every player name exactly as written above, including capital letters and spaces. Use large text so it is readable on a phone screen. Portrait format 9:16.'
+    ].join('\n');
   }
+  function dsPubInfo(){
+    var p = DS_PUB;
+    $('dsPubInfo').textContent = p && p.at ? 'Aktuell veröffentlicht: ' + fmtDateTime(new Date(p.at)) + ' (' + Object.keys(p.teams || {}).map(function(t){ return 'Team ' + t; }).join(' + ') + ')' : 'Aktuell ist kein Einsatzplan veröffentlicht.';
+  }
+  function dsPublish(plan){
+    $('dsNote').textContent = 'Speichere…'; $('dsNote').className = 'note';
+    rpc('admin_ds_publish', { p_pw: PW, p_plan: plan, p_actor: ACTOR || null }).then(function(){
+      DS_PUB = plan; dsPubInfo();
+      $('dsNote').textContent = plan ? 'Veröffentlicht – die Spieler sehen ihren Einsatz jetzt auf der Seite.' : 'Veröffentlichung zurückgenommen.'; $('dsNote').className = 'note ok';
+    }).catch(function(e){ $('dsNote').textContent = 'Fehler beim Speichern: ' + (e && e.message || ''); $('dsNote').className = 'note err'; });
+  }
+  (function(){
+    function upd(fn){ var st = dsState(); fn(st); dsSave(st); }
+    ['A','B'].forEach(function(t){
+      $('dsTime' + t).addEventListener('input', function(){ var v = this.value; upd(function(st){ st.time[t] = v; }); dsRenderList(); });
+      $('dsOpp' + t).addEventListener('input', function(){ var v = this.value; upd(function(st){ st.opp[t] = v; }); });
+      $('dsCopy' + t).addEventListener('click', function(){ if (DS_LAST && DS_LAST.plan.teams[t]) copyText(dsChat(t), 'dsNote'); });
+      $('dsImg' + t).addEventListener('click', function(){ if (DS_LAST && DS_LAST.plan.teams[t]) copyText(dsImgPrompt(t), 'dsNote'); });
+    });
+    $('dsMetric').addEventListener('change', function(){ var v = this.value; upd(function(st){ st.metric = v; }); dsRenderList(); });
+    $('dsSearch').addEventListener('input', dsRenderList);
+    $('dsOnlySel').addEventListener('click', function(){ DS_ONLYSEL = !DS_ONLYSEL; dsRenderList(); });
+    $('dsClear').addEventListener('click', function(){ if (!confirm('Alle Zuordnungen für Team A und B löschen?')) return; upd(function(st){ st.assign = {}; }); dsRenderList(); });
+    $('dsList').addEventListener('change', function(e){
+      var s = e.target.closest('select[data-ds]'); if (!s) return; var n = s.dataset.ds, v = s.value;
+      upd(function(st){ if (v) st.assign[n] = v; else delete st.assign[n]; });
+      dsRenderList();
+    });
+    $('dsRun').addEventListener('click', dsRun);
+    $('dsPublish').addEventListener('click', function(){ if (!DS_LAST) return; dsRun(); if (!confirm('Einsatzplan für die Spieler veröffentlichen?')) return; dsPublish(DS_LAST.plan); });
+    $('dsUnpublish').addEventListener('click', function(){ if (confirm('Veröffentlichten Einsatzplan zurücknehmen?')) dsPublish(null); });
+  })();
 
   /* ---------- Logbuch ---------- */
   var LOG = null, LOG_PAGE = 1000, logLoading = false;
@@ -882,6 +1048,7 @@
     }
     if (a === 'self_join') return { tag:'adm', label:'Beitritt', text: who(r.target) + (d.returned ? ' ist zurück und hat sich selbst wieder eingetragen' : ' hat sich selbst neu eingetragen'), sub: 'Rang ' + (d.rank || 'R1') + ' · bei Bedarf im Tab Mitglieder anpassen' };
     if (a === 'unsub') return { tag:'warn', label:'Abgemeldet', text: who(r.target) + ' hat sich von der Mail-Erinnerung abgemeldet', sub: '' };
+    if (a === 'ds_publish') return { tag:'adm', label:'Wüstensturm', text: who(r.actor) + (d.cleared ? ' hat den Einsatzplan zurückgenommen' : ' hat den Wüstensturm-Einsatzplan veröffentlicht'), sub: d.cleared ? '' : ('Team A: ' + (d.a || 0) + ' · Team B: ' + (d.b || 0) + ' Spieler') };
     if (a === 'admin_login') return { tag:'adm', label:'Admin', text: who(r.actor) + ' hat sich im Admin-Bereich angemeldet', sub: '' };
     if (a === 'admin_add') return { tag:'adm', label:'Verwaltung', text: who(r.actor) + ' hat ' + who(r.target) + (d.returned ? ' wieder aufgenommen' : ' hinzugefügt'), sub: 'Rang ' + (d.rank || '–') };
     if (a === 'admin_leave') return { tag:'warn', label:'Verwaltung', text: who(r.actor) + ' hat ' + who(r.target) + ' als ausgeschieden markiert', sub: d.rank ? 'war ' + d.rank : '' };
@@ -974,13 +1141,14 @@
   function showTab(name){
     var bs = document.querySelectorAll('#tabs button');
     for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-    ['ov','mem','hist','pl','dev','exp','adm','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+    ['ov','mem','hist','pl','dev','exp','ds','adm','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
     store('skws_admin_tab', name);
     if (name === 'hist') renderHistory();
     if (name === 'ov') renderOverview();
     if (name === 'pl') renderPlayer();
     if (name === 'adm') renderAdmin();
     if (name === 'exp') renderExport();
+    if (name === 'ds') dsRender();
     if (name === 'dev') renderDev();
     if (name === 'log') loadLog(false);
   }
@@ -991,6 +1159,7 @@
   function load(pw, silent){
     $('loginBtn').disabled = true; $('loginMsg').textContent = '';
     return rpc('admin_data', { p_pw: pw }).then(function(raw){
+      DS_PUB = raw.ds || null;
       var first = !PW && !silent;
       PW = pw; store('skws_admin_pw', pw); if (!silent) { if ($('remember').checked) ls('skws_admin_pw_keep', pw); else ls('skws_admin_pw_keep', null); }
       D = prep(raw);
@@ -1085,9 +1254,6 @@
     download('SKWS-Serverliste-' + fileDate() + '.csv', csv([FR_HEAD].concat(rows)));
     $('expNote').textContent = 'Server-Liste mit ' + rows.length + ' Spielern erstellt.'; $('expNote').className = 'note ok';
   });
-  $('dsRun').addEventListener('click', planDesertStorm);
-  $('dsCopy').addEventListener('click', function(){ if (lastPlan) copyText(planText(), 'dsNote'); });
-  $('dsCsv').addEventListener('click', function(){ if (lastPlan) download('SKWS-Wuestensturm-' + fileDate() + '.csv', planCsv()); });
   $('addForm').addEventListener('submit', function(e){
     e.preventDefault();
     var n = $('addName').value.trim(); if (!n) return note('Bitte einen Namen eingeben.', false);
