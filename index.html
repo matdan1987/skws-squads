@@ -208,6 +208,7 @@ var I18N = {
     lastUpdate: 'Zuletzt aktualisiert', loading: 'Lade…',
     errLoad: 'Laden fehlgeschlagen. Bitte Seite neu laden.', errName: 'Bitte wähle deinen Namen.',
     errT1: 'T1 braucht Truppentyp und Kampfkraft.',
+    errTreq: 'T{n} braucht Truppentyp und Kampfkraft.',
     errSquad: 'Trupp {n}: Typ und Kampfkraft beide ausfüllen oder beide leer lassen.',
     errPower: 'Ungültige Kampfkraft.', errEmail: 'Ungültige E-Mail-Adresse.',
     errSave: 'Speichern fehlgeschlagen. Bitte erneut versuchen.',
@@ -255,6 +256,7 @@ var I18N = {
     lastUpdate: 'Last updated', loading: 'Loading…',
     errLoad: 'Loading failed. Please reload the page.', errName: 'Please select your name.',
     errT1: 'T1 needs troop type and power.',
+    errTreq: 'T{n} needs troop type and power.',
     errSquad: 'Squad {n}: fill in both type and power, or leave both empty.',
     errPower: 'Invalid power value.', errEmail: 'Invalid email address.',
     errSave: 'Saving failed. Please try again.',
@@ -302,6 +304,7 @@ var I18N = {
     lastUpdate: 'Dernière mise à jour', loading: 'Chargement…',
     errLoad: 'Échec du chargement. Recharge la page.', errName: 'Choisis ton nom.',
     errT1: 'T1 nécessite un type de troupe et une puissance.',
+    errTreq: 'T{n} nécessite un type de troupe et une puissance.',
     errSquad: 'Escouade {n} : remplis le type et la puissance, ou laisse les deux vides.',
     errPower: 'Puissance invalide.', errEmail: 'Adresse e-mail invalide.',
     errSave: "Échec de l'enregistrement. Réessaie.",
@@ -349,6 +352,7 @@ var I18N = {
     lastUpdate: 'Última actualización', loading: 'Cargando…',
     errLoad: 'Error al cargar. Recarga la página.', errName: 'Elige tu nombre.',
     errT1: 'T1 necesita tipo de tropa y poder.',
+    errTreq: 'T{n} necesita tipo de tropa y poder.',
     errSquad: 'Escuadrón {n}: rellena tipo y poder, o deja ambos vacíos.',
     errPower: 'Poder no válido.', errEmail: 'Correo no válido.',
     errSave: 'Error al guardar. Inténtalo de nuevo.',
@@ -396,6 +400,7 @@ var I18N = {
     lastUpdate: 'Última atualização', loading: 'Carregando…',
     errLoad: 'Falha ao carregar. Recarregue a página.', errName: 'Escolha seu nome.',
     errT1: 'T1 precisa de tipo de tropa e poder.',
+    errTreq: 'T{n} precisa de tipo de tropa e poder.',
     errSquad: 'Esquadrão {n}: preencha tipo e poder, ou deixe ambos vazios.',
     errPower: 'Poder inválido.', errEmail: 'E-mail inválido.',
     errSave: 'Falha ao salvar. Tente novamente.',
@@ -443,6 +448,7 @@ var I18N = {
     lastUpdate: 'Ultimo aggiornamento', loading: 'Caricamento…',
     errLoad: 'Caricamento non riuscito. Ricarica la pagina.', errName: 'Scegli il tuo nome.',
     errT1: 'T1 richiede tipo di truppa e potenza.',
+    errTreq: 'T{n} richiede tipo di truppa e potenza.',
     errSquad: 'Squadra {n}: compila tipo e potenza, oppure lascia vuoti entrambi.',
     errPower: 'Potenza non valida.', errEmail: 'Indirizzo e-mail non valido.',
     errSave: 'Salvataggio non riuscito. Riprova.',
@@ -490,6 +496,7 @@ var I18N = {
     lastUpdate: 'Son güncelleme', loading: 'Yükleniyor…',
     errLoad: 'Yükleme başarısız. Lütfen sayfayı yenile.', errName: 'Lütfen adını seç.',
     errT1: 'T1 için birlik türü ve güç gerekli.',
+    errTreq: 'T{n} için birlik türü ve güç gerekli.',
     errSquad: 'Takım {n}: tür ve gücü birlikte doldur ya da ikisini de boş bırak.',
     errPower: 'Geçersiz güç değeri.', errEmail: 'Geçersiz e-posta adresi.',
     errSave: 'Kaydetme başarısız. Lütfen tekrar dene.',
@@ -537,6 +544,7 @@ var I18N = {
     lastUpdate: 'Последнее обновление', loading: 'Загрузка…',
     errLoad: 'Ошибка загрузки. Обнови страницу.', errName: 'Выбери своё имя.',
     errT1: 'Для T1 нужны тип войск и мощь.',
+    errTreq: 'Для T{n} нужны тип войск и мощь.',
     errSquad: 'Отряд {n}: заполни тип и мощь или оставь оба поля пустыми.',
     errPower: 'Неверное значение мощи.', errEmail: 'Неверный адрес e-mail.',
     errSave: 'Ошибка сохранения. Попробуй ещё раз.',
@@ -584,6 +592,7 @@ var I18N = {
     lastUpdate: 'Ostatnia aktualizacja', loading: 'Ładowanie…',
     errLoad: 'Błąd ładowania. Odśwież stronę.', errName: 'Wybierz swoje imię.',
     errT1: 'T1 wymaga typu wojsk i mocy.',
+    errTreq: 'T{n} wymaga typu wojsk i mocy.',
     errSquad: 'Oddział {n}: wypełnij typ i moc albo zostaw oba puste.',
     errPower: 'Nieprawidłowa moc.', errEmail: 'Nieprawidłowy adres e-mail.',
     errSave: 'Błąd zapisu. Spróbuj ponownie.',
@@ -607,6 +616,7 @@ function rpc(fn, body){
 (function(){
   var DATA = null, LANG = 'en', busy = false;
   var $ = function(id){ return document.getElementById(id); };
+  var REQ_SQUADS = 3; // T1–T3 sind Pflicht
   var COLORS = { tank:'var(--tank)', missile:'var(--missile)', aircraft:'var(--aircraft)', mixed:'var(--mixed)' };
 
   function store(k, v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k, v); }catch(e){ return null; } }
@@ -631,9 +641,10 @@ function rpc(fn, body){
     var box = $('squads'); box.innerHTML = '';
     for (var i = 0; i < DATA.squads; i++){
       var c = document.createElement('div');
-      c.className = 'card sq' + (i ? ' opt' : ''); c.id = 'sq' + i; c.dataset.type = '';
+      var req = i < REQ_SQUADS;
+      c.className = 'card sq' + (req ? '' : ' opt'); c.id = 'sq' + i; c.dataset.type = '';
       c.innerHTML =
-        '<div class="sq-h"><b>T' + (i+1) + '</b><span class="tag' + (i ? '' : ' req') + '" data-t="' + (i ? 'optional' : 'required') + '"></span></div>' +
+        '<div class="sq-h"><b>T' + (i+1) + '</b><span class="tag' + (req ? ' req' : '') + '" data-t="' + (req ? 'required' : 'optional') + '"></span></div>' +
         '<div class="row">' +
           '<div><label class="l" data-t="troopType"></label><select class="type"></select></div>' +
           '<div><label class="l" data-t="power"></label><input class="pow" type="text" inputmode="decimal" autocomplete="off"></div>' +
@@ -739,7 +750,7 @@ function rpc(fn, body){
     for (var i = 0; i < DATA.squads; i++){
       var c = $('sq'+i), type = c.querySelector('.type').value, raw = c.querySelector('.pow').value, p = parsePow(raw);
       if (p !== null && isNaN(p)) return { err: t('errPower') };
-      if (i === 0 && (!type || p === null)) return { err: t('errT1') };
+      if (i < REQ_SQUADS && (!type || p === null)) return { err: t('errTreq', {n: i+1}) };
       if (!!type !== (p !== null)) return { err: t('errSquad', {n: i+1}) };
       squads.push({ type: type, power: p === null ? null : (p >= 10000 ? Math.round(p / 1e4) / 100 : p) });
     }
