@@ -285,6 +285,11 @@
           <button class="btn" id="expCsv">CSV für Excel herunterladen</button>
           <button class="btn2" id="expCopy">Als Text kopieren</button>
         </div>
+        <div class="btnrow">
+          <button class="btn2" id="expFrCopy">Server-Liste (FR) kopieren</button>
+          <button class="btn2" id="expFrCsv">Server-Liste (FR) als CSV</button>
+        </div>
+        <p class="small muted" style="margin:6px 0 0">Server-Liste: genau die Spalten der Liste des Serverpräsidenten (Username, Hero Power, Type T1 … T4, Niv Gorilla, TOTAL), stärkste zuerst. „Kopieren“ lässt sich direkt in die Tabelle einfügen.</p>
         <div class="note" id="expNote"></div>
         <textarea id="expPreview" readonly></textarea>
       </div>
@@ -406,6 +411,7 @@
   function daysSince(t){ return t ? Math.floor((Date.now() - new Date(t)) / DAY) : null; }
   function dayKey(t){ var d = new Date(t); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
   function sumSquads(sq){ var s = 0; (sq || []).forEach(function(x){ if (x && x.power) s += Number(x.power); }); return Math.round(s * 100) / 100; }
+  function gorillaCell(e){ var a = []; if (e.gstage) a.push('★' + e.gstage); if (e.gorilla) a.push('Lv ' + e.gorilla); if (e.gpower) a.push(fmt(e.gpower / 1e6, 2) + ' M'); return a.length ? a.join(' · ') : '–'; }
   function sq(e, i){ return (e && e.squads && e.squads[i]) || {}; }
 
   /* ---------- Daten aufbereiten ---------- */
@@ -604,7 +610,7 @@
           var s = sq(p.entry, i);
           h += '<td class="n">' + squadCell(s) + '</td>';
         }
-        h += '<td class="n">' + fmt(p.total) + '</td><td class="n">' + (p.delta === null ? '<span class="muted">neu</span>' : fmtDelta(p.delta)) + '</td><td class="n">' + (p.entry.hero ? fmt(p.entry.hero) : '–') + '</td><td class="n">' + (p.entry.gorilla || '–') + '</td></tr>';
+        h += '<td class="n">' + fmt(p.total) + '</td><td class="n">' + (p.delta === null ? '<span class="muted">neu</span>' : fmtDelta(p.delta)) + '</td><td class="n">' + (p.entry.hero ? fmt(p.entry.hero) : '–') + '</td><td class="n">' + gorillaCell(p.entry) + '</td></tr>';
       });
     });
     $('memTable').innerHTML = h;
@@ -755,10 +761,10 @@
   function playerRow(p){
     var r = [p.rank, p.name];
     for (var i = 0; i < 4; i++) { var s = sq(p.entry, i); r.push(s.type ? TROOPS[s.type] : '', s.type ? csvNum(s.power) : ''); }
-    r.push(p.entry ? csvNum(p.total) : '', p.entry && p.entry.hero ? csvNum(p.entry.hero) : '', p.entry && p.entry.gorilla ? String(p.entry.gorilla) : '', p.entry ? fmtDateTime(p.updated) : 'keine Meldung');
+    r.push(p.entry ? csvNum(p.total) : '', p.entry && p.entry.hero ? csvNum(p.entry.hero) : '', p.entry && p.entry.gstage ? String(p.entry.gstage) : '', p.entry && p.entry.gorilla ? String(p.entry.gorilla) : '', p.entry && p.entry.gpower ? String(Math.round(p.entry.gpower)) : '', p.entry ? fmtDateTime(p.updated) : 'keine Meldung');
     return r;
   }
-  var CSV_HEAD = ['Rang','Name','T1 Typ','T1 Kampfkraft (Mio.)','T2 Typ','T2 Kampfkraft (Mio.)','T3 Typ','T3 Kampfkraft (Mio.)','T4 Typ','T4 Kampfkraft (Mio.)','Gesamt (Mio.)','Heldenkraft (Mio.)','Overlord-Gorilla Level','Stand'];
+  var CSV_HEAD = ['Rang','Name','T1 Typ','T1 Kampfkraft (Mio.)','T2 Typ','T2 Kampfkraft (Mio.)','T3 Typ','T3 Kampfkraft (Mio.)','T4 Typ','T4 Kampfkraft (Mio.)','Gesamt (Mio.)','Heldenkraft (Mio.)','Gorilla-Stufe','Gorilla-Level','Gorilla-Kraft','Stand'];
   function download(name, text){
     if (window.SKWSAndroid && window.SKWSAndroid.saveFile) { window.SKWSAndroid.saveFile(name, '\ufeff' + text, 'text/csv'); return; }
     var blob = new Blob(['\ufeff' + text], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
@@ -1053,6 +1059,32 @@
     $('expNote').textContent = 'CSV mit ' + list.length + ' Spielern erstellt.'; $('expNote').className = 'note ok';
   });
   $('expCopy').addEventListener('click', function(){ copyText(exportText(), 'expNote'); });
+  var FR_TYPES = { tank:'Tank', missile:'Missile', aircraft:'Plane', mixed:'Hybrid' };
+  var FR_HEAD = ['Username','Hero Power','Type T1','T1','Type T2','T2','Type T3','T3','T4','Niv Gorilla','TOTAL'];
+  function frNum(v){ return v ? String(Math.round(v * 100) / 100).replace('.', ',') : ''; }
+  function frRows(){
+    var list = selected().filter(function(p){ return p.entry; }).sort(function(a,b){ return b.total - a.total; });
+    return list.map(function(p){
+      var e = p.entry, r = [p.name, e.hero ? String(Math.round(e.hero * 1e6)) : ''];
+      for (var i = 0; i < 3; i++) { var s = sq(e, i); r.push(s.type ? FR_TYPES[s.type] : '', s.type ? frNum(s.power) : ''); }
+      var s4 = sq(e, 3); r.push(s4.type ? frNum(s4.power) : '');
+      r.push(e.gstage ? String(e.gstage) : '', frNum(p.total));
+      return r;
+    });
+  }
+  function frCheck(rows){
+    if (rows.length) return true;
+    $('expNote').textContent = 'Bitte zuerst Spieler mit Meldung auswählen.'; $('expNote').className = 'note err'; return false;
+  }
+  $('expFrCopy').addEventListener('click', function(){
+    var rows = frRows(); if (!frCheck(rows)) return;
+    copyText(rows.map(function(r){ return r.join('\t'); }).join('\n'), 'expNote');
+  });
+  $('expFrCsv').addEventListener('click', function(){
+    var rows = frRows(); if (!frCheck(rows)) return;
+    download('SKWS-Serverliste-' + fileDate() + '.csv', csv([FR_HEAD].concat(rows)));
+    $('expNote').textContent = 'Server-Liste mit ' + rows.length + ' Spielern erstellt.'; $('expNote').className = 'note ok';
+  });
   $('dsRun').addEventListener('click', planDesertStorm);
   $('dsCopy').addEventListener('click', function(){ if (lastPlan) copyText(planText(), 'dsNote'); });
   $('dsCsv').addEventListener('click', function(){ if (lastPlan) download('SKWS-Wuestensturm-' + fileDate() + '.csv', planCsv()); });
