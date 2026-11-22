@@ -117,6 +117,15 @@
       <div id="squads"></div>
 
       <div class="card">
+        <div class="sq-h"><b data-t="heroTitle"></b><span class="tag req" data-t="required"></span></div>
+        <div class="row">
+          <div><label class="l" for="hero" data-t="heroPower"></label><input id="hero" type="text" inputmode="decimal" autocomplete="off"></div>
+          <div><label class="l" for="gorilla" data-t="gorilla"></label><input id="gorilla" type="text" inputmode="numeric" autocomplete="off" placeholder="15"></div>
+        </div>
+        <div class="hint" data-t="heroHint"></div>
+      </div>
+
+      <div class="card">
         <div class="sq-h"><label class="l" for="email" data-t="emailTitle" style="margin:0"></label><span class="tag req" data-t="required"></span></div>
         <div id="emailActive" class="ok-pill hide">● <span data-t="emailSaved"></span></div>
         <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com">
@@ -171,6 +180,14 @@ var LANG_NAMES = {
 
 var I18N = {
   de: {
+    heroTitle: "Held & Gorilla",
+    heroPower: "Heldenkraft (Hero Power, Mio.)",
+    heroHint: "z. B. 45,3 für 45,3 Mio.",
+    gorilla: "Overlord-Gorilla Level",
+    errHero: "Bitte gib deine Heldenkraft an (in Mio.).",
+    errGorilla: "Bitte gib das Level deines Overlord-Gorillas an (ganze Zahl).",
+    heroShort: "Held",
+    gorillaShort: "Gorilla Lv",
     linksTitle: "Links zum Teilen",
     linkPublic: "Öffentliche Seite",
     linkAdmin: "Admin-Bereich (R4/R5)",
@@ -219,6 +236,14 @@ var I18N = {
     unsubDone: 'Du bekommst keine Erinnerungen mehr.', unsubFail: 'Link ungültig oder bereits abgemeldet.'
   },
   en: {
+    heroTitle: "Hero & Gorilla",
+    heroPower: "Hero power (M)",
+    heroHint: "e.g. 45.3 for 45.3 M",
+    gorilla: "Overlord Gorilla level",
+    errHero: "Please enter your hero power (in M).",
+    errGorilla: "Please enter your Overlord Gorilla level (whole number).",
+    heroShort: "Hero",
+    gorillaShort: "Gorilla Lv",
     linksTitle: "Links to share",
     linkPublic: "Public page",
     linkAdmin: "Admin area (R4/R5)",
@@ -267,6 +292,14 @@ var I18N = {
     unsubDone: 'You will no longer receive reminders.', unsubFail: 'Invalid link or already unsubscribed.'
   },
   fr: {
+    heroTitle: "Héros & Gorille",
+    heroPower: "Puissance des héros (Hero Power, M)",
+    heroHint: "ex. 45,3 pour 45,3 M",
+    gorilla: "Niveau du Gorille Overlord",
+    errHero: "Indique la puissance de tes héros (en M).",
+    errGorilla: "Indique le niveau de ton Gorille Overlord (nombre entier).",
+    heroShort: "Héros",
+    gorillaShort: "Gorille niv.",
     linksTitle: "Liens à partager",
     linkPublic: "Page publique",
     linkAdmin: "Espace admin (R4/R5)",
@@ -315,6 +348,14 @@ var I18N = {
     unsubDone: 'Tu ne recevras plus de rappels.', unsubFail: 'Lien invalide ou déjà désinscrit.'
   },
   es: {
+    heroTitle: "Héroes y Gorila",
+    heroPower: "Poder de héroes (Hero Power, M)",
+    heroHint: "p. ej. 45,3 para 45,3 M",
+    gorilla: "Nivel del Gorila Overlord",
+    errHero: "Indica el poder de tus héroes (en M).",
+    errGorilla: "Indica el nivel de tu Gorila Overlord (número entero).",
+    heroShort: "Héroes",
+    gorillaShort: "Gorila niv.",
     linksTitle: "Enlaces para compartir",
     linkPublic: "Página pública",
     linkAdmin: "Área de administración (R4/R5)",
@@ -363,6 +404,14 @@ var I18N = {
     unsubDone: 'Ya no recibirás recordatorios.', unsubFail: 'Enlace no válido o ya te has dado de baja.'
   },
   pt: {
+    heroTitle: "Heróis e Gorila",
+    heroPower: "Poder dos heróis (Hero Power, M)",
+    heroHint: "ex.: 45,3 para 45,3 M",
+    gorilla: "Nível do Gorila Overlord",
+    errHero: "Informe o poder dos seus heróis (em M).",
+    errGorilla: "Informe o nível do seu Gorila Overlord (número inteiro).",
+    heroShort: "Heróis",
+    gorillaShort: "Gorila nív.",
     linksTitle: "Links para compartilhar",
     linkPublic: "Página pública",
     linkAdmin: "Área de administração (R4/R5)",
@@ -411,6 +460,14 @@ var I18N = {
     unsubDone: 'Você não receberá mais lembretes.', unsubFail: 'Link inválido ou já cancelado.'
   },
   it: {
+    heroTitle: "Eroi e Gorilla",
+    heroPower: "Potenza eroi (Hero Power, M)",
+    heroHint: "es. 45,3 per 45,3 M",
+    gorilla: "Livello Gorilla Overlord",
+    errHero: "Inserisci la potenza dei tuoi eroi (in M).",
+    errGorilla: "Inserisci il livello del tuo Gorilla Overlord (numero intero).",
+    heroShort: "Eroi",
+    gorillaShort: "Gorilla liv.",
     linksTitle: "Link da condividere",
     linkPublic: "Pagina pubblica",
     linkAdmin: "Area admin (R4/R5)",
@@ -459,6 +516,14 @@ var I18N = {
     unsubDone: 'Non riceverai più promemoria.', unsubFail: 'Link non valido o già disiscritto.'
   },
   tr: {
+    heroTitle: "Kahraman & Goril",
+    heroPower: "Kahraman gücü (Hero Power, M)",
+    heroHint: "örn. 45,3 M için 45,3",
+    gorilla: "Overlord Goril seviyesi",
+    errHero: "Lütfen kahraman gücünü gir (M olarak).",
+    errGorilla: "Lütfen Overlord Goril seviyeni gir (tam sayı).",
+    heroShort: "Kahraman",
+    gorillaShort: "Goril Sv",
     linksTitle: "Paylaşılacak bağlantılar",
     linkPublic: "Herkese açık sayfa",
     linkAdmin: "Yönetici alanı (R4/R5)",
@@ -507,6 +572,14 @@ var I18N = {
     unsubDone: 'Artık hatırlatma almayacaksın.', unsubFail: 'Geçersiz bağlantı veya abonelikten zaten çıkılmış.'
   },
   ru: {
+    heroTitle: "Герои и Горилла",
+    heroPower: "Мощь героев (Hero Power, млн)",
+    heroHint: "напр. 45,3 для 45,3 млн",
+    gorilla: "Уровень Overlord Гориллы",
+    errHero: "Укажи мощь своих героев (в млн).",
+    errGorilla: "Укажи уровень своей Overlord Гориллы (целое число).",
+    heroShort: "Герои",
+    gorillaShort: "Горилла ур.",
     linksTitle: "Ссылки для отправки",
     linkPublic: "Публичная страница",
     linkAdmin: "Админ-раздел (R4/R5)",
@@ -555,6 +628,14 @@ var I18N = {
     unsubDone: 'Ты больше не будешь получать напоминания.', unsubFail: 'Ссылка недействительна или ты уже отписался.'
   },
   pl: {
+    heroTitle: "Bohaterowie i Goryl",
+    heroPower: "Moc bohaterów (Hero Power, mln)",
+    heroHint: "np. 45,3 dla 45,3 mln",
+    gorilla: "Poziom Goryla Overlord",
+    errHero: "Podaj moc swoich bohaterów (w mln).",
+    errGorilla: "Podaj poziom swojego Goryla Overlord (liczba całkowita).",
+    heroShort: "Bohaterowie",
+    gorillaShort: "Goryl poz.",
     linksTitle: "Linki do udostępnienia",
     linkPublic: "Strona publiczna",
     linkAdmin: "Panel admina (R4/R5)",
@@ -702,6 +783,9 @@ function rpc(fn, body){
       var p = s && s.power !== null && s.power !== undefined ? s.power : '';
       c.querySelector('.pow').value = p === '' ? '' : String(p).replace('.', LANG === 'en' ? '.' : ',');
     }
+    var hp = e && e.hero !== null && e.hero !== undefined ? String(e.hero).replace('.', LANG === 'en' ? '.' : ',') : '';
+    $('hero').value = hp;
+    $('gorilla').value = e && e.gorilla ? String(e.gorilla) : '';
     $('email').value = '';
     if (e && e.lang && DATA.i18n[e.lang] && !store('skws_lang_manual')) setLang(e.lang, false);
     showMeta(); setMsg('');
@@ -754,17 +838,26 @@ function rpc(fn, body){
       if (!!type !== (p !== null)) return { err: t('errSquad', {n: i+1}) };
       squads.push({ type: type, power: p === null ? null : (p >= 10000 ? Math.round(p / 1e4) / 100 : p) });
     }
+    var hero = parsePow($('hero').value);
+    if (hero === null || isNaN(hero)) return { err: t('errHero') };
+    if (hero >= 10000) hero = Math.round(hero / 1e4) / 100;
+    var gtxt = $('gorilla').value.trim(), gor = /^\d{1,3}$/.test(gtxt) ? parseInt(gtxt, 10) : NaN;
+    if (!(gor >= 1)) return { err: t('errGorilla') };
     var email = $('email').value.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { err: t('errEmail') };
     var ex = NEW_MODE ? null : DATA.entries[name];
     if (!email && !(ex && ex.hasEmail)) return { err: t('errEmailReq') };
-    return { data: { name: name, squads: squads, email: email, removeEmail: false, lang: LANG } };
+    return { data: { name: name, squads: squads, email: email, removeEmail: false, lang: LANG, hero: hero, gorilla: gor } };
   }
 
   function errText(m){
     m = String(m || '');
     var sq = m.match(/ERR_SQUAD:(\d)/);
     if (sq) return t('errSquad', {n: sq[1]});
+    var tr = m.match(/ERR_TREQ:(\d)/);
+    if (tr) return t('errTreq', {n: tr[1]});
+    if (m.indexOf('ERR_HERO') >= 0) return t('errHero');
+    if (m.indexOf('ERR_GORILLA') >= 0) return t('errGorilla');
     if (m.indexOf('ERR_NEWNAME') >= 0) return t('errNewName');
     if (m.indexOf('ERR_EXISTS') >= 0) return t('errExists');
     if (m.indexOf('ERR_RATE') >= 0) return t('errRate');
@@ -784,13 +877,13 @@ function rpc(fn, body){
     busy = true; $('save').disabled = true; $('save').textContent = t('saving'); setMsg('');
     var isNew = NEW_MODE;
     var call = isNew
-      ? rpc('register_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_lang: r.data.lang })
-      : rpc('save_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_remove_email: false, p_lang: r.data.lang });
+      ? rpc('register_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_lang: r.data.lang, p_hero: r.data.hero, p_gorilla: r.data.gorilla })
+      : rpc('save_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_remove_email: false, p_lang: r.data.lang, p_hero: r.data.hero, p_gorilla: r.data.gorilla });
     call
       .then(function(res){
         var nm = (isNew && res.name) || r.data.name;
         if (isNew && DATA.members.indexOf(nm) < 0) DATA.members.push(nm);
-        DATA.entries[nm] = { squads: res.squads, hasEmail: res.hasEmail, lang: res.lang, updated: res.updated };
+        DATA.entries[nm] = { squads: res.squads, hasEmail: res.hasEmail, lang: res.lang, updated: res.updated, hero: res.hero, gorilla: res.gorilla };
         done();
         $('email').value = '';
         if (isNew) {
@@ -813,7 +906,7 @@ function rpc(fn, body){
       var e = DATA.entries[n];
       if (!e) { missing.push(n); return; }
       var total = 0; e.squads.forEach(function(s){ if (s.power) total += Number(s.power); });
-      rows.push({ name: n, t1: e.squads[0] || {}, total: total });
+      rows.push({ name: n, t1: e.squads[0] || {}, total: total, hero: e.hero, gorilla: e.gorilla });
     });
     rows.sort(function(a,b){ return (b.t1.power||0) - (a.t1.power||0); });
     var x = members.length - missing.length, y = members.length;
@@ -825,6 +918,11 @@ function rpc(fn, body){
       var tr = document.createElement('tr');
       var td0 = document.createElement('td'); td0.textContent = i + 1; td0.className = 'typ';
       var td1 = document.createElement('td'); td1.textContent = r.name;
+      if (r.hero || r.gorilla) {
+        var hs = document.createElement('div'); hs.className = 'typ';
+        hs.textContent = [r.hero ? t('heroShort') + ' ' + fmtPow(r.hero) : '', r.gorilla ? t('gorillaShort') + ' ' + r.gorilla : ''].filter(Boolean).join(' · ');
+        td1.appendChild(hs);
+      }
       var td2 = document.createElement('td'); td2.className = 'n';
       var dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = COLORS[r.t1.type] || 'var(--mixed)';
       dot.title = r.t1.type ? t(r.t1.type) : '';

@@ -583,7 +583,7 @@
       name: function(a,b){ return a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); },
       updated: function(a,b){ return (b.updated || 0) - (a.updated || 0); }
     }[sort];
-    var h = '<tr><th class="sticky">Spieler</th><th class="n">T1</th><th class="n">T2</th><th class="n">T3</th><th class="n">T4</th><th class="n">Gesamt</th><th class="n">Δ</th></tr>';
+    var h = '<tr><th class="sticky">Spieler</th><th class="n">T1</th><th class="n">T2</th><th class="n">T3</th><th class="n">T4</th><th class="n">Gesamt</th><th class="n">Δ</th><th class="n">Held</th><th class="n">Gorilla</th></tr>';
     RANKS.forEach(function(r){
       var list = D.players.filter(function(p){
         if (p.rank !== r) return false;
@@ -596,15 +596,15 @@
       }).sort(cmp);
       if (!list.length) return;
       var n = D.players.filter(function(p){ return p.rank === r; });
-      h += '<tr class="rankhead"><td class="sticky">' + r + '</td><td colspan="6">' + n.filter(function(p){ return p.entry; }).length + ' / ' + n.length + ' eingetragen</td></tr>';
+      h += '<tr class="rankhead"><td class="sticky">' + r + '</td><td colspan="8">' + n.filter(function(p){ return p.entry; }).length + ' / ' + n.length + ' eingetragen</td></tr>';
       list.forEach(function(p){
-        if (!p.entry) { h += '<tr class="missing"><td class="sticky">' + esc(p.name) + '</td><td colspan="6">— noch nie eingetragen</td></tr>'; return; }
+        if (!p.entry) { h += '<tr class="missing"><td class="sticky">' + esc(p.name) + '</td><td colspan="8">— noch nie eingetragen</td></tr>'; return; }
         h += '<tr class="click" data-name="' + esc(p.name) + '"><td class="sticky">' + esc(p.name) + '<div class="tl' + (p.stale ? ' stale' : '') + '">' + (p.stale ? '⚠ ' : '') + fmtDate(p.updated) + ' · ' + ago(p.updated) + '</div></td>';
         for (var i = 0; i < 4; i++) {
           var s = sq(p.entry, i);
           h += '<td class="n">' + squadCell(s) + '</td>';
         }
-        h += '<td class="n">' + fmt(p.total) + '</td><td class="n">' + (p.delta === null ? '<span class="muted">neu</span>' : fmtDelta(p.delta)) + '</td></tr>';
+        h += '<td class="n">' + fmt(p.total) + '</td><td class="n">' + (p.delta === null ? '<span class="muted">neu</span>' : fmtDelta(p.delta)) + '</td><td class="n">' + (p.entry.hero ? fmt(p.entry.hero) : '–') + '</td><td class="n">' + (p.entry.gorilla || '–') + '</td></tr>';
       });
     });
     $('memTable').innerHTML = h;
@@ -755,10 +755,10 @@
   function playerRow(p){
     var r = [p.rank, p.name];
     for (var i = 0; i < 4; i++) { var s = sq(p.entry, i); r.push(s.type ? TROOPS[s.type] : '', s.type ? csvNum(s.power) : ''); }
-    r.push(p.entry ? csvNum(p.total) : '', p.entry ? fmtDateTime(p.updated) : 'keine Meldung');
+    r.push(p.entry ? csvNum(p.total) : '', p.entry && p.entry.hero ? csvNum(p.entry.hero) : '', p.entry && p.entry.gorilla ? String(p.entry.gorilla) : '', p.entry ? fmtDateTime(p.updated) : 'keine Meldung');
     return r;
   }
-  var CSV_HEAD = ['Rang','Name','T1 Typ','T1 Kampfkraft (Mio.)','T2 Typ','T2 Kampfkraft (Mio.)','T3 Typ','T3 Kampfkraft (Mio.)','T4 Typ','T4 Kampfkraft (Mio.)','Gesamt (Mio.)','Stand'];
+  var CSV_HEAD = ['Rang','Name','T1 Typ','T1 Kampfkraft (Mio.)','T2 Typ','T2 Kampfkraft (Mio.)','T3 Typ','T3 Kampfkraft (Mio.)','T4 Typ','T4 Kampfkraft (Mio.)','Gesamt (Mio.)','Heldenkraft (Mio.)','Overlord-Gorilla Level','Stand'];
   function download(name, text){
     if (window.SKWSAndroid && window.SKWSAndroid.saveFile) { window.SKWSAndroid.saveFile(name, '\ufeff' + text, 'text/csv'); return; }
     var blob = new Blob(['\ufeff' + text], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
