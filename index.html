@@ -46,6 +46,10 @@
   .sq[data-type="aircraft"]{border-left:3px solid var(--aircraft)}
   .sq[data-type="mixed"]{border-left:3px solid var(--mixed)}
   .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  .lnk{margin-top:8px}
+  .lnkrow{display:flex;gap:8px;align-items:center;margin-top:4px}
+  .lnkrow code{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px}
+  .cpy{flex:none;background:var(--bg2);border:1px solid rgba(92,200,255,.45);color:var(--accent);border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
   .linkbtn{display:block;width:100%;margin-top:10px;background:var(--bg2);border:1px dashed var(--line);color:var(--accent);border-radius:10px;padding:10px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
   .meta{font-size:13px;color:var(--muted);margin:8px 0 0}
   .chk{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;color:var(--muted)}
@@ -127,6 +131,14 @@
         <button type="button" id="appRemTest" style="margin-top:10px;background:var(--bg2);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer" data-t="appRemTest"></button>
       </div>
 
+      <div class="card hide" id="linksCard">
+        <label class="l" data-t="linksTitle"></label>
+        <div class="lnk"><div class="hint" data-t="linkPublic"></div>
+          <div class="lnkrow"><code>https://matdan1987.github.io/skws-squads/</code><button type="button" class="cpy" data-url="https://matdan1987.github.io/skws-squads/" data-t="copy"></button></div></div>
+        <div class="lnk hide" id="linkAdminBox"><div class="hint" data-t="linkAdmin"></div>
+          <div class="lnkrow"><code>https://matdan1987.github.io/skws-squads/admin.html</code><button type="button" class="cpy" data-url="https://matdan1987.github.io/skws-squads/admin.html" data-t="copy"></button></div></div>
+      </div>
+
       <button class="btn" id="save" data-t="save"></button>
       <div class="msg" id="msg"></div>
     </section>
@@ -159,6 +171,11 @@ var LANG_NAMES = {
 
 var I18N = {
   de: {
+    linksTitle: "Links zum Teilen",
+    linkPublic: "Öffentliche Seite",
+    linkAdmin: "Admin-Bereich (R4/R5)",
+    copy: "Kopieren",
+    copied: "✓ Kopiert",
     newBtn: "➕ Ich bin neu – Namen eintragen",
     newName: "Dein Spielername (genau wie im Spiel)",
     newNameHint: "Bitte exakt so schreiben wie im Spiel, damit R4/R5 dich zuordnen können.",
@@ -201,6 +218,11 @@ var I18N = {
     unsubDone: 'Du bekommst keine Erinnerungen mehr.', unsubFail: 'Link ungültig oder bereits abgemeldet.'
   },
   en: {
+    linksTitle: "Links to share",
+    linkPublic: "Public page",
+    linkAdmin: "Admin area (R4/R5)",
+    copy: "Copy",
+    copied: "✓ Copied",
     newBtn: "➕ I'm new – add my name",
     newName: "Your player name (exactly as in game)",
     newNameHint: "Please type it exactly as in the game so R4/R5 can match you.",
@@ -243,6 +265,11 @@ var I18N = {
     unsubDone: 'You will no longer receive reminders.', unsubFail: 'Invalid link or already unsubscribed.'
   },
   fr: {
+    linksTitle: "Liens à partager",
+    linkPublic: "Page publique",
+    linkAdmin: "Espace admin (R4/R5)",
+    copy: "Copier",
+    copied: "✓ Copié",
     newBtn: "➕ Je suis nouveau – ajouter mon nom",
     newName: "Ton nom de joueur (exactement comme en jeu)",
     newNameHint: "Écris-le exactement comme dans le jeu pour que les R4/R5 te reconnaissent.",
@@ -285,6 +312,11 @@ var I18N = {
     unsubDone: 'Tu ne recevras plus de rappels.', unsubFail: 'Lien invalide ou déjà désinscrit.'
   },
   es: {
+    linksTitle: "Enlaces para compartir",
+    linkPublic: "Página pública",
+    linkAdmin: "Área de administración (R4/R5)",
+    copy: "Copiar",
+    copied: "✓ Copiado",
     newBtn: "➕ Soy nuevo – añadir mi nombre",
     newName: "Tu nombre de jugador (igual que en el juego)",
     newNameHint: "Escríbelo exactamente como en el juego para que R4/R5 te identifiquen.",
@@ -327,6 +359,11 @@ var I18N = {
     unsubDone: 'Ya no recibirás recordatorios.', unsubFail: 'Enlace no válido o ya te has dado de baja.'
   },
   pt: {
+    linksTitle: "Links para compartilhar",
+    linkPublic: "Página pública",
+    linkAdmin: "Área de administração (R4/R5)",
+    copy: "Copiar",
+    copied: "✓ Copiado",
     newBtn: "➕ Sou novo – adicionar meu nome",
     newName: "Seu nome de jogador (igual ao do jogo)",
     newNameHint: "Escreva exatamente como no jogo para que R4/R5 possam identificar você.",
@@ -369,6 +406,11 @@ var I18N = {
     unsubDone: 'Você não receberá mais lembretes.', unsubFail: 'Link inválido ou já cancelado.'
   },
   it: {
+    linksTitle: "Link da condividere",
+    linkPublic: "Pagina pubblica",
+    linkAdmin: "Area admin (R4/R5)",
+    copy: "Copia",
+    copied: "✓ Copiato",
     newBtn: "➕ Sono nuovo – aggiungi il mio nome",
     newName: "Il tuo nome giocatore (esattamente come nel gioco)",
     newNameHint: "Scrivilo esattamente come nel gioco, così R4/R5 possono riconoscerti.",
@@ -411,6 +453,11 @@ var I18N = {
     unsubDone: 'Non riceverai più promemoria.', unsubFail: 'Link non valido o già disiscritto.'
   },
   tr: {
+    linksTitle: "Paylaşılacak bağlantılar",
+    linkPublic: "Herkese açık sayfa",
+    linkAdmin: "Yönetici alanı (R4/R5)",
+    copy: "Kopyala",
+    copied: "✓ Kopyalandı",
     newBtn: "➕ Yeniyim – adımı ekle",
     newName: "Oyuncu adın (oyundakiyle aynı)",
     newNameHint: "R4/R5 seni tanıyabilsin diye oyundakiyle birebir aynı yaz.",
@@ -453,6 +500,11 @@ var I18N = {
     unsubDone: 'Artık hatırlatma almayacaksın.', unsubFail: 'Geçersiz bağlantı veya abonelikten zaten çıkılmış.'
   },
   ru: {
+    linksTitle: "Ссылки для отправки",
+    linkPublic: "Публичная страница",
+    linkAdmin: "Админ-раздел (R4/R5)",
+    copy: "Копировать",
+    copied: "✓ Скопировано",
     newBtn: "➕ Я новенький – добавить имя",
     newName: "Твоё игровое имя (точно как в игре)",
     newNameHint: "Пиши точно как в игре, чтобы R4/R5 смогли тебя узнать.",
@@ -495,6 +547,11 @@ var I18N = {
     unsubDone: 'Ты больше не будешь получать напоминания.', unsubFail: 'Ссылка недействительна или ты уже отписался.'
   },
   pl: {
+    linksTitle: "Linki do udostępnienia",
+    linkPublic: "Strona publiczna",
+    linkAdmin: "Panel admina (R4/R5)",
+    copy: "Kopiuj",
+    copied: "✓ Skopiowano",
     newBtn: "➕ Jestem nowy – dodaj moje imię",
     newName: "Twoja nazwa gracza (dokładnie jak w grze)",
     newNameHint: "Wpisz dokładnie tak jak w grze, aby R4/R5 mogli cię rozpoznać.",
@@ -643,6 +700,7 @@ function rpc(fn, body){
     var nm = $('name').value;
     $('nameSaved').classList.toggle('hide', !nm);
     $('adminBtn').classList.toggle('hide', !(nm && DATA && (DATA.leaders || []).indexOf(nm) >= 0));
+    $('linkAdminBox').classList.toggle('hide', !(nm && DATA && (DATA.leaders || []).indexOf(nm) >= 0));
     var e = DATA && DATA.entries[$('name').value];
     $('lastUpdate').classList.toggle('hide', !(e && e.updated));
     if (e && e.updated) $('lastUpdate').textContent = t('lastUpdate') + ': ' + fmtDate(e.updated);
@@ -808,6 +866,17 @@ function rpc(fn, body){
     if (st.on && !st.perm) msg = t('appRemNoPerm');
     $('appRemMsg').textContent = msg;
   }
+  function setupLinks(){
+    if (!window.SKWSAndroid) return;
+    $('linksCard').classList.remove('hide');
+    var btns = document.querySelectorAll('#linksCard .cpy');
+    for (var i = 0; i < btns.length; i++) btns[i].addEventListener('click', function(){
+      var b = this, url = b.dataset.url;
+      function ok(){ b.textContent = t('copied'); setTimeout(function(){ b.textContent = t('copy'); }, 2000); }
+      if (window.SKWSAndroid.copy) { try { window.SKWSAndroid.copy(url); ok(); return; } catch(e){} }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok, function(){});
+    });
+  }
   function setupRem(){
     if (!APP) return;
     showRem();
@@ -846,6 +915,7 @@ function rpc(fn, body){
     $('tabOverview').addEventListener('click', function(){ showTab('overview'); });
 
     setupRem();
+    setupLinks();
     var last = store('skws_name');
     if (last && DATA.members.indexOf(last) >= 0){ $('name').value = last; loadMember(); }
   }
