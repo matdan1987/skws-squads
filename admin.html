@@ -327,6 +327,7 @@
               <option value="changed">nur Meldungen mit Änderung</option>
               <option value="admin">Verwaltung (R4/R5)</option>
               <option value="login">Admin-Anmeldungen</option>
+              <option value="join">Neue Spieler (selbst eingetragen)</option>
               <option value="unsub">Abmeldungen Mail</option>
               <option value="reminder">Erinnerungs-Mails</option>
             </select></div>
@@ -873,6 +874,7 @@
       }
       return { tag:'', label:'Gespeichert', text: who(r.target) + ' hat gespeichert – ohne Änderung', sub: (d.email_changed ? 'E-Mail geändert · ' : '') + 'Gesamt ' + fmt(d.total_new) + ' M' };
     }
+    if (a === 'self_join') return { tag:'adm', label:'Beitritt', text: who(r.target) + (d.returned ? ' ist zurück und hat sich selbst wieder eingetragen' : ' hat sich selbst neu eingetragen'), sub: 'Rang ' + (d.rank || 'R1') + ' · bei Bedarf im Tab Mitglieder anpassen' };
     if (a === 'unsub') return { tag:'warn', label:'Abgemeldet', text: who(r.target) + ' hat sich von der Mail-Erinnerung abgemeldet', sub: '' };
     if (a === 'admin_login') return { tag:'adm', label:'Admin', text: who(r.actor) + ' hat sich im Admin-Bereich angemeldet', sub: '' };
     if (a === 'admin_add') return { tag:'adm', label:'Verwaltung', text: who(r.actor) + ' hat ' + who(r.target) + (d.returned ? ' wieder aufgenommen' : ' hinzugefügt'), sub: 'Rang ' + (d.rank || '–') };
@@ -889,6 +891,7 @@
     if (f === 'changed' && !(a === 'save' && r.details.changed)) return false;
     if (f === 'admin' && !(a.indexOf('admin_') === 0 && a !== 'admin_login')) return false;
     if (f === 'login' && a !== 'admin_login') return false;
+    if (f === 'join' && a !== 'self_join') return false;
     if (f === 'unsub' && a !== 'unsub') return false;
     if (f === 'reminder' && a !== 'reminder_sent') return false;
     if (q && ((r.actor || '') + ' ' + (r.target || '') + ' ' + JSON.stringify(r.details)).toLowerCase().indexOf(q) < 0) return false;
