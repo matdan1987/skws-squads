@@ -46,6 +46,11 @@
   .sq[data-type="aircraft"]{border-left:3px solid var(--aircraft)}
   .sq[data-type="mixed"]{border-left:3px solid var(--mixed)}
   .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  .lnk{margin-top:8px}
+  .lnkrow{display:flex;gap:8px;align-items:center;margin-top:4px}
+  .lnkrow code{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px}
+  .cpy{flex:none;background:var(--bg2);border:1px solid rgba(92,200,255,.45);color:var(--accent);border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .linkbtn{display:block;width:100%;margin-top:10px;background:var(--bg2);border:1px dashed var(--line);color:var(--accent);border-radius:10px;padding:10px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
   .meta{font-size:13px;color:var(--muted);margin:8px 0 0}
   .chk{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;color:var(--muted)}
   .chk input{width:18px;height:18px;padding:0;accent-color:var(--accent);-webkit-appearance:auto;appearance:auto}
@@ -93,10 +98,18 @@
       <div class="card">
         <p class="intro" data-t="intro"></p>
         <label class="l" for="name" data-t="name"></label>
-        <input id="search" type="search" data-tp="search" autocomplete="off" style="margin-bottom:8px">
-        <select id="name"></select>
-        <div class="hint hide" id="nameSaved" style="color:var(--ok)">✓ <span data-t="nameSaved"></span></div>
-        <div class="hint" data-t="notListed"></div>
+        <div id="pickBox">
+          <input id="search" type="search" data-tp="search" autocomplete="off" style="margin-bottom:8px">
+          <select id="name"></select>
+          <div class="hint hide" id="nameSaved" style="color:var(--ok)">✓ <span data-t="nameSaved"></span></div>
+          <div class="hint" data-t="notListed"></div>
+          <button type="button" id="newBtn" class="linkbtn" data-t="newBtn"></button>
+        </div>
+        <div id="newBox" class="hide">
+          <input id="newName" type="text" maxlength="40" autocomplete="off" data-tp="newName">
+          <div class="hint" data-t="newNameHint"></div>
+          <button type="button" id="backBtn" class="linkbtn" data-t="backToList"></button>
+        </div>
         <a href="admin.html" id="adminBtn" class="hide" style="display:block;margin-top:10px;text-align:center;border:1px solid rgba(92,200,255,.45);color:var(--accent);border-radius:10px;padding:10px;text-decoration:none;font-weight:600;font-size:14px">🔒 <span data-t="adminBtn"></span></a>
         <div class="meta hide" id="lastUpdate"></div>
       </div>
@@ -116,6 +129,14 @@
         <div class="hint" data-t="appRemHint"></div>
         <div class="hint" id="appRemMsg" style="color:var(--warn)"></div>
         <button type="button" id="appRemTest" style="margin-top:10px;background:var(--bg2);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer" data-t="appRemTest"></button>
+      </div>
+
+      <div class="card hide" id="linksCard">
+        <label class="l" data-t="linksTitle"></label>
+        <div class="lnk"><div class="hint" data-t="linkPublic"></div>
+          <div class="lnkrow"><code>https://matdan1987.github.io/skws-squads/</code><button type="button" class="cpy" data-url="https://matdan1987.github.io/skws-squads/" data-t="copy"></button></div></div>
+        <div class="lnk hide" id="linkAdminBox"><div class="hint" data-t="linkAdmin"></div>
+          <div class="lnkrow"><code>https://matdan1987.github.io/skws-squads/admin.html</code><button type="button" class="cpy" data-url="https://matdan1987.github.io/skws-squads/admin.html" data-t="copy"></button></div></div>
       </div>
 
       <button class="btn" id="save" data-t="save"></button>
@@ -150,6 +171,18 @@ var LANG_NAMES = {
 
 var I18N = {
   de: {
+    linksTitle: "Links zum Teilen",
+    linkPublic: "Öffentliche Seite",
+    linkAdmin: "Admin-Bereich (R4/R5)",
+    copy: "Kopieren",
+    copied: "✓ Kopiert",
+    newBtn: "➕ Ich bin neu – Namen eintragen",
+    newName: "Dein Spielername (genau wie im Spiel)",
+    newNameHint: "Bitte exakt so schreiben wie im Spiel, damit R4/R5 dich zuordnen können.",
+    backToList: "← Zurück zur Namensliste",
+    errExists: "Dieser Name steht schon in der Liste – bitte oben auswählen.",
+    errNewName: "Bitte gib deinen Spielernamen ein (2–40 Zeichen).",
+    errRate: "Gerade haben sich sehr viele neu eingetragen. Bitte versuch es in einer Stunde erneut.",
     errEmailTaken: "Diese E-Mail-Adresse wird schon von einem anderen Spieler verwendet.",
     nameSaved: "Dein Name wird auf diesem Gerät gemerkt.",
     adminBtn: "Admin-Bereich (R4/R5) öffnen",
@@ -179,12 +212,24 @@ var I18N = {
     errPower: 'Ungültige Kampfkraft.', errEmail: 'Ungültige E-Mail-Adresse.',
     errSave: 'Speichern fehlgeschlagen. Bitte erneut versuchen.',
     overview: 'Übersicht', form: 'Eintragen', submitted: '{x} von {y} eingetragen',
-    missing: 'Fehlt noch', notListed: 'Name fehlt? Melde dich bei R4/R5.', total: 'Gesamt',
+    missing: 'Fehlt noch', notListed: "Neu in der Allianz und dein Name fehlt?", total: 'Gesamt',
     mailSubject: '{alliance}: Bitte Squad-Werte aktualisieren',
     mailBody: 'Hallo {name},\n\nkurze Erinnerung: Bitte prüfe deine Squad-Werte (Kampfkraft und Truppentyp) und aktualisiere sie bei Bedarf:\n{url}\n\nDanke!\n{alliance}\n\nKeine Erinnerungen mehr: {unsub}',
     unsubDone: 'Du bekommst keine Erinnerungen mehr.', unsubFail: 'Link ungültig oder bereits abgemeldet.'
   },
   en: {
+    linksTitle: "Links to share",
+    linkPublic: "Public page",
+    linkAdmin: "Admin area (R4/R5)",
+    copy: "Copy",
+    copied: "✓ Copied",
+    newBtn: "➕ I'm new – add my name",
+    newName: "Your player name (exactly as in game)",
+    newNameHint: "Please type it exactly as in the game so R4/R5 can match you.",
+    backToList: "← Back to the name list",
+    errExists: "This name is already in the list – please select it above.",
+    errNewName: "Please enter your player name (2–40 characters).",
+    errRate: "Many players just signed up. Please try again in an hour.",
     errEmailTaken: "This email address is already used by another player.",
     nameSaved: "Your name is remembered on this device.",
     adminBtn: "Open admin area (R4/R5)",
@@ -214,12 +259,24 @@ var I18N = {
     errPower: 'Invalid power value.', errEmail: 'Invalid email address.',
     errSave: 'Saving failed. Please try again.',
     overview: 'Overview', form: 'Submit', submitted: '{x} of {y} submitted',
-    missing: 'Still missing', notListed: 'Name missing? Contact R4/R5.', total: 'Total',
+    missing: 'Still missing', notListed: "New to the alliance and your name is missing?", total: 'Total',
     mailSubject: '{alliance}: Please update your squad values',
     mailBody: 'Hi {name},\n\nquick reminder: please check your squad values (power and troop type) and update them if needed:\n{url}\n\nThanks!\n{alliance}\n\nStop reminders: {unsub}',
     unsubDone: 'You will no longer receive reminders.', unsubFail: 'Invalid link or already unsubscribed.'
   },
   fr: {
+    linksTitle: "Liens à partager",
+    linkPublic: "Page publique",
+    linkAdmin: "Espace admin (R4/R5)",
+    copy: "Copier",
+    copied: "✓ Copié",
+    newBtn: "➕ Je suis nouveau – ajouter mon nom",
+    newName: "Ton nom de joueur (exactement comme en jeu)",
+    newNameHint: "Écris-le exactement comme dans le jeu pour que les R4/R5 te reconnaissent.",
+    backToList: "← Retour à la liste des noms",
+    errExists: "Ce nom est déjà dans la liste – sélectionne-le ci-dessus.",
+    errNewName: "Saisis ton nom de joueur (2 à 40 caractères).",
+    errRate: "Beaucoup de joueurs viennent de s'inscrire. Réessaie dans une heure.",
     errEmailTaken: "Cette adresse e-mail est déjà utilisée par un autre joueur.",
     nameSaved: "Ton nom est mémorisé sur cet appareil.",
     adminBtn: "Ouvrir l'espace admin (R4/R5)",
@@ -249,12 +306,24 @@ var I18N = {
     errPower: 'Puissance invalide.', errEmail: 'Adresse e-mail invalide.',
     errSave: "Échec de l'enregistrement. Réessaie.",
     overview: 'Aperçu', form: 'Saisir', submitted: '{x} sur {y} saisis',
-    missing: 'Manquent encore', notListed: 'Ton nom manque ? Contacte R4/R5.', total: 'Total',
+    missing: 'Manquent encore', notListed: "Nouveau dans l'alliance et ton nom manque ?", total: 'Total',
     mailSubject: '{alliance} : merci de mettre à jour tes escouades',
     mailBody: "Salut {name},\n\npetit rappel : vérifie tes valeurs d'escouade (puissance et type de troupe) et mets-les à jour si besoin :\n{url}\n\nMerci !\n{alliance}\n\nArrêter les rappels : {unsub}",
     unsubDone: 'Tu ne recevras plus de rappels.', unsubFail: 'Lien invalide ou déjà désinscrit.'
   },
   es: {
+    linksTitle: "Enlaces para compartir",
+    linkPublic: "Página pública",
+    linkAdmin: "Área de administración (R4/R5)",
+    copy: "Copiar",
+    copied: "✓ Copiado",
+    newBtn: "➕ Soy nuevo – añadir mi nombre",
+    newName: "Tu nombre de jugador (igual que en el juego)",
+    newNameHint: "Escríbelo exactamente como en el juego para que R4/R5 te identifiquen.",
+    backToList: "← Volver a la lista de nombres",
+    errExists: "Este nombre ya está en la lista; selecciónalo arriba.",
+    errNewName: "Introduce tu nombre de jugador (2–40 caracteres).",
+    errRate: "Se han registrado muchos jugadores. Inténtalo de nuevo en una hora.",
     errEmailTaken: "Este correo ya lo usa otro jugador.",
     nameSaved: "Tu nombre se recuerda en este dispositivo.",
     adminBtn: "Abrir área de administración (R4/R5)",
@@ -284,12 +353,24 @@ var I18N = {
     errPower: 'Poder no válido.', errEmail: 'Correo no válido.',
     errSave: 'Error al guardar. Inténtalo de nuevo.',
     overview: 'Resumen', form: 'Registrar', submitted: '{x} de {y} registrados',
-    missing: 'Faltan', notListed: '¿No aparece tu nombre? Contacta con R4/R5.', total: 'Total',
+    missing: 'Faltan', notListed: "¿Eres nuevo en la alianza y no aparece tu nombre?", total: 'Total',
     mailSubject: '{alliance}: actualiza tus escuadrones',
     mailBody: 'Hola {name},\n\nun recordatorio rápido: revisa los valores de tus escuadrones (poder y tipo de tropa) y actualízalos si hace falta:\n{url}\n\n¡Gracias!\n{alliance}\n\nNo más recordatorios: {unsub}',
     unsubDone: 'Ya no recibirás recordatorios.', unsubFail: 'Enlace no válido o ya te has dado de baja.'
   },
   pt: {
+    linksTitle: "Links para compartilhar",
+    linkPublic: "Página pública",
+    linkAdmin: "Área de administração (R4/R5)",
+    copy: "Copiar",
+    copied: "✓ Copiado",
+    newBtn: "➕ Sou novo – adicionar meu nome",
+    newName: "Seu nome de jogador (igual ao do jogo)",
+    newNameHint: "Escreva exatamente como no jogo para que R4/R5 possam identificar você.",
+    backToList: "← Voltar para a lista de nomes",
+    errExists: "Este nome já está na lista – selecione-o acima.",
+    errNewName: "Digite seu nome de jogador (2–40 caracteres).",
+    errRate: "Muitos jogadores acabaram de se cadastrar. Tente novamente em uma hora.",
     errEmailTaken: "Este e-mail já é usado por outro jogador.",
     nameSaved: "Seu nome fica salvo neste dispositivo.",
     adminBtn: "Abrir área de administração (R4/R5)",
@@ -319,12 +400,24 @@ var I18N = {
     errPower: 'Poder inválido.', errEmail: 'E-mail inválido.',
     errSave: 'Falha ao salvar. Tente novamente.',
     overview: 'Visão geral', form: 'Registrar', submitted: '{x} de {y} registrados',
-    missing: 'Faltam', notListed: 'Seu nome não está na lista? Fale com R4/R5.', total: 'Total',
+    missing: 'Faltam', notListed: "Novo na aliança e seu nome não está na lista?", total: 'Total',
     mailSubject: '{alliance}: atualize seus esquadrões',
     mailBody: 'Olá {name},\n\nlembrete rápido: confira os valores dos seus esquadrões (poder e tipo de tropa) e atualize se necessário:\n{url}\n\nObrigado!\n{alliance}\n\nParar lembretes: {unsub}',
     unsubDone: 'Você não receberá mais lembretes.', unsubFail: 'Link inválido ou já cancelado.'
   },
   it: {
+    linksTitle: "Link da condividere",
+    linkPublic: "Pagina pubblica",
+    linkAdmin: "Area admin (R4/R5)",
+    copy: "Copia",
+    copied: "✓ Copiato",
+    newBtn: "➕ Sono nuovo – aggiungi il mio nome",
+    newName: "Il tuo nome giocatore (esattamente come nel gioco)",
+    newNameHint: "Scrivilo esattamente come nel gioco, così R4/R5 possono riconoscerti.",
+    backToList: "← Torna alla lista dei nomi",
+    errExists: "Questo nome è già nella lista – selezionalo sopra.",
+    errNewName: "Inserisci il tuo nome giocatore (2–40 caratteri).",
+    errRate: "Si sono appena iscritti molti giocatori. Riprova tra un'ora.",
     errEmailTaken: "Questo indirizzo e-mail è già usato da un altro giocatore.",
     nameSaved: "Il tuo nome viene ricordato su questo dispositivo.",
     adminBtn: "Apri area admin (R4/R5)",
@@ -354,12 +447,24 @@ var I18N = {
     errPower: 'Potenza non valida.', errEmail: 'Indirizzo e-mail non valido.',
     errSave: 'Salvataggio non riuscito. Riprova.',
     overview: 'Panoramica', form: 'Inserisci', submitted: '{x} su {y} inseriti',
-    missing: 'Mancano ancora', notListed: 'Il tuo nome manca? Contatta R4/R5.', total: 'Totale',
+    missing: 'Mancano ancora', notListed: "Nuovo nell'alleanza e il tuo nome manca?", total: 'Totale',
     mailSubject: '{alliance}: aggiorna le tue squadre',
     mailBody: 'Ciao {name},\n\npromemoria veloce: controlla i valori delle tue squadre (potenza e tipo di truppa) e aggiornali se necessario:\n{url}\n\nGrazie!\n{alliance}\n\nBasta promemoria: {unsub}',
     unsubDone: 'Non riceverai più promemoria.', unsubFail: 'Link non valido o già disiscritto.'
   },
   tr: {
+    linksTitle: "Paylaşılacak bağlantılar",
+    linkPublic: "Herkese açık sayfa",
+    linkAdmin: "Yönetici alanı (R4/R5)",
+    copy: "Kopyala",
+    copied: "✓ Kopyalandı",
+    newBtn: "➕ Yeniyim – adımı ekle",
+    newName: "Oyuncu adın (oyundakiyle aynı)",
+    newNameHint: "R4/R5 seni tanıyabilsin diye oyundakiyle birebir aynı yaz.",
+    backToList: "← İsim listesine dön",
+    errExists: "Bu isim zaten listede – lütfen yukarıdan seç.",
+    errNewName: "Lütfen oyuncu adını gir (2–40 karakter).",
+    errRate: "Az önce çok sayıda oyuncu kaydoldu. Lütfen bir saat sonra tekrar dene.",
     errEmailTaken: "Bu e-posta adresi başka bir oyuncu tarafından kullanılıyor.",
     nameSaved: "Adın bu cihazda hatırlanır.",
     adminBtn: "Yönetici alanını aç (R4/R5)",
@@ -389,12 +494,24 @@ var I18N = {
     errPower: 'Geçersiz güç değeri.', errEmail: 'Geçersiz e-posta adresi.',
     errSave: 'Kaydetme başarısız. Lütfen tekrar dene.',
     overview: 'Genel bakış', form: 'Gir', submitted: '{y} kişiden {x} kişi girdi',
-    missing: 'Eksik olanlar', notListed: 'Adın listede yok mu? R4/R5 ile iletişime geç.', total: 'Toplam',
+    missing: 'Eksik olanlar', notListed: "İttifakta yeni misin ve adın listede yok mu?", total: 'Toplam',
     mailSubject: '{alliance}: Lütfen takım değerlerini güncelle',
     mailBody: 'Merhaba {name},\n\nkısa bir hatırlatma: lütfen takım değerlerini (güç ve birlik türü) kontrol et ve gerekirse güncelle:\n{url}\n\nTeşekkürler!\n{alliance}\n\nHatırlatmaları durdur: {unsub}',
     unsubDone: 'Artık hatırlatma almayacaksın.', unsubFail: 'Geçersiz bağlantı veya abonelikten zaten çıkılmış.'
   },
   ru: {
+    linksTitle: "Ссылки для отправки",
+    linkPublic: "Публичная страница",
+    linkAdmin: "Админ-раздел (R4/R5)",
+    copy: "Копировать",
+    copied: "✓ Скопировано",
+    newBtn: "➕ Я новенький – добавить имя",
+    newName: "Твоё игровое имя (точно как в игре)",
+    newNameHint: "Пиши точно как в игре, чтобы R4/R5 смогли тебя узнать.",
+    backToList: "← Назад к списку имён",
+    errExists: "Это имя уже есть в списке – выбери его выше.",
+    errNewName: "Введи своё игровое имя (2–40 символов).",
+    errRate: "Сейчас записалось очень много игроков. Попробуй через час.",
     errEmailTaken: "Этот e-mail уже использует другой игрок.",
     nameSaved: "Твоё имя сохраняется на этом устройстве.",
     adminBtn: "Открыть админ-раздел (R4/R5)",
@@ -424,12 +541,24 @@ var I18N = {
     errPower: 'Неверное значение мощи.', errEmail: 'Неверный адрес e-mail.',
     errSave: 'Ошибка сохранения. Попробуй ещё раз.',
     overview: 'Обзор', form: 'Ввести', submitted: 'Заполнено: {x} из {y}',
-    missing: 'Ещё не заполнили', notListed: 'Нет твоего имени? Напиши R4/R5.', total: 'Всего',
+    missing: 'Ещё не заполнили', notListed: "Ты новенький и твоего имени нет в списке?", total: 'Всего',
     mailSubject: '{alliance}: обнови данные отрядов',
     mailBody: 'Привет, {name}!\n\nКороткое напоминание: проверь данные своих отрядов (мощь и тип войск) и обнови их при необходимости:\n{url}\n\nСпасибо!\n{alliance}\n\nОтключить напоминания: {unsub}',
     unsubDone: 'Ты больше не будешь получать напоминания.', unsubFail: 'Ссылка недействительна или ты уже отписался.'
   },
   pl: {
+    linksTitle: "Linki do udostępnienia",
+    linkPublic: "Strona publiczna",
+    linkAdmin: "Panel admina (R4/R5)",
+    copy: "Kopiuj",
+    copied: "✓ Skopiowano",
+    newBtn: "➕ Jestem nowy – dodaj moje imię",
+    newName: "Twoja nazwa gracza (dokładnie jak w grze)",
+    newNameHint: "Wpisz dokładnie tak jak w grze, aby R4/R5 mogli cię rozpoznać.",
+    backToList: "← Wróć do listy imion",
+    errExists: "To imię jest już na liście – wybierz je powyżej.",
+    errNewName: "Podaj swoją nazwę gracza (2–40 znaków).",
+    errRate: "Właśnie zapisało się wielu graczy. Spróbuj ponownie za godzinę.",
     errEmailTaken: "Ten adres e-mail jest już używany przez innego gracza.",
     nameSaved: "Twoje imię jest zapamiętywane na tym urządzeniu.",
     adminBtn: "Otwórz panel admina (R4/R5)",
@@ -459,7 +588,7 @@ var I18N = {
     errPower: 'Nieprawidłowa moc.', errEmail: 'Nieprawidłowy adres e-mail.',
     errSave: 'Błąd zapisu. Spróbuj ponownie.',
     overview: 'Przegląd', form: 'Zgłoś', submitted: 'Zgłoszono: {x} z {y}',
-    missing: 'Brakuje jeszcze', notListed: 'Brak twojego imienia? Napisz do R4/R5.', total: 'Razem',
+    missing: 'Brakuje jeszcze', notListed: "Jesteś nowy w sojuszu i brakuje twojego imienia?", total: 'Razem',
     mailSubject: '{alliance}: zaktualizuj swoje oddziały',
     mailBody: 'Cześć {name},\n\nkrótkie przypomnienie: sprawdź wartości swoich oddziałów (moc i typ wojsk) i w razie potrzeby je zaktualizuj:\n{url}\n\nDzięki!\n{alliance}\n\nWyłącz przypomnienia: {unsub}',
     unsubDone: 'Nie będziesz już dostawać przypomnień.', unsubFail: 'Nieprawidłowy link lub już wypisano.'
@@ -571,6 +700,7 @@ function rpc(fn, body){
     var nm = $('name').value;
     $('nameSaved').classList.toggle('hide', !nm);
     $('adminBtn').classList.toggle('hide', !(nm && DATA && (DATA.leaders || []).indexOf(nm) >= 0));
+    $('linkAdminBox').classList.toggle('hide', !(nm && DATA && (DATA.leaders || []).indexOf(nm) >= 0));
     var e = DATA && DATA.entries[$('name').value];
     $('lastUpdate').classList.toggle('hide', !(e && e.updated));
     if (e && e.updated) $('lastUpdate').textContent = t('lastUpdate') + ': ' + fmtDate(e.updated);
@@ -587,8 +717,23 @@ function rpc(fn, body){
     return isFinite(n) && n > 0 ? n : NaN;
   }
 
+  var NEW_MODE = false;
+  function setNewMode(on){
+    NEW_MODE = !!on;
+    $('pickBox').classList.toggle('hide', NEW_MODE);
+    $('newBox').classList.toggle('hide', !NEW_MODE);
+    if (NEW_MODE) { $('name').value = ''; loadMember(); $('newName').focus(); }
+    else { $('newName').value = ''; }
+    setMsg('');
+  }
+
   function collect(){
-    var name = $('name').value;
+    var name = NEW_MODE ? $('newName').value.trim().replace(/\s+/g, ' ') : $('name').value;
+    if (NEW_MODE) {
+      if (name.length < 2 || name.length > 40) return { err: t('errNewName') };
+      var hit = DATA.members.filter(function(m){ return m.toLowerCase() === name.toLowerCase(); })[0];
+      if (hit) return { err: t('errExists') };
+    }
     if (!name) return { err: t('errName') };
     var squads = [];
     for (var i = 0; i < DATA.squads; i++){
@@ -600,7 +745,7 @@ function rpc(fn, body){
     }
     var email = $('email').value.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { err: t('errEmail') };
-    var ex = DATA.entries[name];
+    var ex = NEW_MODE ? null : DATA.entries[name];
     if (!email && !(ex && ex.hasEmail)) return { err: t('errEmailReq') };
     return { data: { name: name, squads: squads, email: email, removeEmail: false, lang: LANG } };
   }
@@ -609,6 +754,9 @@ function rpc(fn, body){
     m = String(m || '');
     var sq = m.match(/ERR_SQUAD:(\d)/);
     if (sq) return t('errSquad', {n: sq[1]});
+    if (m.indexOf('ERR_NEWNAME') >= 0) return t('errNewName');
+    if (m.indexOf('ERR_EXISTS') >= 0) return t('errExists');
+    if (m.indexOf('ERR_RATE') >= 0) return t('errRate');
     if (m.indexOf('ERR_NAME') >= 0) return t('errName');
     if (m.indexOf('ERR_T1') >= 0) return t('errT1');
     if (m.indexOf('ERR_POWER') >= 0) return t('errPower');
@@ -623,12 +771,24 @@ function rpc(fn, body){
     var r = collect();
     if (r.err) { setMsg(r.err, 'err'); return; }
     busy = true; $('save').disabled = true; $('save').textContent = t('saving'); setMsg('');
-    rpc('save_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_remove_email: false, p_lang: r.data.lang })
+    var isNew = NEW_MODE;
+    var call = isNew
+      ? rpc('register_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_lang: r.data.lang })
+      : rpc('save_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_remove_email: false, p_lang: r.data.lang });
+    call
       .then(function(res){
-        DATA.entries[r.data.name] = { squads: res.squads, hasEmail: res.hasEmail, lang: res.lang, updated: res.updated };
-        done(); setMsg(t('saved'), 'ok');
+        var nm = (isNew && res.name) || r.data.name;
+        if (isNew && DATA.members.indexOf(nm) < 0) DATA.members.push(nm);
+        DATA.entries[nm] = { squads: res.squads, hasEmail: res.hasEmail, lang: res.lang, updated: res.updated };
+        done();
         $('email').value = '';
+        if (isNew) {
+          setNewMode(false); fillNames(); $('name').value = nm;
+          store('skws_name', nm);
+          if (window.SKWSAndroid && window.SKWSAndroid.setName) { try { window.SKWSAndroid.setName(nm); } catch(e){} }
+        }
         fillNames(); showMeta(); renderOverview();
+        setMsg(t('saved'), 'ok');
       })
       .catch(function(err){ done(); setMsg(errText(err && err.message), 'err'); });
     function done(){ busy = false; $('save').disabled = false; $('save').textContent = t('save'); }
@@ -706,6 +866,17 @@ function rpc(fn, body){
     if (st.on && !st.perm) msg = t('appRemNoPerm');
     $('appRemMsg').textContent = msg;
   }
+  function setupLinks(){
+    if (!window.SKWSAndroid) return;
+    $('linksCard').classList.remove('hide');
+    var btns = document.querySelectorAll('#linksCard .cpy');
+    for (var i = 0; i < btns.length; i++) btns[i].addEventListener('click', function(){
+      var b = this, url = b.dataset.url;
+      function ok(){ b.textContent = t('copied'); setTimeout(function(){ b.textContent = t('copy'); }, 2000); }
+      if (window.SKWSAndroid.copy) { try { window.SKWSAndroid.copy(url); ok(); return; } catch(e){} }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok, function(){});
+    });
+  }
   function setupRem(){
     if (!APP) return;
     showRem();
@@ -738,10 +909,13 @@ function rpc(fn, body){
     $('search').addEventListener('input', fillNames);
     $('name').addEventListener('change', function(){ store('skws_name', this.value); if (window.SKWSAndroid && window.SKWSAndroid.setName) { try { window.SKWSAndroid.setName(this.value); } catch(e){} } loadMember(); });
     $('save').addEventListener('click', save);
+    $('newBtn').addEventListener('click', function(){ setNewMode(true); });
+    $('backBtn').addEventListener('click', function(){ setNewMode(false); });
     $('tabForm').addEventListener('click', function(){ showTab('form'); });
     $('tabOverview').addEventListener('click', function(){ showTab('overview'); });
 
     setupRem();
+    setupLinks();
     var last = store('skws_name');
     if (last && DATA.members.indexOf(last) >= 0){ $('name').value = last; loadMember(); }
   }
