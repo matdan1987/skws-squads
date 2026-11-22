@@ -344,7 +344,8 @@
 
       <div class="card">
         <h2>3 · Taktik &amp; Einsatzplan</h2>
-        <div class="btnrow"><button class="btn" id="dsRun">Taktik erstellen</button></div>
+        <div class="btnrow"><button class="btn" id="dsRun">Taktik erstellen</button><button class="btn2" id="dsExample">Beispiel zeigen</button></div>
+        <p class="small muted" style="margin:6px 0 0">Beispiel: nimmt die aktiven Spieler nach Stärke (Plätze 1–20 Team A, 21–30 Ersatz A, 31–50 Team B, 51–60 Ersatz B) mit den oben gewählten Taktiken. Deine Zuordnung bleibt unverändert, veröffentlicht wird nichts.</p>
         <div id="dsResult"></div>
         <div class="hide" id="dsActions">
           <div class="btnrow">
@@ -988,8 +989,8 @@
         '<select data-ds="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
     }).join('') || '<div class="empty">Keine Treffer.</div>';
   }
-  function dsBuild(){
-    var st = dsState(), m = st.metric, by = {}; D.players.forEach(function(p){ by[p.name] = p; });
+  function dsBuild(stIn){
+    var st = stIn || dsState(), m = st.metric, by = {}; D.players.forEach(function(p){ by[p.name] = p; });
     var plan = { at: new Date().toISOString(), metric: m, teams: {} }, warn = [];
     ['A','B'].forEach(function(t){
       function pick(r){ return Object.keys(st.assign).filter(function(n){ return st.assign[n] === t + r && by[n] && by[n].active; }).map(function(n){ return by[n]; })
@@ -1013,8 +1014,16 @@
     TC.groups.forEach(function(g){ var names = team.m.filter(function(x){ return x[1] === g.k; }).map(function(x){ return x[0]; }); if (names.length) out.push({ g: g, names: names }); });
     return out;
   }
-  function dsRun(){
-    var r = dsBuild(); DS_LAST = r;
+  function dsExampleState(){
+    var st = JSON.parse(JSON.stringify(dsState())), m = st.metric;
+    var list = D.players.filter(function(p){ return p.active && p.entry; }).sort(function(a,b){ return dsMetricVal(b,m) - dsMetricVal(a,m) || a.name.localeCompare(b.name); });
+    st.assign = {};
+    list.forEach(function(p, i){ var v = i < 20 ? 'AS' : i < 30 ? 'AE' : i < 50 ? 'BS' : i < 60 ? 'BE' : ''; if (v) st.assign[p.name] = v; });
+    st.time = { A: st.time.A || 'Fr 14:00', B: st.time.B || 'Fr 21:00' };
+    return st;
+  }
+  function dsRun(example){
+    var r = dsBuild(example === true ? dsExampleState() : null); r.example = example === true; DS_LAST = r;
     var P = r.plan, m = P.metric, h = '';
     ['A','B'].forEach(function(t){
       var T = P.teams[t]; if (!T) return;
@@ -1032,8 +1041,10 @@
     if (!Object.keys(P.teams).length) h = '<div class="empty">Bitte zuerst oben Spieler Team A oder B zuordnen.</div>';
     else h += '<details style="margin-top:10px"><summary>Grundregeln, die im Chat-Text mitgeschickt werden</summary><ul class="small">' + DS_TIPS.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></details>';
     if (r.warn.length) h = '<div class="note err">' + r.warn.map(esc).join('<br>') + '</div>' + h;
+    if (r.example && Object.keys(P.teams).length) h = '<div class="note ok">BEISPIEL – zeigt, wie der Plan mit euren stärksten Spielern aussehen würde. Chat-Text und Bild-Prompt kannst du zum Ausprobieren kopieren; veröffentlichen geht nur mit echter Zuordnung.</div>' + h;
     $('dsResult').innerHTML = h;
     $('dsActions').classList.toggle('hide', !Object.keys(P.teams).length);
+    $('dsPublish').disabled = !!r.example; $('dsPublish').style.opacity = r.example ? .4 : '';
     ['A','B'].forEach(function(t){ ['dsCopy','dsImg'].forEach(function(id){ $(id + t).classList.toggle('hide', !P.teams[t]); }); });
     $('dsMsg').textContent = ''; $('dsMsg').className = 'note';
   }
@@ -1124,8 +1135,9 @@
       upd(function(st){ if (v) st.assign[n] = v; else delete st.assign[n]; });
       dsRenderList();
     });
-    $('dsRun').addEventListener('click', dsRun);
-    $('dsPublish').addEventListener('click', function(){ if (!DS_LAST) return; dsRun(); if (!confirm('Einsatzplan für die Spieler veröffentlichen?')) return; dsPublish(DS_LAST.plan); });
+    $('dsRun').addEventListener('click', function(){ dsRun(false); });
+    $('dsExample').addEventListener('click', function(){ dsRun(true); });
+    $('dsPublish').addEventListener('click', function(){ if (!DS_LAST || DS_LAST.example) return; dsRun(false); if (!confirm('Einsatzplan für die Spieler veröffentlichen?')) return; dsPublish(DS_LAST.plan); });
     $('dsUnpublish').addEventListener('click', function(){ if (confirm('Veröffentlichten Einsatzplan zurücknehmen?')) dsPublish(null); });
   })();
 
