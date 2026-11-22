@@ -50,6 +50,9 @@
   .lnkrow{display:flex;gap:8px;align-items:center;margin-top:4px}
   .lnkrow code{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px}
   .cpy{flex:none;background:var(--bg2);border:1px solid rgba(92,200,255,.45);color:var(--accent);border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .dssteps{margin:8px 0 0;padding-left:20px}
+  .dssteps li{margin:6px 0}
+  .dssteps li b{display:block;font-size:12px;color:var(--muted);font-weight:600}
   .linkbtn{display:block;width:100%;margin-top:10px;background:var(--bg2);border:1px dashed var(--line);color:var(--accent);border-radius:10px;padding:10px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
   .meta{font-size:13px;color:var(--muted);margin:8px 0 0}
   .chk{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;color:var(--muted)}
@@ -112,6 +115,13 @@
         </div>
         <a href="admin.html" id="adminBtn" class="hide" style="display:block;margin-top:10px;text-align:center;border:1px solid rgba(92,200,255,.45);color:var(--accent);border-radius:10px;padding:10px;text-decoration:none;font-weight:600;font-size:14px">🔒 <span data-t="adminBtn"></span></a>
         <div class="meta hide" id="lastUpdate"></div>
+      </div>
+
+      <div class="card hide" id="dsCard">
+        <div class="sq-h"><b id="dsTitle"></b><span class="tag req" id="dsTeam"></span></div>
+        <div class="hint" id="dsMeta" style="margin-top:0"></div>
+        <ol id="dsSteps" class="dssteps"></ol>
+        <div class="hint" id="dsWith"></div>
       </div>
 
       <div id="squads"></div>
@@ -734,6 +744,14 @@ var I18N = {
 };
 
 
+var DS_I18N = {"de": {"title": "Dein Wüstensturm-Einsatz", "team": "Team", "vs": "gegen", "stamm": "Stammspieler", "ersatz": "Ersatzspieler", "ph": ["Start (0–10 Min.)", "Ab 10 Min.", "Ab 13 Min."], "sub": "Halte dich bereit. Sobald ein Platz frei wird, rückst du nach (du bist Ersatz Nr. {n}) und übernimmst die Aufgabe des ausgefallenen Spielers.", "b": {"ref1": "Ölraffinerie I", "ref2": "Ölraffinerie II", "hosp1": "Feldlazarett I", "hosp2": "Feldlazarett II", "hosp3": "Feldlazarett III", "sci": "Wissenschaftszentrum", "info": "Infozentrum", "arsenal": "Waffenlager", "merc": "Söldnerfabrik", "silo": "Atomsilo", "wells": "Ölquellen"}, "a": {"take": "{b} erobern und halten", "help": "bei {b} mit erobern", "move": "zu {b} wechseln, erobern und halten", "hold": "{b} halten", "holdh": "{b} halten, geheilte Truppen abholen", "rally": "ab 9:30 sammeln, um 10:00 gemeinsam {b} erobern und halten", "iffree": "{b} erobern, wenn frei – sonst verstärken, wo nötig", "defend": "Basis verteidigen, Punkte-Kisten einsammeln", "reinforce": "Kisten einsammeln, angegriffene Gebäude verstärken", "wells": "{b} sammeln"}, "with": "Zusammen mit"}, "en": {"title": "Your Desert Storm assignment", "team": "Team", "vs": "vs", "stamm": "Starter", "ersatz": "Substitute", "ph": ["Start (0–10 min)", "From 10 min", "From 13 min"], "sub": "Stay ready. As soon as a spot opens you move in (you are substitute no. {n}) and take over the task of the player who left.", "b": {"ref1": "Oil Refinery I", "ref2": "Oil Refinery II", "hosp1": "Field Hospital I", "hosp2": "Field Hospital II", "hosp3": "Field Hospital III", "sci": "Science Hub", "info": "Info Center", "arsenal": "Arsenal", "merc": "Mercenary Factory", "silo": "Nuclear Silo", "wells": "Oil Wells"}, "a": {"take": "capture and hold {b}", "help": "help capture {b}", "move": "move to {b}, capture and hold it", "hold": "hold {b}", "holdh": "hold {b}, collect healed troops", "rally": "gather at 9:30, capture {b} together at 10:00 and hold it", "iffree": "capture {b} if it is free – otherwise reinforce where needed", "defend": "defend the base, collect point boxes", "reinforce": "collect boxes, reinforce buildings under attack", "wells": "gather at {b}"}, "with": "Together with"}, "fr": {"title": "Ton affectation Tempête du désert", "team": "Équipe", "vs": "contre", "stamm": "Titulaire", "ersatz": "Remplaçant", "ph": ["Début (0–10 min)", "À partir de 10 min", "À partir de 13 min"], "sub": "Tiens-toi prêt. Dès qu'une place se libère, tu entres (tu es remplaçant n° {n}) et tu reprends la mission du joueur parti.", "b": {"ref1": "Raffinerie I", "ref2": "Raffinerie II", "hosp1": "Hôpital de campagne I", "hosp2": "Hôpital de campagne II", "hosp3": "Hôpital de campagne III", "sci": "Centre scientifique", "info": "Centre d'information", "arsenal": "Arsenal", "merc": "Usine de mercenaires", "silo": "Silo nucléaire", "wells": "Puits de pétrole"}, "a": {"take": "prendre et tenir {b}", "help": "aider à prendre {b}", "move": "aller à {b}, le prendre et le tenir", "hold": "tenir {b}", "holdh": "tenir {b}, récupérer les troupes soignées", "rally": "se rassembler à 9:30, prendre {b} ensemble à 10:00 et le tenir", "iffree": "prendre {b} s'il est libre – sinon renforcer où il faut", "defend": "défendre la base, ramasser les caisses de points", "reinforce": "ramasser les caisses, renforcer les bâtiments attaqués", "wells": "récolter aux {b}"}, "with": "Avec"}, "es": {"title": "Tu misión en Tormenta del desierto", "team": "Equipo", "vs": "contra", "stamm": "Titular", "ersatz": "Suplente", "ph": ["Inicio (0–10 min)", "Desde 10 min", "Desde 13 min"], "sub": "Mantente listo. En cuanto quede un hueco, entras (eres el suplente n.º {n}) y asumes la tarea del jugador que salió.", "b": {"ref1": "Refinería I", "ref2": "Refinería II", "hosp1": "Hospital de campaña I", "hosp2": "Hospital de campaña II", "hosp3": "Hospital de campaña III", "sci": "Centro científico", "info": "Centro de información", "arsenal": "Arsenal", "merc": "Fábrica de mercenarios", "silo": "Silo nuclear", "wells": "Pozos de petróleo"}, "a": {"take": "capturar y mantener {b}", "help": "ayudar a capturar {b}", "move": "ir a {b}, capturarlo y mantenerlo", "hold": "mantener {b}", "holdh": "mantener {b}, recoger tropas curadas", "rally": "reunirse a las 9:30, capturar {b} juntos a las 10:00 y mantenerlo", "iffree": "capturar {b} si está libre – si no, reforzar donde haga falta", "defend": "defender la base, recoger cajas de puntos", "reinforce": "recoger cajas, reforzar edificios atacados", "wells": "recolectar en {b}"}, "with": "Junto con"}, "pt": {"title": "Sua missão na Tempestade do deserto", "team": "Equipe", "vs": "contra", "stamm": "Titular", "ersatz": "Reserva", "ph": ["Início (0–10 min)", "A partir de 10 min", "A partir de 13 min"], "sub": "Fique pronto. Assim que abrir uma vaga, você entra (você é o reserva nº {n}) e assume a tarefa do jogador que saiu.", "b": {"ref1": "Refinaria I", "ref2": "Refinaria II", "hosp1": "Hospital de campanha I", "hosp2": "Hospital de campanha II", "hosp3": "Hospital de campanha III", "sci": "Centro científico", "info": "Centro de informações", "arsenal": "Arsenal", "merc": "Fábrica de mercenários", "silo": "Silo nuclear", "wells": "Poços de petróleo"}, "a": {"take": "capturar e segurar {b}", "help": "ajudar a capturar {b}", "move": "ir para {b}, capturar e segurar", "hold": "segurar {b}", "holdh": "segurar {b}, recolher tropas curadas", "rally": "reunir às 9:30, capturar {b} juntos às 10:00 e segurar", "iffree": "capturar {b} se estiver livre – senão reforçar onde precisar", "defend": "defender a base, coletar caixas de pontos", "reinforce": "coletar caixas, reforçar prédios atacados", "wells": "coletar nos {b}"}, "with": "Junto com"}, "it": {"title": "Il tuo incarico Tempesta nel deserto", "team": "Squadra", "vs": "contro", "stamm": "Titolare", "ersatz": "Riserva", "ph": ["Inizio (0–10 min)", "Da 10 min", "Da 13 min"], "sub": "Tieniti pronto. Appena si libera un posto entri (sei la riserva n. {n}) e prendi il compito del giocatore uscito.", "b": {"ref1": "Raffineria I", "ref2": "Raffineria II", "hosp1": "Ospedale da campo I", "hosp2": "Ospedale da campo II", "hosp3": "Ospedale da campo III", "sci": "Centro scientifico", "info": "Centro informazioni", "arsenal": "Arsenale", "merc": "Fabbrica di mercenari", "silo": "Silo nucleare", "wells": "Pozzi di petrolio"}, "a": {"take": "conquistare e tenere {b}", "help": "aiutare a conquistare {b}", "move": "spostarsi a {b}, conquistarlo e tenerlo", "hold": "tenere {b}", "holdh": "tenere {b}, ritirare le truppe curate", "rally": "radunarsi alle 9:30, conquistare insieme {b} alle 10:00 e tenerlo", "iffree": "conquistare {b} se libero – altrimenti rinforzare dove serve", "defend": "difendere la base, raccogliere le casse punti", "reinforce": "raccogliere casse, rinforzare gli edifici attaccati", "wells": "raccogliere ai {b}"}, "with": "Insieme a"}, "tr": {"title": "Çöl Fırtınası görevin", "team": "Takım", "vs": "rakip", "stamm": "As oyuncu", "ersatz": "Yedek", "ph": ["Başlangıç (0–10 dk)", "10. dakikadan itibaren", "13. dakikadan itibaren"], "sub": "Hazır ol. Bir yer boşalır boşalmaz girersin ({n}. yedeksin) ve ayrılan oyuncunun görevini üstlenirsin.", "b": {"ref1": "Petrol Rafinerisi I", "ref2": "Petrol Rafinerisi II", "hosp1": "Sahra Hastanesi I", "hosp2": "Sahra Hastanesi II", "hosp3": "Sahra Hastanesi III", "sci": "Bilim Merkezi", "info": "Bilgi Merkezi", "arsenal": "Cephanelik", "merc": "Paralı Asker Fabrikası", "silo": "Nükleer Silo", "wells": "Petrol Kuyuları"}, "a": {"take": "{b} ele geçir ve tut", "help": "{b} ele geçirmeye yardım et", "move": "{b} binasına geç, ele geçir ve tut", "hold": "{b} tut", "holdh": "{b} tut, iyileşen birlikleri al", "rally": "9:30'da toplan, 10:00'da birlikte {b} ele geçir ve tut", "iffree": "boşsa {b} ele geçir – değilse gereken yeri destekle", "defend": "üssü savun, puan kutularını topla", "reinforce": "kutuları topla, saldırı altındaki binaları destekle", "wells": "{b} topla"}, "with": "Birlikte"}, "ru": {"title": "Твоё задание в «Буре в пустыне»", "team": "Команда", "vs": "против", "stamm": "Основной", "ersatz": "Запасной", "ph": ["Старт (0–10 мин)", "С 10-й минуты", "С 13-й минуты"], "sub": "Будь наготове. Как только освободится место, заходи (ты запасной № {n}) и бери задачу выбывшего игрока.", "b": {"ref1": "Нефтезавод I", "ref2": "Нефтезавод II", "hosp1": "Полевой госпиталь I", "hosp2": "Полевой госпиталь II", "hosp3": "Полевой госпиталь III", "sci": "Научный центр", "info": "Информационный центр", "arsenal": "Арсенал", "merc": "Фабрика наёмников", "silo": "Ядерная шахта", "wells": "Нефтяные скважины"}, "a": {"take": "захватить и удерживать: {b}", "help": "помочь захватить: {b}", "move": "перейти в {b}, захватить и удерживать", "hold": "удерживать: {b}", "holdh": "удерживать: {b}, забирать вылеченные войска", "rally": "собраться в 9:30, в 10:00 вместе захватить {b} и удерживать", "iffree": "захватить {b}, если свободно – иначе помогать, где нужно", "defend": "защищать базу, собирать ящики с очками", "reinforce": "собирать ящики, усиливать атакованные здания", "wells": "собирать: {b}"}, "with": "Вместе с"}, "pl": {"title": "Twoje zadanie w Burzy pustynnej", "team": "Drużyna", "vs": "przeciw", "stamm": "Podstawowy", "ersatz": "Rezerwowy", "ph": ["Start (0–10 min)", "Od 10 min", "Od 13 min"], "sub": "Bądź gotowy. Gdy zwolni się miejsce, wchodzisz (jesteś rezerwowym nr {n}) i przejmujesz zadanie gracza, który wyszedł.", "b": {"ref1": "Rafineria I", "ref2": "Rafineria II", "hosp1": "Szpital polowy I", "hosp2": "Szpital polowy II", "hosp3": "Szpital polowy III", "sci": "Centrum naukowe", "info": "Centrum informacji", "arsenal": "Arsenał", "merc": "Fabryka najemników", "silo": "Silos nuklearny", "wells": "Szyby naftowe"}, "a": {"take": "zdobyć i utrzymać: {b}", "help": "pomóc zdobyć: {b}", "move": "przejść do: {b}, zdobyć i utrzymać", "hold": "utrzymać: {b}", "holdh": "utrzymać: {b}, odbierać wyleczone wojska", "rally": "zbiórka o 9:30, o 10:00 razem zdobyć {b} i utrzymać", "iffree": "zdobyć {b}, jeśli wolne – inaczej wspierać tam, gdzie trzeba", "defend": "bronić bazy, zbierać skrzynki z punktami", "reinforce": "zbierać skrzynki, wspierać atakowane budynki", "wells": "zbierać: {b}"}, "with": "Razem z"}};
+var DS_GROUPS = {
+  silo:[['take','ref1'],['rally','silo'],['hold','silo']], ref2:[['take','ref2'],['hold','ref2'],['hold','ref2']],
+  ref1:[['help','ref2'],['move','ref1'],['hold','ref1']], info:[['take','info'],['move','arsenal'],['hold','arsenal']],
+  hosp1:[['take','hosp1'],['holdh','hosp1'],['holdh','hosp1']], hosp2:[['take','hosp2'],['holdh','hosp2'],['holdh','hosp2']],
+  sci:[['take','sci'],['iffree','merc'],['wells','wells']], hosp3:[['take','hosp3'],['holdh','hosp3'],['reinforce','']],
+  supp:[['defend',''],['reinforce',''],['wells','wells']]
+};
 var SB_URL = 'https://ulwuoxfglmlcdppdegml.supabase.co/rest/v1/rpc/';
 var SB_KEY = 'sb_publishable_f9uikP8ZEHD7leJtckyKbg_E-jLm_Nn';
 var ALLIANCE = 'SKWS – Skywalkers';
@@ -821,6 +839,36 @@ function rpc(fn, body){
     document.title = DATA.alliance + ' · ' + t('title');
   }
 
+  /* ---------- Wüstensturm-Einsatz ---------- */
+  function renderDs(){
+    var card = $('dsCard'), P = DATA && DATA.ds, n = $('name').value;
+    if (!P || !P.teams || !n) { card.classList.add('hide'); return; }
+    var L = DS_I18N[LANG] || DS_I18N.en, hit = null;
+    Object.keys(P.teams).forEach(function(t){
+      var T = P.teams[t];
+      (T.m || []).forEach(function(x){ if (x[0] === n) hit = { t: t, T: T, g: x[1] }; });
+      (T.s || []).forEach(function(x, i){ if (x === n) hit = { t: t, T: T, sub: i + 1 }; });
+    });
+    if (!hit) { card.classList.add('hide'); return; }
+    function act(s){ var a = L.a[s[0]] || s[0]; return a.split('{b}').join(L.b[s[1]] || ''); }
+    $('dsTitle').textContent = L.title;
+    $('dsTeam').textContent = L.team + ' ' + hit.t + ' · ' + (hit.sub ? L.ersatz : L.stamm);
+    $('dsMeta').textContent = [hit.T.time, hit.T.opp ? L.vs + ' ' + hit.T.opp : ''].filter(Boolean).join(' · ');
+    var ol = $('dsSteps'); ol.innerHTML = '';
+    if (hit.sub) {
+      var li = document.createElement('li'); li.textContent = L.sub.replace('{n}', hit.sub); ol.appendChild(li);
+      $('dsWith').textContent = '';
+    } else {
+      (DS_GROUPS[hit.g] || []).forEach(function(s, i){
+        var li = document.createElement('li'), b = document.createElement('b'); b.textContent = L.ph[i];
+        li.appendChild(b); li.appendChild(document.createTextNode(act(s))); ol.appendChild(li);
+      });
+      var mates = (hit.T.m || []).filter(function(x){ return x[1] === hit.g && x[0] !== n; }).map(function(x){ return x[0]; });
+      $('dsWith').textContent = mates.length ? L['with'] + ': ' + mates.join(', ') : '';
+    }
+    card.classList.remove('hide');
+  }
+
   /* ---------- Formular ---------- */
   function loadMember(){
     var n = $('name').value, e = DATA.entries[n];
@@ -842,6 +890,7 @@ function rpc(fn, body){
   }
 
   function showMeta(){
+    renderDs();
     var nm = $('name').value;
     $('nameSaved').classList.toggle('hide', !nm);
     $('adminBtn').classList.toggle('hide', !(nm && DATA && (DATA.leaders || []).indexOf(nm) >= 0));
@@ -1102,7 +1151,7 @@ function rpc(fn, body){
   }
   rpc('get_init')
     .then(function(res){
-      init({ alliance: ALLIANCE, members: res.members || [], leaders: res.leaders || [], entries: res.entries || {},
+      init({ alliance: ALLIANCE, members: res.members || [], leaders: res.leaders || [], entries: res.entries || {}, ds: res.ds || null,
              troops: ['tank','missile','aircraft','mixed'], squads: 4, langs: LANG_NAMES, i18n: I18N });
     })
     .catch(function(){ $('loadingTxt').textContent = 'Error – please reload / Fehler – bitte neu laden'; });
