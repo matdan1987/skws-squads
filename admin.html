@@ -117,6 +117,8 @@
   .dscount .over{color:var(--err)}
   .pick label select{width:auto;flex:none;padding:5px 8px;font-size:13px;border-radius:8px}
   .pick label.as{background:rgba(92,200,255,.08)} .pick label.bs{background:rgba(168,120,255,.10)}
+  .tacinfo{font-size:12px;line-height:1.45;margin-top:6px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+  #tab-ds textarea{width:100%;height:68px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text);font:inherit;font-size:14px;resize:vertical;box-sizing:border-box}
   .phase{font-size:12px;color:var(--muted);margin-top:2px;white-space:normal}
   .grp td{white-space:normal;vertical-align:top}
   .team{margin-top:12px}
@@ -317,6 +319,12 @@
           <div><label for="dsOppA">Team A – Gegner (optional)</label><input id="dsOppA" type="text"></div>
           <div><label for="dsOppB">Team B – Gegner (optional)</label><input id="dsOppB" type="text"></div>
         </div>
+        <div class="formrow">
+          <div><label for="dsTacA">Team A – Taktik</label><select id="dsTacA"></select><div class="tacinfo" id="dsTacInfoA"></div></div>
+          <div><label for="dsTacB">Team B – Taktik</label><select id="dsTacB"></select><div class="tacinfo" id="dsTacInfoB"></div></div>
+          <div><label for="dsNoteA">Team A – Sonderanweisung (optional)</label><textarea id="dsNoteA" rows="2" placeholder="z. B. Bedra, Harald und Meister: bis Minute 20 beobachten, wo es brennt, und dort helfen."></textarea></div>
+          <div><label for="dsNoteB">Team B – Sonderanweisung (optional)</label><textarea id="dsNoteB" rows="2"></textarea></div>
+        </div>
         <div class="formrow" style="grid-template-columns:1fr">
           <div><label for="dsMetric">Stärke bewerten nach</label>
             <select id="dsMetric"><option value="t1">T1-Kampfkraft (empfohlen)</option><option value="total">Gesamt T1–T4</option><option value="hero">Heldenkraft</option></select></div>
@@ -347,14 +355,14 @@
             <button class="btn2" id="dsImgA">Bild-KI-Prompt Team A</button>
             <button class="btn2" id="dsImgB">Bild-KI-Prompt Team B</button>
           </div>
-          <p class="small muted" style="margin:6px 0 0">Bild-KI: Prompt kopieren, in z. B. ChatGPT oder Gemini einfügen und einen Screenshot der Wüstensturm-Karte aus dem Spiel anhängen – dann zeichnet sie die Namen an die richtigen Gebäude.</p>
+          <p class="small muted" style="margin:6px 0 0">Bild-KI: Prompt kopieren, in z. B. ChatGPT oder Gemini einfügen und eure leere Wüstensturm-Karte (ohne Namen) als Bild anhängen. Die KI schreibt dann die Namen an die Gebäude, kreist Spieler ein, die später wechseln, und zeichnet Pfeile – im Stil eures bisherigen Plans. Namen bitte gegenlesen.</p>
           <div class="btnrow" style="margin-top:12px">
             <button class="btn" id="dsPublish">Für Spieler veröffentlichen</button>
             <button class="btn2" id="dsUnpublish">Veröffentlichung zurücknehmen</button>
           </div>
           <p class="small muted" style="margin:6px 0 0">Veröffentlicht: Jeder Spieler sieht auf der Seite und in der App seinen eigenen Einsatz (Team, Uhrzeit, Aufgabe je Phase) in seiner Sprache.</p>
         </div>
-        <div class="note" id="dsNote"></div>
+        <div class="note" id="dsMsg"></div>
         <div class="small muted" id="dsPubInfo"></div>
       </div>
     </section>
@@ -833,24 +841,94 @@
   function updateSelCount(){ $('selCount').textContent = selected().length; $('expPreview').value = exportText(); $('expNote').textContent = ''; }
 
   /* ---------- Wüstensturm ---------- */
-  // Gleiche Gruppen/Schritte wie in index.html (dort übersetzt). Reihenfolge = Priorität: die Stärksten zuerst.
-  var DS_GROUPS = [
-    { k:'silo',  n:5, steps:[['take','ref1'],['rally','silo'],['hold','silo']] },
-    { k:'ref2',  n:2, steps:[['take','ref2'],['hold','ref2'],['hold','ref2']] },
-    { k:'ref1',  n:2, steps:[['help','ref2'],['move','ref1'],['hold','ref1']] },
-    { k:'info',  n:2, steps:[['take','info'],['move','arsenal'],['hold','arsenal']] },
-    { k:'hosp1', n:2, steps:[['take','hosp1'],['holdh','hosp1'],['holdh','hosp1']] },
-    { k:'hosp2', n:2, steps:[['take','hosp2'],['holdh','hosp2'],['holdh','hosp2']] },
-    { k:'sci',   n:1, steps:[['take','sci'],['iffree','merc'],['wells','wells']] },
-    { k:'hosp3', n:2, steps:[['take','hosp3'],['holdh','hosp3'],['reinforce','']] },
-    { k:'supp',  n:2, steps:[['defend',''],['reinforce',''],['wells','wells']] }
-  ];
-  var DS_GNAME = { silo:'Silo-Trupp', ref2:'Raffinerie-II-Trupp', ref1:'Raffinerie-I-Trupp', info:'Info-/Waffenlager-Trupp', hosp1:'Lazarett I', hosp2:'Lazarett II', sci:'Wissenschaft', hosp3:'Lazarett III', supp:'Unterstützung' };
-  var DS_B = { ref1:'Ölraffinerie I', ref2:'Ölraffinerie II', hosp1:'Feldlazarett I', hosp2:'Feldlazarett II', hosp3:'Feldlazarett III', sci:'Wissenschaftszentrum', info:'Infozentrum', arsenal:'Waffenlager', merc:'Söldnerfabrik', silo:'Atomsilo', wells:'Ölquellen' };
-  var DS_B_EN = { ref1:'Oil Refinery I', ref2:'Oil Refinery II', hosp1:'Field Hospital I', hosp2:'Field Hospital II', hosp3:'Field Hospital III', sci:'Science Hub', info:'Info Center', arsenal:'Arsenal', merc:'Mercenary Factory', silo:'Nuclear Silo', wells:'Oil Wells' };
-  var DS_A = { take:'{b} erobern und halten', help:'bei {b} mit erobern', move:'zu {b} wechseln, erobern und halten', hold:'{b} halten', holdh:'{b} halten, geheilte Truppen abholen', rally:'ab 9:30 sammeln, um 10:00 gemeinsam {b} erobern und halten', iffree:'{b} erobern, wenn frei – sonst verstärken, wo nötig', defend:'Basis verteidigen, Punkte-Kisten einsammeln', reinforce:'Kisten einsammeln, angegriffene Gebäude verstärken', wells:'{b} sammeln' };
-  var DS_PH_SHORT = ['Start (0–10 Min.)', 'Ab 10 Min.', 'Ab 13 Min.'];
-  var DS_PH = ['Phase 1 (Start, 0–10 Min.)', 'Phase 2 (ab 10 Min.)', 'Phase 3 (ab 13 Min.)'];
+  // Taktiken: Gruppen in Prioritätsreihenfolge (die Stärksten zuerst), je Gruppe ein Schritt pro Phase.
+  // Die Schritte werden mit veröffentlicht; index.html übersetzt Aktionen, Gebäude und Phasen.
+  var DS_TACTICS = {
+    std: {
+      name: 'Ausgewogen – Silo-Sturm um 10:00',
+      desc: 'Die 5 Stärksten nehmen zuerst Ölraffinerie I und stürmen um 10:00 gemeinsam das Atomsilo. Der Rest hält Raffinerien, Infozentrum/Waffenlager, drei Lazarette und das Wissenschaftszentrum.',
+      when: 'Gegner ungefähr gleich stark. Guter Standard, wenn ihr den Gegner nicht kennt.',
+      pro: 'Holt das Silo (meiste Punkte) früh, ohne die Außengebäude aufzugeben.',
+      con: 'Wenn der Gegner das Silo härter verteidigt, binden sich eure Stärksten dort.',
+      en: 'Balanced: the 5 strongest take Oil Refinery I, then storm the Nuclear Silo together at 10:00; the rest hold refineries, Info Center/Arsenal, three hospitals and the Science Hub.',
+      ph: ['p0','p10','p13'],
+      groups: [
+        { k:'silo',  n:5, label:'Silo-Trupp',              steps:[['take','ref1'],['rally','silo'],['hold','silo']] },
+        { k:'ref2',  n:2, label:'Raffinerie-II-Trupp',     steps:[['take','ref2'],['hold','ref2'],['hold','ref2']] },
+        { k:'ref1',  n:2, label:'Raffinerie-I-Trupp',      steps:[['help','ref2'],['move','ref1'],['hold','ref1']] },
+        { k:'info',  n:2, label:'Info-/Waffenlager-Trupp', steps:[['take','info'],['move','arsenal'],['hold','arsenal']] },
+        { k:'hosp1', n:2, label:'Lazarett I',              steps:[['take','hosp1'],['holdh','hosp1'],['holdh','hosp1']] },
+        { k:'hosp2', n:2, label:'Lazarett II',             steps:[['take','hosp2'],['holdh','hosp2'],['holdh','hosp2']] },
+        { k:'sci',   n:1, label:'Wissenschaft',            steps:[['take','sci'],['iffree','merc'],['wells','wells']] },
+        { k:'hosp3', n:2, label:'Lazarett III',            steps:[['take','hosp3'],['holdh','hosp3'],['reinforce','']] },
+        { k:'supp',  n:2, label:'Unterstützung',           steps:[['defend',''],['reinforce',''],['wells','wells']] }
+      ]
+    },
+    wide: {
+      name: 'Breit verteilt + Eingreiftruppe',
+      desc: 'Alle 8 Außengebäude werden ab Start mit 1–3 Spielern besetzt. Die 3 Stärksten sind eine Eingreiftruppe: Sie beobachten, wo wir unter Druck sind, und verstärken dort. Ab 10 Min. übernehmen Info- und Wissenschafts-Trupp Waffenlager und Söldnerfabrik, ab 20 Min. geht die Eingreiftruppe aufs Atomsilo.',
+      when: 'Wenn ihr viele Gebäude sicher halten wollt und der Gegner unberechenbar ist. Entspricht eurem letzten Plan.',
+      pro: 'Viele Gebäude produzieren gleichzeitig Punkte; die Eingreiftruppe stopft Lücken.',
+      con: 'Wenig Leute pro Gebäude – ein konzentrierter Angriff kann einzelne Gebäude kippen.',
+      en: 'Spread out: all 8 outer buildings are held from the start by 1–3 players each. The 3 strongest form a reaction team that watches where we are under pressure and reinforces there; from minute 20 they take the Nuclear Silo.',
+      ph: ['p0','p10','p20'],
+      groups: [
+        { k:'flex',  n:3, label:'Eingreiftruppe',          steps:[['watch',''],['watch',''],['takeend','silo']] },
+        { k:'ref1',  n:3, label:'Raffinerie I',            steps:[['take','ref1'],['hold','ref1'],['hold','ref1']] },
+        { k:'ref2',  n:3, label:'Raffinerie II',           steps:[['take','ref2'],['hold','ref2'],['hold','ref2']] },
+        { k:'info',  n:2, label:'Info-/Waffenlager-Trupp', steps:[['take','info'],['move','arsenal'],['hold','arsenal']] },
+        { k:'sci',   n:2, label:'Wissenschaft/Söldner',    steps:[['take','sci'],['move','merc'],['hold','merc']] },
+        { k:'hosp1', n:2, label:'Lazarett I',              steps:[['take','hosp1'],['holdh','hosp1'],['holdh','hosp1']] },
+        { k:'hosp2', n:2, label:'Lazarett II',             steps:[['take','hosp2'],['holdh','hosp2'],['holdh','hosp2']] },
+        { k:'hosp3', n:2, label:'Lazarett III',            steps:[['take','hosp3'],['holdh','hosp3'],['holdh','hosp3']] },
+        { k:'hosp4', n:1, label:'Lazarett IV',             steps:[['take','hosp4'],['holdh','hosp4'],['reinforce','']] }
+      ]
+    },
+    center: {
+      name: 'Zentrum & Buffs – gegen schwächere Gegner',
+      desc: '6 Starke nehmen Ölraffinerie I und stürmen um 10:00 das Atomsilo. Je 3 Spieler holen sich parallel Waffenlager (+15 % eigene Werte) und Söldnerfabrik (−15 % Gegner). Zusammen mit dem Silo ergibt das das „Buff-Dreieck“.',
+      when: 'Wenn ihr klar stärker seid oder unbedingt das Silo dominieren wollt.',
+      pro: 'Bis zu 30 % Werte-Vorteil in der Mitte; das Silo bringt die meisten Punkte.',
+      con: 'Lazarette und Wissenschaft werden kaum besetzt – gegen starke Gegner riskant.',
+      en: 'Center & buffs: 6 strong players take Oil Refinery I and storm the Nuclear Silo at 10:00; at the same time 3 players each take the Arsenal and the Mercenary Factory (buff triangle).',
+      ph: ['p0','p10','p13'],
+      groups: [
+        { k:'silo',  n:6, label:'Silo-Trupp',         steps:[['take','ref1'],['rally','silo'],['hold','silo']] },
+        { k:'arsenal', n:3, label:'Waffenlager-Trupp', steps:[['take','info'],['move','arsenal'],['hold','arsenal']] },
+        { k:'merc',  n:3, label:'Söldner-Trupp',      steps:[['take','sci'],['move','merc'],['hold','merc']] },
+        { k:'ref2',  n:3, label:'Raffinerie II',      steps:[['take','ref2'],['hold','ref2'],['hold','ref2']] },
+        { k:'ref1',  n:2, label:'Raffinerie I halten', steps:[['help','ref1'],['hold','ref1'],['hold','ref1']] },
+        { k:'hosp1', n:2, label:'Lazarett I',         steps:[['take','hosp1'],['holdh','hosp1'],['holdh','hosp1']] },
+        { k:'supp',  n:1, label:'Unterstützung',      steps:[['defend',''],['reinforce',''],['wells','wells']] }
+      ]
+    },
+    turtle: {
+      name: 'Bollwerk + Schlussangriff – gegen stärkere Gegner',
+      desc: 'Alle 4 Lazarette (Heilung!) und beide Raffinerien werden gehalten, ins Zentrum geht zunächst niemand, die Truppen werden geschont. Ab 28:00 sammeln sich die 5 Stärksten und greifen um 28:30 gemeinsam das Atomsilo an, danach werden die Punkte-Kisten eingesammelt.',
+      when: 'Wenn der Gegner deutlich stärker ist. Riskant: Der Schlussangriff muss gut abgestimmt sein.',
+      pro: 'Wenig Verluste, viel Heilung, sichere Punkte; der späte Angriff erwischt den Gegner oft unvorbereitet.',
+      con: 'Lange kein Silo-Punktestrom; scheitert der Schlussangriff, fehlen die Punkte.',
+      en: 'Bulwark & final strike: hold all 4 field hospitals and both refineries, stay out of the center and save troops; from 28:00 the 5 strongest gather and attack the Nuclear Silo together at 28:30, then collect the point boxes.',
+      ph: ['p0','p10','p28'],
+      groups: [
+        { k:'strike', n:5, label:'Schlussangriff',  steps:[['take','ref1'],['holdq','ref1'],['final','silo']] },
+        { k:'ref2',  n:3, label:'Raffinerie II',    steps:[['take','ref2'],['holdq','ref2'],['hold','ref2']] },
+        { k:'hosp1', n:2, label:'Lazarett I',       steps:[['take','hosp1'],['holdh','hosp1'],['holdh','hosp1']] },
+        { k:'hosp2', n:2, label:'Lazarett II',      steps:[['take','hosp2'],['holdh','hosp2'],['holdh','hosp2']] },
+        { k:'hosp3', n:2, label:'Lazarett III',     steps:[['take','hosp3'],['holdh','hosp3'],['holdh','hosp3']] },
+        { k:'hosp4', n:2, label:'Lazarett IV',      steps:[['take','hosp4'],['holdh','hosp4'],['holdh','hosp4']] },
+        { k:'info',  n:2, label:'Infozentrum',      steps:[['take','info'],['holdq','info'],['hold','info']] },
+        { k:'supp',  n:2, label:'Unterstützung',    steps:[['defend',''],['reinforce',''],['reinforce','']] }
+      ]
+    }
+  };
+  var DS_B = { ref1:'Ölraffinerie I', ref2:'Ölraffinerie II', hosp1:'Feldlazarett I', hosp2:'Feldlazarett II', hosp3:'Feldlazarett III', hosp4:'Feldlazarett IV', sci:'Wissenschaftszentrum', info:'Infozentrum', arsenal:'Waffenlager', merc:'Söldnerfabrik', silo:'Atomsilo', wells:'Ölquellen' };
+  var DS_B_EN = { ref1:'Oil Refinery I', ref2:'Oil Refinery II', hosp1:'Field Hospital I', hosp2:'Field Hospital II', hosp3:'Field Hospital III', hosp4:'Field Hospital IV', sci:'Science Hub', info:'Info Center', arsenal:'Arsenal', merc:'Mercenary Factory', silo:'Nuclear Silo', wells:'Oil Wells' };
+  var DS_A = { take:'{b} erobern und halten', help:'bei {b} mit erobern', move:'zu {b} wechseln, erobern und halten', hold:'{b} halten', holdh:'{b} halten, geheilte Truppen abholen', rally:'ab 9:30 sammeln, um 10:00 gemeinsam {b} erobern und halten', iffree:'{b} erobern, wenn frei – sonst verstärken, wo nötig', defend:'Basis verteidigen, Punkte-Kisten einsammeln', reinforce:'Kisten einsammeln, angegriffene Gebäude verstärken', wells:'{b} sammeln',
+    watch:'Eingreiftruppe: beobachten, wo wir unter Druck sind, und dort verstärken', takeend:'{b} erobern und bis zum Ende halten', final:'ab 28:00 sammeln, um 28:30 gemeinsam {b} angreifen, danach Punkte-Kisten einsammeln', holdq:'{b} halten und Truppen schonen – nicht ins Zentrum' };
+  var DS_A_EN = { take:'capture & hold', help:'help capture', move:'move to & hold', hold:'hold', holdh:'hold', rally:'rally 9:30, attack 10:00', iffree:'take if free', defend:'defend base', reinforce:'reinforce', wells:'gather', watch:'reaction team', takeend:'capture & hold to the end', final:'final strike 28:30', holdq:'hold, save troops' };
+  var DS_PHL = { p0:'Start (0–10 Min.)', p10:'Ab 10 Min.', p13:'Ab 13 Min.', p20:'Ab 20 Min.', p28:'Ab 28 Min.' };
+  var DS_PHL_EN = { p0:'phase 1, minute 0–10', p10:'phase 2, from minute 10', p13:'phase 3, from minute 13', p20:'phase 3, from minute 20', p28:'phase 3, from minute 28' };
   var DS_TIPS = [
     'Gebäude bringen auch ohne Besatzung Punkte – nach dem Erobern nicht wild abziehen.',
     'Nach 60 Sekunden werden 40 % der Punkte plünderbar: Gebäude halten, bei einem Wechsel die Punkte-Kisten mit dem Aufklärer einsammeln.',
@@ -861,7 +939,8 @@
   var DS_KEY = 'skws_ds', DS_ONLYSEL = false, DS_LAST = null, DS_PUB = null;
   function dsState(){
     var st = null; try { st = JSON.parse(ls(DS_KEY) || 'null'); } catch(e){}
-    st = st || {}; st.assign = st.assign || {}; st.time = st.time || {A:'',B:''}; st.opp = st.opp || {A:'',B:''}; st.metric = st.metric || 't1';
+    st = st || {}; st.assign = st.assign || {}; st.time = st.time || {A:'',B:''}; st.opp = st.opp || {A:'',B:''};
+    st.note = st.note || {A:'',B:''}; st.tac = st.tac || {A:'std',B:'std'}; st.metric = st.metric || 't1';
     return st;
   }
   function dsSave(st){ try { ls(DS_KEY, JSON.stringify(st)); } catch(e){} }
@@ -871,15 +950,22 @@
     return m === 'total' ? p.total : p.t1;
   }
   function dsMetricTxt(p, m){
-    if (!p.entry) return 'keine Meldung';
+    if (!p || !p.entry) return 'keine Meldung';
     var v = dsMetricVal(p, m);
     return (m === 'hero' ? 'Held ' : m === 'total' ? 'Ges. ' : 'T1 ') + (v ? fmt(v) + ' M' : '–');
   }
-  function dsAct(step, B){ var t = DS_A[step[0]] || step[0]; return t.split('{b}').join(B[step[1]] || ''); }
+  function dsAct(step){ var t = DS_A[step[0]] || step[0]; return t.split('{b}').join(DS_B[step[1]] || ''); }
+  function dsTacInfo(t){
+    var T = DS_TACTICS[$('dsTac' + t).value] || DS_TACTICS.std;
+    $('dsTacInfo' + t).innerHTML = '<b>' + esc(T.name) + '</b><br>' + esc(T.desc) + '<br><span class="muted">Wann: </span>' + esc(T.when) + '<br><span class="up">+ </span>' + esc(T.pro) + '<br><span class="down">− </span>' + esc(T.con);
+  }
   function dsRender(){
     if (!D) return;
     var st = dsState();
-    $('dsTimeA').value = st.time.A; $('dsTimeB').value = st.time.B; $('dsOppA').value = st.opp.A; $('dsOppB').value = st.opp.B;
+    ['A','B'].forEach(function(t){
+      $('dsTime' + t).value = st.time[t]; $('dsOpp' + t).value = st.opp[t]; $('dsNote' + t).value = st.note[t];
+      $('dsTac' + t).value = DS_TACTICS[st.tac[t]] ? st.tac[t] : 'std'; dsTacInfo(t);
+    });
     $('dsMetric').value = st.metric;
     dsRenderList();
     dsPubInfo();
@@ -910,19 +996,21 @@
         .sort(function(a,b){ return dsMetricVal(b,m) - dsMetricVal(a,m) || a.name.localeCompare(b.name); }); }
       var stamm = pick('S'), subs = pick('E');
       if (!stamm.length && !subs.length) return;
-      var members = [], i = 0;
-      DS_GROUPS.forEach(function(g){ for (var k = 0; k < g.n && i < stamm.length; k++, i++) members.push([stamm[i].name, g.k]); });
-      for (; i < stamm.length; i++) members.push([stamm[i].name, 'supp']);
+      var tacKey = DS_TACTICS[st.tac[t]] ? st.tac[t] : 'std', TC = DS_TACTICS[tacKey];
+      var members = [], used = {}, i = 0, last = TC.groups[TC.groups.length - 1].k;
+      TC.groups.forEach(function(g){ for (var k = 0; k < g.n && i < stamm.length; k++, i++) { members.push([stamm[i].name, g.k]); used[g.k] = g.steps; } });
+      for (; i < stamm.length; i++) { members.push([stamm[i].name, last]); used[last] = TC.groups[TC.groups.length - 1].steps; }
       if (stamm.length > 20) warn.push('Team ' + t + ': ' + stamm.length + ' Stammspieler – im Spiel sind nur 20 gleichzeitig möglich.');
       if (subs.length > 10) warn.push('Team ' + t + ': ' + subs.length + ' Ersatzspieler – im Spiel sind nur 10 möglich.');
       var nod = stamm.concat(subs).filter(function(p){ return !p.entry; }).map(function(p){ return p.name; });
       if (nod.length) warn.push('Team ' + t + ' ohne Meldung (als Schwächste eingeplant): ' + nod.join(', '));
-      plan.teams[t] = { time: st.time[t] || '', opp: st.opp[t] || '', m: members, s: subs.map(function(p){ return p.name; }) };
+      plan.teams[t] = { time: st.time[t] || '', opp: st.opp[t] || '', note: st.note[t] || '', tac: tacKey, ph: TC.ph, g: used, m: members, s: subs.map(function(p){ return p.name; }) };
     });
     return { plan: plan, warn: warn, by: by };
   }
   function dsGroupsOf(team){
-    var out = []; DS_GROUPS.forEach(function(g){ var names = team.m.filter(function(x){ return x[1] === g.k; }).map(function(x){ return x[0]; }); if (names.length) out.push({ g: g, names: names }); });
+    var TC = DS_TACTICS[team.tac] || DS_TACTICS.std, out = [];
+    TC.groups.forEach(function(g){ var names = team.m.filter(function(x){ return x[1] === g.k; }).map(function(x){ return x[0]; }); if (names.length) out.push({ g: g, names: names }); });
     return out;
   }
   function dsRun(){
@@ -930,11 +1018,13 @@
     var P = r.plan, m = P.metric, h = '';
     ['A','B'].forEach(function(t){
       var T = P.teams[t]; if (!T) return;
-      h += '<div class="team"><h3>Team ' + t + (T.time ? ' · ' + esc(T.time) : '') + (T.opp ? ' · gegen ' + esc(T.opp) : '') + '<span>' + T.m.length + ' Stamm · ' + T.s.length + ' Ersatz</span></h3>';
-      h += '<div class="tw"><table class="grp"><tr><th>Gruppe</th><th>Spieler</th><th>' + DS_PH[0] + '</th><th>' + DS_PH[1] + '</th><th>' + DS_PH[2] + '</th></tr>';
+      var TC = DS_TACTICS[T.tac];
+      h += '<div class="team"><h3>Team ' + t + (T.time ? ' · ' + esc(T.time) : '') + (T.opp ? ' · gegen ' + esc(T.opp) : '') + '<span>' + esc(TC.name) + ' · ' + T.m.length + ' Stamm · ' + T.s.length + ' Ersatz</span></h3>';
+      if (T.note) h += '<p class="small" style="margin:0 0 6px">Hinweis: ' + esc(T.note) + '</p>';
+      h += '<div class="tw"><table class="grp"><tr><th>Gruppe</th><th>Spieler</th>' + T.ph.map(function(k){ return '<th>' + DS_PHL[k] + '</th>'; }).join('') + '</tr>';
       dsGroupsOf(T).forEach(function(x){
-        h += '<tr><td><b>' + DS_GNAME[x.g.k] + '</b></td><td>' + x.names.map(function(n){ return esc(n) + '<div class="phase">' + dsMetricTxt(r.by[n], m) + '</div>'; }).join('') + '</td>' +
-          x.g.steps.map(function(s){ return '<td>' + esc(dsAct(s, DS_B)) + '</td>'; }).join('') + '</tr>';
+        h += '<tr><td><b>' + esc(x.g.label) + '</b></td><td>' + x.names.map(function(n){ return esc(n) + '<div class="phase">' + dsMetricTxt(r.by[n], m) + '</div>'; }).join('') + '</td>' +
+          x.g.steps.map(function(s){ return '<td>' + esc(dsAct(s)) + '</td>'; }).join('') + '</tr>';
       });
       if (T.s.length) h += '<tr class="rankhead"><td colspan="5">Ersatz (Reihenfolge = wer zuerst nachrückt)</td></tr><tr><td colspan="5" style="white-space:normal">' + T.s.map(function(n, i){ return 'E' + (i+1) + ' ' + esc(n); }).join(' · ') + '</td></tr>';
       h += '</table></div></div>';
@@ -945,13 +1035,15 @@
     $('dsResult').innerHTML = h;
     $('dsActions').classList.toggle('hide', !Object.keys(P.teams).length);
     ['A','B'].forEach(function(t){ ['dsCopy','dsImg'].forEach(function(id){ $(id + t).classList.toggle('hide', !P.teams[t]); }); });
-    $('dsNote').textContent = ''; $('dsNote').className = 'note';
+    $('dsMsg').textContent = ''; $('dsMsg').className = 'note';
   }
   function dsChat(t){
-    var T = DS_LAST.plan.teams[t], out = ['SKWS Wüstensturm – Team ' + t + (T.time ? ' – ' + T.time : '') + (T.opp ? ' – gegen ' + T.opp : '')];
+    var T = DS_LAST.plan.teams[t], TC = DS_TACTICS[T.tac];
+    var out = ['SKWS Wüstensturm – Team ' + t + (T.time ? ' – ' + T.time : '') + (T.opp ? ' – gegen ' + T.opp : ''), 'Taktik: ' + TC.name, TC.desc];
+    if (T.note) out.push('', '‼ ' + T.note);
     dsGroupsOf(T).forEach(function(x){
-      out.push('', '▶ ' + DS_GNAME[x.g.k] + ': ' + x.names.join(', '));
-      x.g.steps.forEach(function(s, i){ out.push('  ' + DS_PH_SHORT[i] + ': ' + dsAct(s, DS_B)); });
+      out.push('', '▶ ' + x.g.label + ': ' + x.names.join(', '));
+      x.g.steps.forEach(function(s, i){ out.push('  ' + DS_PHL[T.ph[i]] + ': ' + dsAct(s)); });
     });
     if (T.s.length) out.push('', 'Ersatz (rücken in dieser Reihenfolge nach und übernehmen die Aufgabe des Ausgefallenen): ' + T.s.join(', '));
     out.push('', 'Regeln:'); DS_TIPS.forEach(function(x){ out.push('• ' + x); });
@@ -959,51 +1051,69 @@
     return out.join('\n');
   }
   function dsImgPrompt(t){
-    var T = DS_LAST.plan.teams[t], groups = dsGroupsOf(T), lines = [], seen = {};
-    [0,1,2].forEach(function(ph){
-      var byB = {}, order = [];
-      groups.forEach(function(x){
-        var s = x.g.steps[ph], b = s[1] || 'base';
-        if (!byB[b]) { byB[b] = []; order.push(b); }
-        byB[b] = byB[b].concat(x.names);
-      });
-      order.forEach(function(b){
-        var key = ph + b; if (seen[key]) return; seen[key] = 1;
-        lines.push('- Phase ' + (ph+1) + ' – ' + (b === 'base' ? 'Own base / support (defend base, collect point boxes, reinforce)' : DS_B_EN[b]) + (b === 'silo' && ph === 1 ? ' (rally at 9:30, attack together at 10:00)' : '') + ': ' + byB[b].join(', '));
+    var T = DS_LAST.plan.teams[t], TC = DS_TACTICS[T.tac], groups = dsGroupsOf(T);
+    // Startposition je Gebäude (Phase 1) und wer später wohin wechselt (Pfeile)
+    var start = {}, order = [], moves = [];
+    groups.forEach(function(x){
+      var b0 = x.g.steps[0][1] || (x.g.steps[0][0] === 'watch' ? 'react' : 'base');
+      if (!start[b0]) { start[b0] = []; order.push(b0); }
+      start[b0] = start[b0].concat(x.names);
+      var prev = b0;
+      x.g.steps.forEach(function(s, i){
+        if (!i) return; var b = s[1] || (s[0] === 'watch' || s[0] === 'reinforce' || s[0] === 'defend' ? 'flex' : prev);
+        if (b !== prev && b !== 'flex') moves.push(x.names.join(', ') + ': ' + (prev === 'base' ? 'own base' : prev === 'react' ? 'reaction team' : DS_B_EN[prev]) + ' → ' + DS_B_EN[b] + ' (' + DS_PHL_EN[T.ph[i]] + (s[0] === 'rally' ? ', rally 9:30, attack 10:00' : s[0] === 'final' ? ', rally 28:00, attack 28:30' : '') + ')');
+        if (b !== 'flex') prev = b;
       });
     });
-    var title = 'SKWS – Desert Storm – Team ' + t + (T.time ? ' – ' + T.time : '');
+    function bn(b){ return b === 'base' ? 'Own base / support' : b === 'react' ? 'Reaction team (write these names near the center of the map)' : DS_B_EN[b]; }
+    var title = 'DESERT STORM – TEAM ' + t;
+    var notes = [];
+    groups.forEach(function(x){ if (x.g.steps.some(function(s){ return s[0] === 'watch'; })) notes.push(x.names.join(', ') + ' are the reaction team: watch where our players are under heavy pressure and reinforce there' + (x.g.steps[2][1] === 'silo' ? '; from minute 20 they take the Nuclear Silo.' : '.')); });
+    if (T.note) notes.push(T.note);
     return [
-      'Create a clean, easy-to-read tactical battle map for the mobile game "Last War: Survival", event "Desert Storm".',
-      'Use the attached screenshot of the in-game Desert Storm map as the layout reference: keep every building exactly where it is on the screenshot and draw the plan on top of it (top-down view, dark military style). If no screenshot is attached, draw a symmetric schematic map with our base at the bottom, the enemy base at the top and the Nuclear Silo in the center.',
-      'For every building that has players assigned, add a clear label box with the building name and the player names, plus an arrow from our base to the building. Color by phase: green = Phase 1 (minute 0–10), orange = Phase 2 (from minute 10, when Nuclear Silo, Arsenal and Mercenary Factory open), purple = Phase 3 (from minute 13, Oil Wells).',
+      'Create a tactical battle plan graphic for the mobile game "Last War: Survival", event "Desert Storm", in landscape format 16:9.',
       '',
-      'Assignments:',
-      lines.join('\n'),
+      'LAYOUT (like a classic alliance briefing slide):',
+      '- Right two thirds: the attached Desert Storm map image (use it as the background exactly as it is – do not move, add or remove buildings). If no image is attached, draw a sandy desert top-down map with 11 buildings: Nuclear Silo in the center, Arsenal above it, Mercenary Factory below it, and 8 outer buildings in a ring around them.',
+      '- Left third: dark background with the neon-blue title "' + title + '" and below it a blue text box with the tactic and special instructions (text below).',
+      '- Top right corner: the time "' + (T.time || '') + '".',
       '',
-      'Add a legend box "Substitutes (in this order): ' + (T.s.join(', ') || '–') + '".',
-      'Title at the top: "' + title + '".',
-      'Spell every player name exactly as written above, including capital letters and spaces. Use large text so it is readable on a phone screen. Portrait format 9:16.'
-    ].join('\n');
+      'ON THE MAP:',
+      '- Write the player names in bold dark text right next to the building where they START (phase 1):',
+      order.map(function(b){ return '  • ' + bn(b) + ': ' + start[b].join(', '); }).join('\n'),
+      '- Players who MOVE later: draw a green oval around their names and a green curved arrow to the building they move to:',
+      (moves.length ? moves.map(function(x){ return '  • ' + x; }).join('\n') : '  • (none)'),
+      '',
+      'TEXT BOX (left side, white text on blue):',
+      'Tactic: ' + TC.en,
+      notes.map(function(x){ return x; }).join('\n'),
+      'Substitutes (in this order): ' + (T.s.join(', ') || '–'),
+      '',
+      'Spell every player name exactly as written, including capital letters, spaces and digits. Keep all text large and readable on a phone. No other decorations.'
+    ].filter(function(x){ return x !== ''; }).join('\n').replace(/\n(LAYOUT|ON THE MAP|TEXT BOX)/g, '\n\n$1');
   }
   function dsPubInfo(){
     var p = DS_PUB;
     $('dsPubInfo').textContent = p && p.at ? 'Aktuell veröffentlicht: ' + fmtDateTime(new Date(p.at)) + ' (' + Object.keys(p.teams || {}).map(function(t){ return 'Team ' + t; }).join(' + ') + ')' : 'Aktuell ist kein Einsatzplan veröffentlicht.';
   }
   function dsPublish(plan){
-    $('dsNote').textContent = 'Speichere…'; $('dsNote').className = 'note';
+    $('dsMsg').textContent = 'Speichere…'; $('dsMsg').className = 'note';
     rpc('admin_ds_publish', { p_pw: PW, p_plan: plan, p_actor: ACTOR || null }).then(function(){
       DS_PUB = plan; dsPubInfo();
-      $('dsNote').textContent = plan ? 'Veröffentlicht – die Spieler sehen ihren Einsatz jetzt auf der Seite.' : 'Veröffentlichung zurückgenommen.'; $('dsNote').className = 'note ok';
-    }).catch(function(e){ $('dsNote').textContent = 'Fehler beim Speichern: ' + (e && e.message || ''); $('dsNote').className = 'note err'; });
+      $('dsMsg').textContent = plan ? 'Veröffentlicht – die Spieler sehen ihren Einsatz jetzt auf der Seite.' : 'Veröffentlichung zurückgenommen.'; $('dsMsg').className = 'note ok';
+    }).catch(function(e){ $('dsMsg').textContent = 'Fehler beim Speichern: ' + (e && e.message || ''); $('dsMsg').className = 'note err'; });
   }
   (function(){
     function upd(fn){ var st = dsState(); fn(st); dsSave(st); }
+    var tacOpts = Object.keys(DS_TACTICS).map(function(k){ return '<option value="' + k + '">' + esc(DS_TACTICS[k].name) + '</option>'; }).join('');
     ['A','B'].forEach(function(t){
+      $('dsTac' + t).innerHTML = tacOpts;
+      $('dsTac' + t).addEventListener('change', function(){ var v = this.value; upd(function(st){ st.tac[t] = v; }); dsTacInfo(t); });
       $('dsTime' + t).addEventListener('input', function(){ var v = this.value; upd(function(st){ st.time[t] = v; }); dsRenderList(); });
       $('dsOpp' + t).addEventListener('input', function(){ var v = this.value; upd(function(st){ st.opp[t] = v; }); });
-      $('dsCopy' + t).addEventListener('click', function(){ if (DS_LAST && DS_LAST.plan.teams[t]) copyText(dsChat(t), 'dsNote'); });
-      $('dsImg' + t).addEventListener('click', function(){ if (DS_LAST && DS_LAST.plan.teams[t]) copyText(dsImgPrompt(t), 'dsNote'); });
+      $('dsNote' + t).addEventListener('input', function(){ var v = this.value; upd(function(st){ st.note[t] = v; }); });
+      $('dsCopy' + t).addEventListener('click', function(){ if (DS_LAST && DS_LAST.plan.teams[t]) copyText(dsChat(t), 'dsMsg'); });
+      $('dsImg' + t).addEventListener('click', function(){ if (DS_LAST && DS_LAST.plan.teams[t]) copyText(dsImgPrompt(t), 'dsMsg'); });
     });
     $('dsMetric').addEventListener('change', function(){ var v = this.value; upd(function(st){ st.metric = v; }); dsRenderList(); });
     $('dsSearch').addEventListener('input', dsRenderList);
