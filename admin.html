@@ -588,6 +588,9 @@
     hist.sort(function(a,b){ return a.t - b.t; });
     var byName = {};
     hist.forEach(function(h){ (byName[h.name] = byName[h.name] || []).push(h); });
+    // Mehrere Speicherungen kurz hintereinander (Eintragen in Etappen, Tippfehler korrigiert) zählen als eine Meldung:
+    // es zählt jeweils die letzte innerhalb von 60 Minuten. Sonst wirkt z. B. eine halb ausgefüllte erste Meldung wie ein riesiger Zuwachs.
+    Object.keys(byName).forEach(function(n){ var l = byName[n]; byName[n] = l.filter(function(h, i){ return i === l.length - 1 || l[i + 1].t - h.t > 60 * 60 * 1000; }); });
 
     var players = raw.members.map(function(m){
       var e = raw.entries[m.name] || null, hs = byName[m.name] || [];
