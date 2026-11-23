@@ -1208,7 +1208,7 @@
     $('dsmClearBg').addEventListener('click', function(){ ls(DSM_KEY, null); dsmLoadBg(dsmEditor); });
     $('dsmReset').addEventListener('click', function(){ ls(DSM_POS_KEY, null); dsmEditor(); });
     $('dsmToggle').addEventListener('click', function(){ var w = $('dsmWrap'); w.classList.toggle('hide'); if (!w.classList.contains('hide')) dsmLoadBg(dsmEditor); });
-    ['A','B'].forEach(function(t){ $('dsPic' + t).addEventListener('click', function(){ if (!DS_LAST || !DS_LAST.plan.teams[t]) return; if (ls(DSM_KEY)) dsmLoadBg(function(){ dsmRender(t); }); else dstLoad(function(){ if (DST_IMG) dstRender(t); else dsmLoadBg(function(){ dsmRender(t); }); }); }); });
+    ['A','B'].forEach(function(t){ $('dsPic' + t).addEventListener('click', function(){ if (!DS_LAST || !DS_LAST.plan.teams[t]) return; if (ls(DSM_KEY)) dsmLoadBg(function(){ dsmRender(t); }); else dstLoad(t, function(){ if (DST_IMG) dstRender(t); else dsmLoadBg(function(){ dsmRender(t); }); }); }); });
   })();
   function dsmWrap(ctx, text, maxW){
     var out = []; String(text).split('\n').forEach(function(par){
@@ -1302,16 +1302,25 @@
     dsmShow(url, t);
   }
 
-  /* ---------- Wüstensturm: Plan-Bild auf der Allianz-Vorlage (ds-vorlage.jpg, 1280×720) ---------- */
+  /* ---------- Wüstensturm: Plan-Bild auf der Allianz-Vorlage (ds-vorlage-a/b.jpg, 1672×941) ---------- */
   // Gebäude-Mitte [x,y] und Mitte des Namensschilds [x,y] in Pixeln der Vorlage.
-  var DST = {
-    src: 'ds-vorlage.jpg', w: 1280, h: 720, box: [66, 376, 468, 668],
-    b: { info:[712,82,714,118], arsenal:[852,158,853,215], hosp3:[980,78,980,114], ref1:[606,232,605,273], hosp4:[1095,255,1100,292],
-         silo:[850,322,850,382], hosp1:[605,388,605,446], ref2:[1097,415,1100,455], merc:[852,492,852,544], hosp2:[715,567,720,620], sci:[978,580,978,620],
-         wells:[700,330,700,330], react:[730,470,730,470], base:[580,640,580,640] }
+  var DST_T = {
+    A: { src: 'ds-vorlage-a.jpg', w: 1672, h: 941, box: [62, 368, 636, 790], map: [690, 1510], low: 700, time: [1462, 47],
+         b: { info:[930,103,931,154], arsenal:[1105,205,1107,281], hosp3:[1273,105,1270,151], ref1:[790,300,787,358], hosp4:[1420,330,1429,382],
+              silo:[1103,420,1105,501], hosp1:[788,515,788,583], ref2:[1425,543,1431,595], merc:[1106,645,1107,710], hosp2:[930,745,936,810], sci:[1275,755,1270,810],
+              wells:[930,430,930,430], react:[955,455,955,455], base:[760,840,760,840] } },
+    B: { src: 'ds-vorlage-b.jpg', w: 1672, h: 941, box: [62, 372, 646, 790], map: [700, 1522], low: 700, time: [1430, 45],
+         b: { info:[942,103,943,153], arsenal:[1120,205,1119,282], hosp3:[1288,105,1283,151], ref1:[800,300,798,358], hosp4:[1432,330,1440,382],
+              silo:[1117,420,1117,500], hosp1:[800,515,799,583], ref2:[1440,543,1442,595], merc:[1120,645,1120,711], hosp2:[943,745,948,811], sci:[1288,755,1282,811],
+              wells:[942,430,942,430], react:[967,455,967,455], base:[772,840,772,840] } }
   };
-  var DST_IMG = null;
-  function dstLoad(cb){ if (DST_IMG) return cb(); var im = new Image(); im.onload = function(){ DST_IMG = im; cb(); }; im.onerror = function(){ cb(); }; im.src = DST.src + '?v=1'; }
+  var DST = DST_T.A, DST_IMGS = {}, DST_IMG = null;
+  function dstLoad(t, cb){
+    if (typeof t === 'function') { cb = t; t = 'A'; }
+    DST = DST_T[t] || DST_T.A;
+    if (DST_IMGS[t]) { DST_IMG = DST_IMGS[t]; return cb(); }
+    var im = new Image(); im.onload = function(){ DST_IMGS[t] = DST_IMG = im; cb(); }; im.onerror = function(){ DST_IMG = null; cb(); }; im.src = DST.src + '?v=2';
+  }
   function dsmShow(url, t){
     var name = 'SKWS-Wuestensturm-Team-' + t + '-' + fileDate() + '.png', A = window.SKWSAndroid, h = '<img src="' + url + '" alt="Plan Team ' + t + '">';
     if (A && A.saveImage) h += '<button class="btn" id="dsmSave" style="width:100%;margin-top:8px">Bild in der Galerie speichern</button>';
@@ -1322,7 +1331,7 @@
   }
   function dstRender(t){
     var T = DS_LAST.plan.teams[t], TC = DS_TACTICS[T.tac], groups = dsGroupsOf(T);
-    var S = 1.5, W = DST.w * S, H = DST.h * S, c = document.createElement('canvas'); c.width = W; c.height = H;
+    var S = 1920 / DST.w, W = DST.w * S, H = DST.h * S, c = document.createElement('canvas'); c.width = W; c.height = H;
     var g = c.getContext('2d'); g.lineJoin = 'round'; g.miterLimit = 2;
     g.drawImage(DST_IMG, 0, 0, W, H);
     function B(k){ var p = DST.b[k] || DST.b.react; return { x: p[0] * S, y: p[1] * S, lx: p[2] * S, ly: p[3] * S }; }
@@ -1337,16 +1346,16 @@
     g.font = '800 ' + FS + 'px system-ui, sans-serif';
     Object.keys(startAt).forEach(function(k){
       var p = B(k), blocks = startAt[k];
-      var maxW = (k !== 'react' && k !== 'base' && k !== 'wells' && p.ly >= 560 * S) ? 160 : 230;
+      var maxW = (k !== 'react' && k !== 'base' && k !== 'wells' && p.ly >= DST.low * S) ? 160 : 230;
       blocks.forEach(function(blk){ var L = [], cur = ''; blk.names.forEach(function(nm){ var tst = cur ? cur + ', ' + nm : nm; if (cur && g.measureText(tst).width > maxW) { L.push(cur); cur = nm; } else cur = tst; }); if (cur) L.push(cur); blk.lines = L; });
       var n = blocks.reduce(function(a, b){ return a + b.lines.length; }, 0);
       var real = k !== 'react' && k !== 'base' && k !== 'wells';
-      var below = !real || p.ly < 560 * S;
+      var below = !real || p.ly < DST.low * S;
       var y = real ? (below ? p.ly + 28 : p.y - 40 - n * LH - (blocks.length - 1) * 14) : p.y - n * LH / 2;
       if (!real) { textOps.push({ s: k === 'react' ? 'Reaction team' : 'Support', x: p.x, y: y - 26, small: true }); }
       blocks.forEach(function(blk){
         var w = Math.max.apply(null, blk.lines.map(function(s){ return g.measureText(s).width; }));
-        var cx = Math.min(Math.max(p.x, 530 * S + w / 2 + 26), 1158 * S - w / 2 - 26);
+        var cx = Math.min(Math.max(p.x, DST.map[0] * S + w / 2 + 26), DST.map[1] * S - w / 2 - 26);
         blk.lines.forEach(function(s, i){ textOps.push({ s: s, x: cx, y: y + i * LH }); });
         if (blk.mover) {
           var cy = y + blk.lines.length * LH / 2 - 2, rx = w / 2 + 22, ry = blk.lines.length * LH / 2 + 10;
@@ -1379,7 +1388,8 @@
     });
     // Briefing-Text (Englisch)
     var bx = DST.box[0] * S, by = DST.box[1] * S, bw = (DST.box[2] - DST.box[0]) * S, bh = (DST.box[3] - DST.box[1]) * S;
-    var head = 'TEAM ' + t + (T.time ? ' · ' + T.time : '') + (T.opp ? ' · vs ' + T.opp : '');
+    var head = 'BRIEFING' + (T.opp ? ' · vs ' + T.opp : '');
+    if (T.time) { g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillStyle = '#ffffff'; g.font = '800 34px system-ui, sans-serif'; g.shadowColor = '#3d8bff'; g.shadowBlur = 12; g.fillText(T.time, DST.time[0] * S, DST.time[1] * S); g.shadowBlur = 0; }
     var parts = [TC.en];
     var flex = groups.filter(function(x){ return x.g.steps.some(function(s){ return s[0] === 'watch'; }); });
     flex.forEach(function(x){ parts.push(x.names.join(', ') + ': watch where we are under pressure and reinforce there' + (x.g.steps[2] && x.g.steps[2][1] === 'silo' ? '; from minute 20 take the Nuclear Silo.' : '.')); });
