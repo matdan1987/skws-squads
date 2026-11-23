@@ -164,6 +164,33 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** Bild (data:-URL, z. B. PNG aus einem Canvas) in Bilder/SKWS speichern. */
+        @JavascriptInterface
+        public boolean saveImage(String name, String dataUrl) {
+            try {
+                int comma = dataUrl.indexOf(',');
+                byte[] bytes = android.util.Base64.decode(comma >= 0 ? dataUrl.substring(comma + 1) : dataUrl, android.util.Base64.DEFAULT);
+                String mime = dataUrl.startsWith("data:image/jpeg") ? "image/jpeg" : "image/png";
+                if (Build.VERSION.SDK_INT >= 29) {
+                    ContentValues v = new ContentValues();
+                    v.put(MediaStore.Images.Media.DISPLAY_NAME, name);
+                    v.put(MediaStore.Images.Media.MIME_TYPE, mime);
+                    v.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/SKWS");
+                    Uri uri = act.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v);
+                    if (uri == null) throw new IllegalStateException("insert failed");
+                    try (OutputStream os = act.getContentResolver().openOutputStream(uri)) { os.write(bytes); }
+                } else {
+                    android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    if (MediaStore.Images.Media.insertImage(act.getContentResolver(), bmp, name, "SKWS") == null) throw new IllegalStateException("insert failed");
+                }
+                act.runOnUiThread(() -> Toast.makeText(act, "Bild gespeichert: Bilder/SKWS/" + name, Toast.LENGTH_LONG).show());
+                return true;
+            } catch (Exception e) {
+                act.runOnUiThread(() -> Toast.makeText(act, "Bild konnte nicht gespeichert werden", Toast.LENGTH_LONG).show());
+                return false;
+            }
+        }
+
         @JavascriptInterface
         public boolean saveFile(String name, String content, String mime) {
             if (Build.VERSION.SDK_INT >= 29) {

@@ -1299,8 +1299,7 @@
     g.fillStyle = '#1f9d3a'; g.fillRect(MX, H - 30, 26, 8); g.fillStyle = '#cfd6e4'; g.fillText(DS_PHL[T.ph[1]], MX + 34, H - 20);
     g.fillStyle = '#e07b12'; g.fillRect(MX + 260, H - 30, 26, 8); g.fillStyle = '#cfd6e4'; g.fillText(DS_PHL[T.ph[2]], MX + 294, H - 20);
     var url = c.toDataURL('image/png'); DSM_LASTURL = url;
-    $('dsmOut').innerHTML = '<img src="' + url + '" alt="Plan Team ' + t + '"><a class="btn" style="display:block;text-align:center;text-decoration:none;margin-top:8px" download="SKWS-Wuestensturm-Team-' + t + '.png" href="' + url + '">Bild herunterladen</a>' +
-      (window.SKWSAndroid ? '<p class="small muted">In der App: Bild lange drücken oder die Admin-Seite im Browser öffnen, um es zu speichern.</p>' : '');
+    dsmShow(url, t);
   }
 
   /* ---------- Wüstensturm: Plan-Bild auf der Allianz-Vorlage (ds-vorlage.jpg, 1280×720) ---------- */
@@ -1313,6 +1312,14 @@
   };
   var DST_IMG = null;
   function dstLoad(cb){ if (DST_IMG) return cb(); var im = new Image(); im.onload = function(){ DST_IMG = im; cb(); }; im.onerror = function(){ cb(); }; im.src = DST.src + '?v=1'; }
+  function dsmShow(url, t){
+    var name = 'SKWS-Wuestensturm-Team-' + t + '-' + fileDate() + '.png', A = window.SKWSAndroid, h = '<img src="' + url + '" alt="Plan Team ' + t + '">';
+    if (A && A.saveImage) h += '<button class="btn" id="dsmSave" style="width:100%;margin-top:8px">Bild in der Galerie speichern</button>';
+    else if (A) h += '<p class="small" style="color:var(--warn)">Zum Speichern in der App bitte die neue App-Version 1.2 installieren (im Handy-Browser öffnen: matdan1987.github.io/skws-squads/SKWS-Squads.apk) – oder die Admin-Seite im Browser öffnen.</p>';
+    else h += '<a class="btn" style="display:block;text-align:center;text-decoration:none;margin-top:8px" download="' + name + '" href="' + url + '">Bild herunterladen</a>';
+    $('dsmOut').innerHTML = h;
+    if ($('dsmSave')) $('dsmSave').addEventListener('click', function(){ A.saveImage(name, url); });
+  }
   function dstRender(t){
     var T = DS_LAST.plan.teams[t], TC = DS_TACTICS[T.tac], groups = dsGroupsOf(T);
     var S = 1.5, W = DST.w * S, H = DST.h * S, c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -1392,8 +1399,7 @@
     g.fillStyle = '#e6f1ff'; g.font = '500 ' + fs + 'px system-ui, sans-serif';
     lines.forEach(function(l, i){ g.fillText(l, bx + 18, by + 18 + (fs + 4) * 1.6 + (i + 1) * fs * 1.32); });
     var url = c.toDataURL('image/png'); DSM_LASTURL = url;
-    $('dsmOut').innerHTML = '<img src="' + url + '" alt="Plan Team ' + t + '"><a class="btn" style="display:block;text-align:center;text-decoration:none;margin-top:8px" download="SKWS-Wuestensturm-Team-' + t + '.png" href="' + url + '">Bild herunterladen</a>' +
-      (window.SKWSAndroid ? '<p class="small muted">In der App: Bild lange drücken oder die Admin-Seite im Browser öffnen, um es zu speichern.</p>' : '');
+    dsmShow(url, t);
   }
 
   /* ---------- Logbuch ---------- */
