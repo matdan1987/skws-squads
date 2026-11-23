@@ -123,7 +123,7 @@
   .dsm-pin{position:absolute;transform:translate(-50%,-50%);background:rgba(10,17,32,.85);color:#fff;border:2px solid var(--accent);border-radius:8px;padding:3px 7px;font-size:12px;font-weight:700;cursor:grab;white-space:nowrap}
   .dsm-pin.aux{border-color:#e07b12}
   .tacinfo{font-size:12px;line-height:1.45;margin-top:6px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
-  #tab-ds textarea{width:100%;height:68px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text);font:inherit;font-size:14px;resize:vertical;box-sizing:border-box}
+  #tab-cs textarea,#tab-ds textarea{width:100%;height:68px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text);font:inherit;font-size:14px;resize:vertical;box-sizing:border-box}
   .phase{font-size:12px;color:var(--muted);margin-top:2px;white-space:normal}
   .grp td{white-space:normal;vertical-align:top}
   .team{margin-top:12px}
@@ -187,6 +187,7 @@
       <button data-tab="dev">Entwicklung</button>
       <button data-tab="exp">Export</button>
       <button data-tab="ds">Wüstensturm</button>
+      <button data-tab="cs">Schluchtsturm</button>
       <button data-tab="adm">Verwaltung</button>
       <button data-tab="log">Logbuch</button>
     </div>
@@ -388,6 +389,68 @@
         </div>
         <div class="note" id="dsMsg"></div>
         <div class="small muted" id="dsPubInfo"></div>
+      </div>
+    </section>
+
+    <!-- Schluchtsturm -->
+    <section id="tab-cs" class="hide">
+      <div class="card">
+        <h2>1 · Runden</h2>
+        <p class="small muted" style="margin:0 0 10px">Schluchtsturm (2 gegen 1): Die Spieler melden sich im Spiel selbst für Einsatztruppe A oder B an – als Stammspieler oder Ersatz. Hier trägst du diese Anmeldungen ein; die Stärke entscheidet nur, wer innerhalb eines Teams welches Gebäude bekommt. Max. 5 Spieler pro Gebäude.</p>
+        <div class="formrow">
+          <div><label for="csTimeA">Team A – Tag/Uhrzeit</label><input id="csTimeA" type="text" placeholder="z. B. Do 15:00"></div>
+          <div><label for="csTimeB">Team B – Tag/Uhrzeit</label><input id="csTimeB" type="text" placeholder="z. B. Do 21:00"></div>
+          <div><label for="csOppA">Team A – Gegner (optional)</label><input id="csOppA" type="text"></div>
+          <div><label for="csOppB">Team B – Gegner (optional)</label><input id="csOppB" type="text"></div>
+          <div><label for="csTacA">Team A – Taktik</label><select id="csTacA"></select><div class="tacinfo" id="csTacInfoA"></div></div>
+          <div><label for="csTacB">Team B – Taktik</label><select id="csTacB"></select><div class="tacinfo" id="csTacInfoB"></div></div>
+          <div><label for="csNoteA">Team A – Sonderanweisung (optional)</label><textarea id="csNoteA" rows="2" class="cstext"></textarea></div>
+          <div><label for="csNoteB">Team B – Sonderanweisung (optional)</label><textarea id="csNoteB" rows="2" class="cstext"></textarea></div>
+        </div>
+        <div class="formrow" style="grid-template-columns:1fr">
+          <div><label for="csMetric">Stärke bewerten nach</label>
+            <select id="csMetric"><option value="t1">T1-Kampfkraft (empfohlen)</option><option value="total">Gesamt T1–T4</option><option value="hero">Heldenkraft</option></select></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2 · Gebäude auf der Karte</h2>
+        <p class="small muted" style="margin:0 0 8px">Belegt sind: Viruslabor (Mitte), Energieturm (darüber), Schutzzone Apollo (oben), Morgenbringer-Start (unten links/rechts). Für die Gebäude 1–8 gibt es keine überprüfbare Quelle – bitte im Spiel antippen und hier den Namen wählen. Wird auf diesem Gerät gespeichert.</p>
+        <img src="cs-nummern.jpg" alt="Karte mit Nummern 1–8" style="width:100%;max-width:520px;display:block;margin:0 auto 10px;border-radius:10px">
+        <div class="formrow" id="csMapRow"></div>
+      </div>
+
+      <div class="card">
+        <h2>3 · Gemeldete Spieler</h2>
+        <div class="dscount" id="csCount"></div>
+        <div class="toolbar"><input id="csSearch" type="search" placeholder="Spieler suchen…"></div>
+        <div class="chips">
+          <button class="chip" id="csOnlySel">nur Zugeordnete zeigen</button>
+          <button class="chip" id="csClear">alle Zuordnungen löschen</button>
+        </div>
+        <div class="pick" id="csList"></div>
+      </div>
+
+      <div class="card">
+        <h2>4 · Taktik &amp; Einsatzplan</h2>
+        <div class="btnrow"><button class="btn" id="csRun">Taktik erstellen</button><button class="btn2" id="csExample">Beispiel zeigen</button></div>
+        <div id="csResult"></div>
+        <div class="hide" id="csActions">
+          <div class="btnrow">
+            <button class="btn" id="csPicA" data-lang="en">Plan-Bild Team A (EN)</button>
+            <button class="btn" id="csPicAde" data-lang="de">Plan-Bild Team A (DE)</button>
+          </div>
+          <div class="btnrow">
+            <button class="btn" id="csPicB" data-lang="en">Plan-Bild Team B (EN)</button>
+            <button class="btn" id="csPicBde" data-lang="de">Plan-Bild Team B (DE)</button>
+          </div>
+          <div id="csOut" class="dsm-out"></div>
+          <div class="btnrow">
+            <button class="btn2" id="csCopyA">Chat-Text Team A kopieren</button>
+            <button class="btn2" id="csCopyB">Chat-Text Team B kopieren</button>
+          </div>
+        </div>
+        <div class="note" id="csMsg"></div>
       </div>
     </section>
 
@@ -1424,6 +1487,322 @@
     dsmShow(url, t, lang);
   }
 
+  /* ---------- Schluchtsturm (Canyon Storm, 2 gegen 1) ---------- */
+  // Belegt (dracgon.tech, lastcmd.com): Schutzzone Apollo oben, darunter Energieturm, Viruslabor in der Mitte,
+  // Morgenbringer-Start unten links/rechts. Gebäude 1–8 ordnet der Admin im Tab zu (keine überprüfbare Quelle).
+  var CS_B = {
+    de: { lab:'Viruslabor', tower:'Energieturm', safe:'Schutzzone Apollo', spl:'Morgenbringer-Start', spr:'Morgenbringer-Start',
+          dc1:'Datenzentrum I', dc2:'Datenzentrum II', sf1:'Serumfabrik I', sf2:'Serumfabrik II', ds1:'Verteidigungssystem I', ds2:'Verteidigungssystem II',
+          sw1:'Probenlager I', sw2:'Probenlager II', sw3:'Probenlager III', sw4:'Probenlager IV', base:'Basis' },
+    en: { lab:'Virus Lab', tower:'Power Tower', safe:'Apollo Safe Zone', spl:'Dawnbreaker Spawn', spr:'Dawnbreaker Spawn',
+          dc1:'Data Center I', dc2:'Data Center II', sf1:'Serum Factory I', sf2:'Serum Factory II', ds1:'Defense System I', ds2:'Defense System II',
+          sw1:'Sample Warehouse I', sw2:'Sample Warehouse II', sw3:'Sample Warehouse III', sw4:'Sample Warehouse IV', base:'Base' }
+  };
+  var CS_TYPES = ['dc1','dc2','sf1','sf2','ds1','ds2','sw1','sw2','sw3','sw4'];
+  var CS_A = {
+    de: { take:'{b} erobern und halten', hold:'{b} halten', move:'zu {b} wechseln, erobern und halten', rally:'ab 11:30 sammeln, um 12:00 gemeinsam {b} angreifen und bis zum Ende halten',
+          defend:'Basis verteidigen, Punkte-Kisten und Energie sammeln', reinforce:'Kisten einsammeln, angegriffene Gebäude verstärken', unlock:'{b} erobern, sobald es öffnet' },
+    en: { take:'capture and hold {b}', hold:'hold {b}', move:'move to {b}, capture and hold it', rally:'gather at 11:30, attack {b} together at 12:00 and hold it to the end',
+          defend:'defend the base, collect point boxes and energy', reinforce:'collect boxes, reinforce buildings under attack', unlock:'capture {b} as soon as it opens' }
+  };
+  var CS_PHL = { de: { p0:'Start (0–10 Min.)', p10:'Ab 10 Min.', p12:'Ab 12 Min.' }, en: { p0:'Start (min 0–10)', p10:'From min 10', p12:'From min 12' } };
+  var CS_TACTICS = {
+    lab: {
+      name: 'Morgenbringer – wir greifen das Viruslabor an',
+      desc: 'Absprache mit der Partner-Allianz: Wir nehmen das Viruslabor, die Partner halten die Gebäude dazwischen. Die 5 Stärksten sichern ab 0:30 den Energieturm und greifen um 12:00 gemeinsam das Viruslabor an. Der Rest hält Datenzentren und Probenlager und holt sich Serumfabriken und Verteidigungssysteme, sobald sie öffnen.',
+      en: 'Agreed with our partner alliance: we take the Virus Lab, they hold the buildings in between. The 5 strongest secure the Power Tower from 0:30 and attack the Virus Lab together at 12:00. The rest hold the Data Centers and Sample Warehouses and take the Serum Factories and Defense Systems as soon as they open.',
+      when: 'Wenn eure Allianz die stärkere der beiden Morgenbringer ist.',
+      pro: 'Das Viruslabor bringt mit 120 Punkten/Sek. am meisten.',
+      con: 'Klappt nur mit Absprache – sonst greifen beide Allianzen dasselbe an und die Außengebäude bleiben leer.',
+      ph: ['p0','p10','p12'],
+      groups: [
+        { k:'sturm', n:5, label:'Sturm-Trupp',      steps:[['take','tower'],['hold','tower'],['rally','lab']] },
+        { k:'dc1',   n:2, label:'Datenzentrum I',   steps:[['take','dc1'],['hold','dc1'],['hold','dc1']] },
+        { k:'dc2',   n:2, label:'Datenzentrum II',  steps:[['take','dc2'],['hold','dc2'],['hold','dc2']] },
+        { k:'sw1',   n:1, label:'Probenlager I',    steps:[['take','sw1'],['hold','sw1'],['hold','sw1']] },
+        { k:'sw2',   n:1, label:'Probenlager II',   steps:[['take','sw2'],['hold','sw2'],['hold','sw2']] },
+        { k:'sw3',   n:1, label:'Probenlager III',  steps:[['take','sw3'],['hold','sw3'],['hold','sw3']] },
+        { k:'sw4',   n:1, label:'Probenlager IV',   steps:[['take','sw4'],['hold','sw4'],['hold','sw4']] },
+        { k:'sf1',   n:2, label:'Serumfabrik I',    steps:[['defend','base'],['unlock','sf1'],['hold','sf1']] },
+        { k:'sf2',   n:2, label:'Serumfabrik II',   steps:[['defend','base'],['unlock','sf2'],['hold','sf2']] },
+        { k:'ds1',   n:1, label:'Verteidigungssystem I',  steps:[['reinforce','base'],['unlock','ds1'],['hold','ds1']] },
+        { k:'ds2',   n:1, label:'Verteidigungssystem II', steps:[['reinforce','base'],['unlock','ds2'],['hold','ds2']] },
+        { k:'supp',  n:1, label:'Unterstützung',    steps:[['defend','base'],['reinforce','base'],['reinforce','base']] }
+      ]
+    },
+    mid: {
+      name: 'Morgenbringer – Partner greift an, wir halten die Mitte',
+      desc: 'Absprache mit der Partner-Allianz: Die Partner nehmen das Viruslabor, wir halten Energieturm, Datenzentren und Probenlager und besetzen ab 10 Minuten beide Verteidigungssysteme, die die Wege zur Mitte bewachen.',
+      en: 'Agreed with our partner alliance: they take the Virus Lab, we hold the Power Tower, Data Centers and Sample Warehouses and occupy both Defense Systems from minute 10, which guard the paths to the center.',
+      when: 'Wenn die Partner-Allianz stärker ist oder das Labor angreifen will.',
+      pro: 'Sichere Punkte von vielen Gebäuden, die Wege zur Mitte sind geschützt.',
+      con: 'Kein Labor-Punktestrom für euch selbst; hängt vom Partner ab.',
+      ph: ['p0','p10','p12'],
+      groups: [
+        { k:'sturm', n:5, label:'Energieturm-Trupp', steps:[['take','tower'],['hold','tower'],['hold','tower']] },
+        { k:'ds1',   n:2, label:'Verteidigungssystem I',  steps:[['take','dc1'],['unlock','ds1'],['hold','ds1']] },
+        { k:'ds2',   n:2, label:'Verteidigungssystem II', steps:[['take','dc2'],['unlock','ds2'],['hold','ds2']] },
+        { k:'dc1',   n:1, label:'Datenzentrum I',   steps:[['take','dc1'],['hold','dc1'],['hold','dc1']] },
+        { k:'dc2',   n:1, label:'Datenzentrum II',  steps:[['take','dc2'],['hold','dc2'],['hold','dc2']] },
+        { k:'sw1',   n:1, label:'Probenlager I',    steps:[['take','sw1'],['hold','sw1'],['hold','sw1']] },
+        { k:'sw2',   n:1, label:'Probenlager II',   steps:[['take','sw2'],['hold','sw2'],['hold','sw2']] },
+        { k:'sw3',   n:1, label:'Probenlager III',  steps:[['take','sw3'],['hold','sw3'],['hold','sw3']] },
+        { k:'sw4',   n:1, label:'Probenlager IV',   steps:[['take','sw4'],['hold','sw4'],['hold','sw4']] },
+        { k:'sf1',   n:2, label:'Serumfabrik I',    steps:[['defend','base'],['unlock','sf1'],['hold','sf1']] },
+        { k:'sf2',   n:2, label:'Serumfabrik II',   steps:[['defend','base'],['unlock','sf2'],['hold','sf2']] },
+        { k:'supp',  n:1, label:'Unterstützung',    steps:[['defend','base'],['reinforce','base'],['reinforce','base']] }
+      ]
+    },
+    rule: {
+      name: 'Ordnungshüter (wir allein) – konzentrieren',
+      desc: 'Als einzelne Allianz nicht alles verteidigen: Die 5 Stärksten nehmen den Energieturm (Schild über die Schutzzone) und halten ab 12 Minuten das Viruslabor bis zum Schluss. Judicator für das Labor-Fenster aufheben. Der Rest hält Datenzentren, Serumfabriken und Verteidigungssysteme.',
+      en: 'As a single alliance, do not defend everything: the 5 strongest take the Power Tower (shield over the safe zone) and hold the Virus Lab from minute 12 to the end. Save the Judicator for the Virus Lab window. The rest hold the Data Centers, Serum Factories and Defense Systems.',
+      when: 'Wenn eure Allianz in dieser Runde die Ordnungshüter-Seite spielt.',
+      pro: 'Kräfte gebündelt, Labor und Schild in eurer Hand.',
+      con: 'Probenlager bleiben dem Gegner – das Labor muss bis zum Ende gehalten werden.',
+      ph: ['p0','p10','p12'],
+      groups: [
+        { k:'sturm', n:5, label:'Sturm-Trupp',      steps:[['take','tower'],['hold','tower'],['rally','lab']] },
+        { k:'dc1',   n:2, label:'Datenzentrum I',   steps:[['take','dc1'],['hold','dc1'],['hold','dc1']] },
+        { k:'dc2',   n:2, label:'Datenzentrum II',  steps:[['take','dc2'],['hold','dc2'],['hold','dc2']] },
+        { k:'sf1',   n:2, label:'Serumfabrik I',    steps:[['defend','base'],['unlock','sf1'],['hold','sf1']] },
+        { k:'sf2',   n:2, label:'Serumfabrik II',   steps:[['defend','base'],['unlock','sf2'],['hold','sf2']] },
+        { k:'ds1',   n:2, label:'Verteidigungssystem I',  steps:[['reinforce','base'],['unlock','ds1'],['hold','ds1']] },
+        { k:'ds2',   n:2, label:'Verteidigungssystem II', steps:[['reinforce','base'],['unlock','ds2'],['hold','ds2']] },
+        { k:'supp',  n:3, label:'Energie & Kisten', steps:[['defend','base'],['reinforce','base'],['reinforce','base']] }
+      ]
+    }
+  };
+  // Vorlagen (1672×941): Gebäude-Mitte und Namensschild in Vorlagen-Pixeln; B liegt 11 px weiter rechts.
+  // [Mitte x, y, Schild x, y, (optional) Namen x, y]
+  var CST_BASE = { safe:[1095,105,1095,105], tower:[1095,291,1095,232,1240,258], lab:[1093,451,1093,500], spl:[776,766,776,766], spr:[1417,766,1417,766], base:[1095,820,1095,820],
+    n1:[901,167,901,197], n2:[804,333,804,372,772,392], n3:[887,381,905,432], n4:[1386,326,1386,366], n5:[787,527,787,566], n6:[1285,471,1285,500], n7:[1400,541,1400,580], n8:[1143,645,1143,675] };
+  var CST_T = { A: { dx: 0, box:[62,368,636,790], map:[690,1510], time:[1462,47], low:700 }, B: { dx: 11, box:[62,372,646,790], map:[700,1522], time:[1430,45], low:700 } };
+  var CS_KEY = 'skws_cs', CS_MAP_KEY = 'skws_cs_map', CS_ONLYSEL = false, CS_LAST = null, CS_IMGS = {};
+  function csState(){
+    var st = null; try { st = JSON.parse(ls(CS_KEY) || 'null'); } catch(e){}
+    st = st || {}; st.assign = st.assign || {}; st.time = st.time || {A:'',B:''}; st.opp = st.opp || {A:'',B:''};
+    st.note = st.note || {A:'',B:''}; st.tac = st.tac || {A:'lab',B:'mid'}; st.metric = st.metric || 't1';
+    return st;
+  }
+  function csSave(st){ try { ls(CS_KEY, JSON.stringify(st)); } catch(e){} }
+  function csMap(){ var m = null; try { m = JSON.parse(ls(CS_MAP_KEY) || 'null'); } catch(e){} return m || {}; }
+  function csPosKey(k){ if (CST_BASE[k]) return k; var m = csMap(); for (var n in m) if (m[n] === k) return n; return null; }
+  function csAct(step, lang){ var t = CS_A[lang || 'de'][step[0]] || step[0]; return t.split('{b}').join(CS_B[lang || 'de'][step[1]] || ''); }
+  function csTacInfo(t){
+    var T = CS_TACTICS[$('csTac' + t).value] || CS_TACTICS.lab;
+    $('csTacInfo' + t).innerHTML = '<b>' + esc(T.name) + '</b><br>' + esc(T.desc) + '<br><span class="muted">Wann: </span>' + esc(T.when) + '<br><span class="up">+ </span>' + esc(T.pro) + '<br><span class="down">− </span>' + esc(T.con);
+  }
+  function csRenderMap(){
+    var m = csMap(), used = {};
+    Object.keys(m).forEach(function(n){ used[m[n]] = n; });
+    $('csMapRow').innerHTML = [1,2,3,4,5,6,7,8].map(function(i){
+      var n = 'n' + i, v = m[n] || '';
+      return '<div><label>Gebäude ' + i + '</label><select data-csmap="' + n + '"><option value="">– noch unbekannt –</option>' +
+        CS_TYPES.map(function(k){ return '<option value="' + k + '"' + (v === k ? ' selected' : '') + (used[k] && used[k] !== n ? ' disabled' : '') + '>' + CS_B.de[k] + '</option>'; }).join('') + '</select></div>';
+    }).join('');
+  }
+  function csRender(){
+    if (!D) return;
+    var st = csState();
+    ['A','B'].forEach(function(t){
+      $('csTime' + t).value = st.time[t]; $('csOpp' + t).value = st.opp[t]; $('csNote' + t).value = st.note[t];
+      $('csTac' + t).value = CS_TACTICS[st.tac[t]] ? st.tac[t] : 'lab'; csTacInfo(t);
+    });
+    $('csMetric').value = st.metric;
+    csRenderMap(); csRenderList();
+  }
+  function csRenderList(){
+    var st = csState(), m = st.metric, q = $('csSearch').value.trim().toLowerCase();
+    var list = D.players.filter(function(p){ return p.active; }).slice().sort(function(a,b){ return dsMetricVal(b,m) - dsMetricVal(a,m) || a.name.localeCompare(b.name); });
+    var c = { AS:0, AE:0, BS:0, BE:0 };
+    list.forEach(function(p){ var v = st.assign[p.name]; if (c[v] !== undefined) c[v]++; });
+    function box(t){ var s = c[t+'S'], e = c[t+'E']; return '<div>Team ' + t + (st.time[t] ? ' · ' + esc(st.time[t]) : '') + '<b><span class="' + (s > 20 ? 'over' : '') + '">' + s + '/20 Stamm</span> · <span>' + e + ' Ersatz</span></b></div>'; }
+    $('csCount').innerHTML = box('A') + box('B');
+    $('csOnlySel').textContent = CS_ONLYSEL ? 'alle Spieler zeigen' : 'nur Zugeordnete zeigen';
+    var opts = [['','–'],['AS','A Stamm'],['AE','A Ersatz'],['BS','B Stamm'],['BE','B Ersatz']];
+    $('csList').innerHTML = list.filter(function(p){ if (CS_ONLYSEL && !st.assign[p.name]) return false; return !q || p.name.toLowerCase().indexOf(q) >= 0; }).map(function(p){
+      var v = st.assign[p.name] || '';
+      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
+        '<select data-cs="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
+    }).join('') || '<div class="empty">Keine Treffer.</div>';
+  }
+  function csBuild(st){
+    st = st || csState(); var m = st.metric, by = {}; D.players.forEach(function(p){ by[p.name] = p; });
+    var plan = { teams: {} }, warn = [];
+    ['A','B'].forEach(function(t){
+      function pick(r){ return Object.keys(st.assign).filter(function(n){ return st.assign[n] === t + r && by[n] && by[n].active; }).map(function(n){ return by[n]; })
+        .sort(function(a,b){ return dsMetricVal(b,m) - dsMetricVal(a,m) || a.name.localeCompare(b.name); }); }
+      var stamm = pick('S'), subs = pick('E');
+      if (!stamm.length && !subs.length) return;
+      var tk = CS_TACTICS[st.tac[t]] ? st.tac[t] : 'lab', TC = CS_TACTICS[tk], members = [], i = 0, last = TC.groups[TC.groups.length - 1].k;
+      TC.groups.forEach(function(g){ for (var k = 0; k < g.n && i < stamm.length; k++, i++) members.push([stamm[i].name, g.k]); });
+      for (; i < stamm.length; i++) members.push([stamm[i].name, last]);
+      if (stamm.length > 20) warn.push('Team ' + t + ': ' + stamm.length + ' Stammspieler – im Spiel sind nur 20 möglich.');
+      plan.teams[t] = { time: st.time[t] || '', opp: st.opp[t] || '', note: st.note[t] || '', tac: tk, ph: TC.ph, m: members, s: subs.map(function(p){ return p.name; }) };
+    });
+    var miss = CS_TYPES.filter(function(k){ return !csPosKey(k); });
+    if (miss.length) warn.push('Noch ohne Kartenposition (oben unter „2 · Gebäude auf der Karte“ zuordnen): ' + miss.map(function(k){ return CS_B.de[k]; }).join(', ') + '. Diese Spieler stehen im Bild nur im Briefing.');
+    return { plan: plan, warn: warn, by: by };
+  }
+  function csGroupsOf(T){
+    var TC = CS_TACTICS[T.tac], out = [];
+    TC.groups.forEach(function(g){ var names = T.m.filter(function(x){ return x[1] === g.k; }).map(function(x){ return x[0]; }); if (names.length) out.push({ g: g, names: names }); });
+    return out;
+  }
+  function csRun(example){
+    var st = null;
+    if (example === true) {
+      st = JSON.parse(JSON.stringify(csState())); var mm = st.metric;
+      var list = D.players.filter(function(p){ return p.active && p.entry; }).sort(function(a,b){ return dsMetricVal(b,mm) - dsMetricVal(a,mm); });
+      st.assign = {}; list.forEach(function(p, i){ var v = i < 40 ? (i % 2 ? 'BS' : 'AS') : i < 50 ? (i % 2 ? 'BE' : 'AE') : ''; if (v) st.assign[p.name] = v; });
+      st.time = { A: st.time.A || 'Do 15:00', B: st.time.B || 'Do 21:00' };
+    }
+    var r = csBuild(st); r.example = example === true; CS_LAST = r;
+    var P = r.plan, h = '';
+    ['A','B'].forEach(function(t){
+      var T = P.teams[t]; if (!T) return; var TC = CS_TACTICS[T.tac];
+      h += '<div class="team"><h3>Team ' + t + (T.time ? ' · ' + esc(T.time) : '') + (T.opp ? ' · gegen ' + esc(T.opp) : '') + '<span>' + esc(TC.name) + ' · ' + T.m.length + ' Stamm · ' + T.s.length + ' Ersatz</span></h3>';
+      if (T.note) h += '<p class="small" style="margin:0 0 6px">Hinweis: ' + esc(T.note) + '</p>';
+      h += '<div class="tw"><table class="grp"><tr><th>Gruppe</th><th>Spieler</th>' + T.ph.map(function(k){ return '<th>' + CS_PHL.de[k] + '</th>'; }).join('') + '</tr>';
+      csGroupsOf(T).forEach(function(x){
+        h += '<tr><td><b>' + esc(x.g.label) + '</b></td><td>' + x.names.map(function(n){ return esc(n) + '<div class="phase">' + dsMetricTxt(r.by[n], CS_LAST && csState().metric) + '</div>'; }).join('') + '</td>' +
+          x.g.steps.map(function(s){ return '<td>' + esc(csAct(s)) + '</td>'; }).join('') + '</tr>';
+      });
+      if (T.s.length) h += '<tr class="rankhead"><td colspan="5">Ersatz (Reihenfolge = wer zuerst nachrückt)</td></tr><tr><td colspan="5" style="white-space:normal">' + T.s.map(function(n, i){ return 'E' + (i+1) + ' ' + esc(n); }).join(' · ') + '</td></tr>';
+      h += '</table></div></div>';
+    });
+    if (!Object.keys(P.teams).length) h = '<div class="empty">Bitte zuerst oben Spieler Team A oder B zuordnen.</div>';
+    if (r.example && Object.keys(P.teams).length) h = '<div class="note ok">BEISPIEL – gemischt verteilt, nur zum Ausprobieren.</div>' + h;
+    if (r.warn.length) h = '<div class="note err">' + r.warn.map(esc).join('<br>') + '</div>' + h;
+    $('csResult').innerHTML = h; $('csOut').innerHTML = '';
+    $('csActions').classList.toggle('hide', !Object.keys(P.teams).length);
+    ['A','B'].forEach(function(t){ ['csCopy','csPic'].forEach(function(id){ $(id + t).classList.toggle('hide', !P.teams[t]); }); $('csPic' + t + 'de').classList.toggle('hide', !P.teams[t]); });
+  }
+  function csChat(t){
+    var T = CS_LAST.plan.teams[t], out = ['SKWS Schluchtsturm Team ' + t + (T.time ? ' - ' + T.time : '') + ' - Plan siehe Bild'];
+    csGroupsOf(T).forEach(function(x){ x.g.steps.forEach(function(s){ if (s[0] === 'rally') out.push('- ' + x.names.join(', ') + ': ab 11:30 sammeln, um 12:00 zusammen aufs Viruslabor und bis zum Ende halten.'); }); });
+    if (T.s.length) out.push('- Ersatz in dieser Reihenfolge: ' + T.s.join(', ') + '. Ersatz übernimmt die Aufgabe dessen, der ausfällt.');
+    out.push('- Basen nicht direkt nebeneinander stellen (Judicator trifft benachbarte Basen).');
+    out.push('- Höchstens 5 Spieler pro Gebäude. Gebäude halten, Punkte-Kisten einsammeln.');
+    out.push('- Das Viruslabor in den letzten Minuten nicht verlassen.');
+    out.push('Deinen Einsatz siehst du auch im Bild.');
+    return out.join('\n');
+  }
+  function csLoadTpl(t, lang, cb){
+    var key = t + lang; if (CS_IMGS[key]) return cb(CS_IMGS[key]);
+    var im = new Image(); im.onload = function(){ CS_IMGS[key] = im; cb(im); }; im.onerror = function(){ cb(null); }; im.src = 'cs-vorlage-' + t.toLowerCase() + '-' + lang + '.jpg?v=1';
+  }
+  function csRender_img(t, lang, IMG){
+    var DE = lang === 'de', L = DE ? 'de' : 'en', CT = CST_T[t], T = CS_LAST.plan.teams[t], TC = CS_TACTICS[T.tac], groups = csGroupsOf(T);
+    var S = 1920 / 1672, W = 1920, H = Math.round(941 * S), c = document.createElement('canvas'); c.width = W; c.height = H;
+    var g = c.getContext('2d'); g.lineJoin = 'round'; g.miterLimit = 2; g.drawImage(IMG, 0, 0, W, H);
+    function B(k){ var pk = csPosKey(k); if (!pk) return null; var p = CST_BASE[pk]; return { x: (p[0] + CT.dx) * S, y: p[1] * S, lx: (p[2] + CT.dx) * S, ly: p[3] * S, nx: ((p[4] || p[2]) + CT.dx) * S, ny: (p[5] || p[3] + 21) * S }; }
+    // Gebäude-Beschriftungen (belegte + zugeordnete)
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'italic 600 19px system-ui, sans-serif';
+    function tag(text, x, y){ var w = g.measureText(text).width + 18; g.fillStyle = 'rgba(10,16,28,.92)'; g.beginPath(); if (g.roundRect) g.roundRect(x - w/2, y - 14, w, 28, 7); else g.rect(x - w/2, y - 14, w, 28); g.fill(); g.fillStyle = '#fff'; g.fillText(text, x, y); }
+    ['safe','tower','lab','spl','spr'].concat(CS_TYPES).forEach(function(k){ var p = B(k); if (p) tag(CS_B[L][k], p.lx, p.ly); });
+    var startAt = {}, moves = [], unplaced = [];
+    groups.forEach(function(x){
+      var b0 = x.g.steps[0][1], prev = b0, mover = false;
+      x.g.steps.forEach(function(s, i){ if (!i) return; var b = s[1]; if (!b || b === prev) return;
+        if (!B(b)) { unplaced.push(x.names.join(', ') + ' → ' + CS_B[L][b] + ' (' + CS_PHL[L][T.ph[i]].toLowerCase() + ')'); prev = b; return; }
+        moves.push({ from: prev, to: b, ph: i, names: x.names, first: !mover }); mover = true; prev = b; });
+      if (!B(b0)) { unplaced.push(x.names.join(', ') + ': ' + CS_B[L][b0]); return; }
+      (startAt[b0] = startAt[b0] || []).push({ names: x.names, mover: mover });
+    });
+    if (startAt.base) startAt.base = [{ names: startAt.base.reduce(function(a, b){ return a.concat(b.names); }, []), mover: false }];
+    var FS = 22, LH = 25, textOps = [], anchor = {};
+    g.font = '800 ' + FS + 'px system-ui, sans-serif';
+    Object.keys(startAt).forEach(function(k){
+      var p = B(k), blocks = startAt[k];
+      var maxW = k === 'base' ? 520 : 220;
+      blocks.forEach(function(blk){ var Ls = [], cur = ''; blk.names.forEach(function(nm){ var tst = cur ? cur + ', ' + nm : nm; if (cur && g.measureText(tst).width > maxW) { Ls.push(cur); cur = nm; } else cur = tst; }); if (cur) Ls.push(cur); blk.lines = Ls; });
+      var tot = blocks.reduce(function(a, b){ return a + b.lines.length * LH + 14; }, 0);
+      var y = k === 'base' ? p.y - tot + 14 : p.ny;
+      if (k === 'base') textOps.push({ s: CS_B[L].base, x: p.x, y: y - 26, small: true });
+      blocks.forEach(function(blk){
+        var w = Math.max.apply(null, blk.lines.map(function(s){ return g.measureText(s).width; }));
+        var cx = Math.min(Math.max(k === 'base' ? p.x : p.nx, CT.map[0] * S + w / 2 + 26), CT.map[1] * S - w / 2 - 26);
+        blk.lines.forEach(function(s, i){ textOps.push({ s: s, x: cx, y: y + i * LH }); });
+        if (blk.mover) {
+          var cy = y + blk.lines.length * LH / 2 - 2, rx = w / 2 + 22, ry = blk.lines.length * LH / 2 + 10;
+          g.strokeStyle = '#22c55e'; g.lineWidth = 4.5; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); g.stroke();
+          blk.names.forEach(function(s){ anchor[s] = [cx, cy, rx]; });
+        }
+        y += blk.lines.length * LH + 14;
+      });
+    });
+    var COL = ['#22c55e', '#22c55e', '#f59e0b'];
+    function arrow(x1, y1, x2, y2, col){
+      var mxp = (x1 + x2) / 2 + (y2 - y1) * .18, myp = (y1 + y2) / 2 - (x2 - x1) * .18;
+      var ang = Math.atan2(y2 - myp, x2 - mxp), ex = x2 - Math.cos(ang) * 42, ey = y2 - Math.sin(ang) * 42;
+      g.strokeStyle = col; g.fillStyle = col; g.lineWidth = 5; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(x1, y1); g.quadraticCurveTo(mxp, myp, ex, ey); g.stroke();
+      var a2 = Math.atan2(ey - myp, ex - mxp); g.beginPath(); g.moveTo(ex + Math.cos(a2) * 16, ey + Math.sin(a2) * 16);
+      g.lineTo(ex + Math.cos(a2 + 2.5) * 20, ey + Math.sin(a2 + 2.5) * 20); g.lineTo(ex + Math.cos(a2 - 2.5) * 20, ey + Math.sin(a2 - 2.5) * 20); g.closePath(); g.fill();
+    }
+    moves.forEach(function(m){
+      var a = m.first ? anchor[m.names[0]] : null, f = B(m.from), to = B(m.to);
+      var sx = a ? a[0] : f.x, sy = a ? a[1] : f.y; if (a) sx += (to.x >= sx ? 1 : -1) * a[2];
+      arrow(sx, sy, to.x, to.y, COL[m.ph] || COL[1]);
+      if (!m.first) textOps.push({ s: m.names.join(', ') + ' (' + CS_PHL[L][T.ph[m.ph]].toLowerCase() + ')', x: to.x, y: to.y - 62, small: true, col: '#7a4a00' });
+    });
+    g.textAlign = 'center'; g.textBaseline = 'top';
+    textOps.forEach(function(o){
+      g.font = (o.small ? '700 17px' : '800 ' + FS + 'px') + ' system-ui, sans-serif';
+      g.lineWidth = 5; g.strokeStyle = 'rgba(255,255,255,.9)'; g.strokeText(o.s, o.x, o.y);
+      g.fillStyle = o.col || '#0b0f19'; g.fillText(o.s, o.x, o.y);
+    });
+    if (T.time) { g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillStyle = '#fff'; g.font = '800 34px system-ui, sans-serif'; g.shadowColor = '#3d8bff'; g.shadowBlur = 12; g.fillText(T.time, CT.time[0] * S, CT.time[1] * S); g.shadowBlur = 0; }
+    var bx = CT.box[0] * S, by = CT.box[1] * S, bw = (CT.box[2] - CT.box[0]) * S, bh = (CT.box[3] - CT.box[1]) * S;
+    var head = 'BRIEFING' + (T.opp ? (DE ? ' · gegen ' : ' · vs ') + T.opp : '');
+    var parts = [DE ? TC.desc : TC.en];
+    if (T.note) parts.push(T.note);
+    if (unplaced.length) parts.push((DE ? 'Ohne Kartenposition: ' : 'Not on the map yet: ') + unplaced.join('; '));
+    if (T.s.length) parts.push((DE ? 'Ersatz: ' : 'Substitutes: ') + T.s.join(', '));
+    parts.push((DE ? 'Grüne Pfeile: ab 10 Min. · Orange: ab 12 Min.' : 'Green arrows: from min 10 · Orange: from min 12'));
+    g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    var fs = 24, lines;
+    do { g.font = '500 ' + fs + 'px system-ui, sans-serif'; lines = []; parts.forEach(function(p, i){ if (i) lines.push(''); dsmWrap(g, p, bw - 36).forEach(function(l){ lines.push(l); }); }); fs -= 1; }
+    while ((lines.length + 2) * fs * 1.32 > bh - 24 && fs > 12);
+    fs += 1;
+    g.fillStyle = '#7dd3fc'; g.font = '800 ' + (fs + 4) + 'px system-ui, sans-serif'; g.fillText(head, bx + 18, by + 18 + fs + 4);
+    g.fillStyle = '#e6f1ff'; g.font = '500 ' + fs + 'px system-ui, sans-serif';
+    lines.forEach(function(l, i){ g.fillText(l, bx + 18, by + 18 + (fs + 4) * 1.6 + (i + 1) * fs * 1.32); });
+    var url = c.toDataURL('image/png'), name = 'SKWS-Schluchtsturm-Team-' + t + '-' + L.toUpperCase() + '-' + fileDate() + '.png', A = window.SKWSAndroid;
+    var hh = '<img src="' + url + '" alt="Plan Team ' + t + '">';
+    if (A && A.saveImage) hh += '<button class="btn" id="csSave" style="width:100%;margin-top:8px">Bild in der Galerie speichern</button>';
+    else if (A) hh += '<p class="small" style="color:var(--warn)">Zum Speichern in der App bitte App-Version 1.2 installieren – oder die Admin-Seite im Browser öffnen.</p>';
+    else hh += '<a class="btn" style="display:block;text-align:center;text-decoration:none;margin-top:8px" download="' + name + '" href="' + url + '">Bild herunterladen</a>';
+    $('csOut').innerHTML = hh;
+    if ($('csSave')) $('csSave').addEventListener('click', function(){ A.saveImage(name, url); });
+  }
+  (function(){
+    function upd(fn){ var st = csState(); fn(st); csSave(st); }
+    var tacOpts = Object.keys(CS_TACTICS).map(function(k){ return '<option value="' + k + '">' + esc(CS_TACTICS[k].name) + '</option>'; }).join('');
+    ['A','B'].forEach(function(t){
+      $('csTac' + t).innerHTML = tacOpts;
+      $('csTac' + t).addEventListener('change', function(){ var v = this.value; upd(function(st){ st.tac[t] = v; }); csTacInfo(t); });
+      $('csTime' + t).addEventListener('input', function(){ var v = this.value; upd(function(st){ st.time[t] = v; }); csRenderList(); });
+      $('csOpp' + t).addEventListener('input', function(){ var v = this.value; upd(function(st){ st.opp[t] = v; }); });
+      $('csNote' + t).addEventListener('input', function(){ var v = this.value; upd(function(st){ st.note[t] = v; }); });
+      $('csCopy' + t).addEventListener('click', function(){ if (CS_LAST && CS_LAST.plan.teams[t]) copyText(csChat(t), 'csMsg'); });
+      ['', 'de'].forEach(function(sfx){ $('csPic' + t + sfx).addEventListener('click', function(){
+        var lang = this.dataset.lang; if (!CS_LAST || !CS_LAST.plan.teams[t]) return;
+        csLoadTpl(t, lang, function(im){ if (im) csRender_img(t, lang, im); else { $('csMsg').textContent = 'Vorlage konnte nicht geladen werden.'; $('csMsg').className = 'note err'; } });
+      }); });
+    });
+    $('csMetric').addEventListener('change', function(){ var v = this.value; upd(function(st){ st.metric = v; }); csRenderList(); });
+    $('csSearch').addEventListener('input', csRenderList);
+    $('csOnlySel').addEventListener('click', function(){ CS_ONLYSEL = !CS_ONLYSEL; csRenderList(); });
+    $('csClear').addEventListener('click', function(){ if (!confirm('Alle Schluchtsturm-Zuordnungen löschen?')) return; upd(function(st){ st.assign = {}; }); csRenderList(); });
+    $('csList').addEventListener('change', function(e){ var s = e.target.closest('select[data-cs]'); if (!s) return; var n = s.dataset.cs, v = s.value; upd(function(st){ if (v) st.assign[n] = v; else delete st.assign[n]; }); csRenderList(); });
+    $('csMapRow').addEventListener('change', function(e){ var s = e.target.closest('select[data-csmap]'); if (!s) return; var m = csMap(); if (s.value) m[s.dataset.csmap] = s.value; else delete m[s.dataset.csmap]; try { ls(CS_MAP_KEY, JSON.stringify(m)); } catch(x){} csRenderMap(); });
+    $('csRun').addEventListener('click', function(){ csRun(false); });
+    $('csExample').addEventListener('click', function(){ csRun(true); });
+  })();
+
   /* ---------- Logbuch ---------- */
   var LOG = null, LOG_PAGE = 1000, logLoading = false;
   function loadLog(more){
@@ -1546,7 +1925,7 @@
   function showTab(name){
     var bs = document.querySelectorAll('#tabs button');
     for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-    ['ov','mem','hist','pl','dev','exp','ds','adm','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+    ['ov','mem','hist','pl','dev','exp','ds','cs','adm','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
     store('skws_admin_tab', name);
     if (name === 'hist') renderHistory();
     if (name === 'ov') renderOverview();
@@ -1554,6 +1933,7 @@
     if (name === 'adm') renderAdmin();
     if (name === 'exp') renderExport();
     if (name === 'ds') dsRender();
+    if (name === 'cs') csRender();
     if (name === 'dev') renderDev();
     if (name === 'log') loadLog(false);
   }
