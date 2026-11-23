@@ -358,8 +358,12 @@
             <button class="btn2" id="dsCopyB">Chat-Text Team B kopieren</button>
           </div>
           <div class="btnrow">
-            <button class="btn" id="dsPicA">Plan-Bild Team A</button>
-            <button class="btn" id="dsPicB">Plan-Bild Team B</button>
+            <button class="btn" id="dsPicA" data-lang="en">Plan-Bild Team A (EN)</button>
+            <button class="btn" id="dsPicAde" data-lang="de">Plan-Bild Team A (DE)</button>
+          </div>
+          <div class="btnrow">
+            <button class="btn" id="dsPicB" data-lang="en">Plan-Bild Team B (EN)</button>
+            <button class="btn" id="dsPicBde" data-lang="de">Plan-Bild Team B (DE)</button>
           </div>
           <div id="dsmOut" class="dsm-out"></div>
           <div class="btnrow">
@@ -1064,7 +1068,7 @@
     $('dsResult').innerHTML = h;
     $('dsActions').classList.toggle('hide', !Object.keys(P.teams).length);
     $('dsPublish').disabled = !!r.example; $('dsPublish').style.opacity = r.example ? .4 : '';
-    ['A','B'].forEach(function(t){ ['dsCopy','dsImg','dsPic'].forEach(function(id){ $(id + t).classList.toggle('hide', !P.teams[t]); }); });
+    ['A','B'].forEach(function(t){ ['dsCopy','dsImg','dsPic'].forEach(function(id){ $(id + t).classList.toggle('hide', !P.teams[t]); }); $('dsPic' + t + 'de').classList.toggle('hide', !P.teams[t]); });
     $('dsmOut').innerHTML = '';
     $('dsMsg').textContent = ''; $('dsMsg').className = 'note';
   }
@@ -1208,7 +1212,7 @@
     $('dsmClearBg').addEventListener('click', function(){ ls(DSM_KEY, null); dsmLoadBg(dsmEditor); });
     $('dsmReset').addEventListener('click', function(){ ls(DSM_POS_KEY, null); dsmEditor(); });
     $('dsmToggle').addEventListener('click', function(){ var w = $('dsmWrap'); w.classList.toggle('hide'); if (!w.classList.contains('hide')) dsmLoadBg(dsmEditor); });
-    ['A','B'].forEach(function(t){ $('dsPic' + t).addEventListener('click', function(){ if (!DS_LAST || !DS_LAST.plan.teams[t]) return; if (ls(DSM_KEY)) dsmLoadBg(function(){ dsmRender(t); }); else dstLoad(t, function(){ if (DST_IMG) dstRender(t); else dsmLoadBg(function(){ dsmRender(t); }); }); }); });
+    ['A','B'].forEach(function(t){ ['', 'de'].forEach(function(sfx){ $('dsPic' + t + sfx).addEventListener('click', function(){ var lang = this.dataset.lang; if (!DS_LAST || !DS_LAST.plan.teams[t]) return; if (ls(DSM_KEY)) dsmLoadBg(function(){ dsmRender(t); }); else dstLoad(t, function(){ if (DST_IMG) dstRender(t, lang); else dsmLoadBg(function(){ dsmRender(t); }); }); }); }); });
   })();
   function dsmWrap(ctx, text, maxW){
     var out = []; String(text).split('\n').forEach(function(par){
@@ -1321,15 +1325,17 @@
     if (DST_IMGS[t]) { DST_IMG = DST_IMGS[t]; return cb(); }
     var im = new Image(); im.onload = function(){ DST_IMGS[t] = DST_IMG = im; cb(); }; im.onerror = function(){ DST_IMG = null; cb(); }; im.src = DST.src + '?v=2';
   }
-  function dsmShow(url, t){
-    var name = 'SKWS-Wuestensturm-Team-' + t + '-' + fileDate() + '.png', A = window.SKWSAndroid, h = '<img src="' + url + '" alt="Plan Team ' + t + '">';
+  function dsmShow(url, t, lang){
+    var name = 'SKWS-Wuestensturm-Team-' + t + (lang ? '-' + lang.toUpperCase() : '') + '-' + fileDate() + '.png', A = window.SKWSAndroid, h = '<img src="' + url + '" alt="Plan Team ' + t + '">';
     if (A && A.saveImage) h += '<button class="btn" id="dsmSave" style="width:100%;margin-top:8px">Bild in der Galerie speichern</button>';
     else if (A) h += '<p class="small" style="color:var(--warn)">Zum Speichern in der App bitte die neue App-Version 1.2 installieren (im Handy-Browser öffnen: matdan1987.github.io/skws-squads/SKWS-Squads.apk) – oder die Admin-Seite im Browser öffnen.</p>';
     else h += '<a class="btn" style="display:block;text-align:center;text-decoration:none;margin-top:8px" download="' + name + '" href="' + url + '">Bild herunterladen</a>';
     $('dsmOut').innerHTML = h;
     if ($('dsmSave')) $('dsmSave').addEventListener('click', function(){ A.saveImage(name, url); });
   }
-  function dstRender(t){
+  function dstRender(t, lang){
+    var DE = lang === 'de';
+    function phTxt(k){ return DE ? DS_PHL[k].replace(/^Ab/, 'ab') : DS_PHL_EN[k].replace(/^phase \d, /, ''); }
     var T = DS_LAST.plan.teams[t], TC = DS_TACTICS[T.tac], groups = dsGroupsOf(T);
     var S = 1920 / DST.w, W = DST.w * S, H = DST.h * S, c = document.createElement('canvas'); c.width = W; c.height = H;
     var g = c.getContext('2d'); g.lineJoin = 'round'; g.miterLimit = 2;
@@ -1339,7 +1345,7 @@
     var startAt = {}, moves = [], late = [];
     groups.forEach(function(x){
       var s0 = x.g.steps[0], b0 = s0[1] || (s0[0] === 'watch' ? 'react' : 'base'), prev = b0, mover = false;
-      x.g.steps.forEach(function(s, i){ if (!i) return; var b = s[1] || null; if (!b || b === prev) return; if (b === 'wells') { late.push(x.names.join(', ') + ' → Oil Wells (' + DS_PHL_EN[T.ph[i]].replace(/^phase \d, /, '') + ')'); return; } moves.push({ from: prev, to: b, ph: i, names: x.names, first: !mover }); mover = true; prev = b; });
+      x.g.steps.forEach(function(s, i){ if (!i) return; var b = s[1] || null; if (!b || b === prev) return; if (b === 'wells') { late.push(x.names.join(', ') + (DE ? ' → Ölquellen (' : ' → Oil Wells (') + phTxt(T.ph[i]) + ')'); return; } moves.push({ from: prev, to: b, ph: i, names: x.names, first: !mover }); mover = true; prev = b; });
       (startAt[b0] = startAt[b0] || []).push({ names: x.names, mover: mover });
     });
     var FS = 22, LH = 25, textOps = [], anchor = {};
@@ -1352,7 +1358,7 @@
       var real = k !== 'react' && k !== 'base' && k !== 'wells';
       var below = !real || p.ly < DST.low * S;
       var y = real ? (below ? p.ly + 28 : p.y - 40 - n * LH - (blocks.length - 1) * 14) : p.y - n * LH / 2;
-      if (!real) { textOps.push({ s: k === 'react' ? 'Reaction team' : 'Support', x: p.x, y: y - 26, small: true }); }
+      if (!real) { textOps.push({ s: k === 'react' ? (DE ? 'Eingreiftruppe' : 'Reaction team') : (DE ? 'Unterstützung' : 'Support'), x: p.x, y: y - 26, small: true }); }
       blocks.forEach(function(blk){
         var w = Math.max.apply(null, blk.lines.map(function(s){ return g.measureText(s).width; }));
         var cx = Math.min(Math.max(p.x, DST.map[0] * S + w / 2 + 26), DST.map[1] * S - w / 2 - 26);
@@ -1378,7 +1384,7 @@
       var a = m.first ? anchor[m.names[0]] : null, f = B(m.from), to = B(m.to);
       var sx = a ? a[0] : f.x, sy = a ? a[1] : f.y; if (a) sx += (to.x >= sx ? 1 : -1) * a[2];
       arrow(sx, sy, to.x, to.y, COL[m.ph] || COL[1]);
-      if (!m.first) textOps.push({ s: m.names.join(', ') + ' (' + DS_PHL_EN[T.ph[m.ph]].replace(/^phase \d, /, '') + ')', x: to.x, y: to.y - 62, small: true, col: '#7a4a00' });
+      if (!m.first) textOps.push({ s: m.names.join(', ') + ' (' + phTxt(T.ph[m.ph]) + ')', x: to.x, y: to.y - 62, small: true, col: '#7a4a00' });
     });
     g.textAlign = 'center'; g.textBaseline = 'top';
     textOps.forEach(function(o){
@@ -1388,15 +1394,15 @@
     });
     // Briefing-Text (Englisch)
     var bx = DST.box[0] * S, by = DST.box[1] * S, bw = (DST.box[2] - DST.box[0]) * S, bh = (DST.box[3] - DST.box[1]) * S;
-    var head = 'BRIEFING' + (T.opp ? ' · vs ' + T.opp : '');
+    var head = 'BRIEFING' + (T.opp ? (DE ? ' · gegen ' : ' · vs ') + T.opp : '');
     if (T.time) { g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillStyle = '#ffffff'; g.font = '800 34px system-ui, sans-serif'; g.shadowColor = '#3d8bff'; g.shadowBlur = 12; g.fillText(T.time, DST.time[0] * S, DST.time[1] * S); g.shadowBlur = 0; }
-    var parts = [TC.en];
+    var parts = [DE ? TC.desc : TC.en];
     var flex = groups.filter(function(x){ return x.g.steps.some(function(s){ return s[0] === 'watch'; }); });
-    flex.forEach(function(x){ parts.push(x.names.join(', ') + ': watch where we are under pressure and reinforce there' + (x.g.steps[2] && x.g.steps[2][1] === 'silo' ? '; from minute 20 take the Nuclear Silo.' : '.')); });
+    flex.forEach(function(x){ var silo = x.g.steps[2] && x.g.steps[2][1] === 'silo'; parts.push(x.names.join(', ') + (DE ? ': beobachten, wo wir unter Druck sind, und dort verstärken' + (silo ? '; ab Minute 20 das Atomsilo erobern.' : '.') : ': watch where we are under pressure and reinforce there' + (silo ? '; from minute 20 take the Nuclear Silo.' : '.'))); });
     if (T.note) parts.push(T.note);
-    if (late.length) parts.push('Later: ' + late.join('; '));
-    if (T.s.length) parts.push('Substitutes: ' + T.s.join(', '));
-    parts.push('Green arrows: ' + DS_PHL_EN[T.ph[1]].replace(/^phase \d, /, '') + ' · Orange: ' + DS_PHL_EN[T.ph[2]].replace(/^phase \d, /, ''));
+    if (late.length) parts.push((DE ? 'Später: ' : 'Later: ') + late.join('; '));
+    if (T.s.length) parts.push((DE ? 'Ersatz: ' : 'Substitutes: ') + T.s.join(', '));
+    parts.push((DE ? 'Grüne Pfeile: ' : 'Green arrows: ') + phTxt(T.ph[1]) + (DE ? ' · Orange: ' : ' · Orange: ') + phTxt(T.ph[2]));
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
     var fs = 24, lines;
     do {
@@ -1409,7 +1415,7 @@
     g.fillStyle = '#e6f1ff'; g.font = '500 ' + fs + 'px system-ui, sans-serif';
     lines.forEach(function(l, i){ g.fillText(l, bx + 18, by + 18 + (fs + 4) * 1.6 + (i + 1) * fs * 1.32); });
     var url = c.toDataURL('image/png'); DSM_LASTURL = url;
-    dsmShow(url, t);
+    dsmShow(url, t, lang);
   }
 
   /* ---------- Logbuch ---------- */
