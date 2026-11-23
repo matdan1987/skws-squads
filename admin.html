@@ -414,14 +414,7 @@
       </div>
 
       <div class="card">
-        <h2>2 · Gebäude auf der Karte</h2>
-        <p class="small muted" style="margin:0 0 8px">Belegt sind: Viruslabor (Mitte), Energieturm (darüber), Schutzzone Apollo (oben), Morgenbringer-Start (unten links/rechts) sowie laut Übersicht von alliance-ops.com 2 = Serumfabrik I, 4 = Verteidigungssystem II, 5 = Verteidigungssystem I, 7 = Serumfabrik II. Für 1, 3, 6 und 8 (Datenzentren bzw. Probenlager) bitte im Spiel antippen und hier wählen. Wird auf diesem Gerät gespeichert.</p>
-        <img src="cs-nummern.jpg" alt="Karte mit Nummern 1–8" style="width:100%;max-width:520px;display:block;margin:0 auto 10px;border-radius:10px">
-        <div class="formrow" id="csMapRow"></div>
-      </div>
-
-      <div class="card">
-        <h2>3 · Gemeldete Spieler</h2>
+        <h2>2 · Gemeldete Spieler</h2>
         <div class="dscount" id="csCount"></div>
         <div class="toolbar"><input id="csSearch" type="search" placeholder="Spieler suchen…"></div>
         <div class="chips">
@@ -432,7 +425,7 @@
       </div>
 
       <div class="card">
-        <h2>4 · Taktik &amp; Einsatzplan</h2>
+        <h2>3 · Taktik &amp; Einsatzplan</h2>
         <div class="btnrow"><button class="btn" id="csRun">Taktik erstellen</button><button class="btn2" id="csExample">Beispiel zeigen</button></div>
         <div id="csResult"></div>
         <div class="hide" id="csActions">
@@ -1488,13 +1481,13 @@
   }
 
   /* ---------- Schluchtsturm (Canyon Storm, 2 gegen 1) ---------- */
-  // Belegt (dracgon.tech, lastcmd.com): Schutzzone Apollo oben, darunter Energieturm, Viruslabor in der Mitte,
+  // Belegt (dracgon.tech, lastcmd.com): Sicherheitszone der Ordnungshüter oben, darunter Energieturm, Hochsicherheitslabor in der Mitte,
   // Morgenbringer-Start unten links/rechts. Gebäude 1–8 ordnet der Admin im Tab zu (keine überprüfbare Quelle).
   var CS_B = {
-    de: { lab:'Viruslabor', tower:'Energieturm', safe:'Schutzzone Apollo', spl:'Morgenbringer-Start', spr:'Morgenbringer-Start',
+    de: { lab:'Hochsicherheitslabor', tower:'Energieturm', safe:'Sicherheitszone Ordnungshüter', spl:'Morgenbringer-Start', spr:'Morgenbringer-Start',
           dc1:'Datenzentrum I', dc2:'Datenzentrum II', sf1:'Serumfabrik I', sf2:'Serumfabrik II', ds1:'Verteidigungssystem I', ds2:'Verteidigungssystem II',
           sw1:'Probenlager I', sw2:'Probenlager II', sw3:'Probenlager III', sw4:'Probenlager IV', base:'Basis' },
-    en: { lab:'Virus Lab', tower:'Power Tower', safe:'Apollo Safe Zone', spl:'Dawnbreaker Spawn', spr:'Dawnbreaker Spawn',
+    en: { lab:'Virus Lab', tower:'Power Tower', safe:'Rulebringer Safe Zone', spl:'Dawnbreaker Spawn', spr:'Dawnbreaker Spawn',
           dc1:'Data Center I', dc2:'Data Center II', sf1:'Serum Factory I', sf2:'Serum Factory II', ds1:'Defense System I', ds2:'Defense System II',
           sw1:'Sample Warehouse I', sw2:'Sample Warehouse II', sw3:'Sample Warehouse III', sw4:'Sample Warehouse IV', base:'Base' }
   };
@@ -1508,11 +1501,11 @@
   var CS_PHL = { de: { p0:'Start (0–10 Min.)', p10:'Ab 10 Min.', p12:'Ab 12 Min.' }, en: { p0:'Start (min 0–10)', p10:'From min 10', p12:'From min 12' } };
   var CS_TACTICS = {
     lab: {
-      name: 'Morgenbringer – wir greifen das Viruslabor an',
-      desc: 'Absprache mit der Partner-Allianz: Wir nehmen das Viruslabor, die Partner halten die Gebäude dazwischen. Die 5 Stärksten sichern ab 0:30 den Energieturm und greifen um 12:00 gemeinsam das Viruslabor an. Der Rest hält Datenzentren und Probenlager und holt sich Serumfabriken und Verteidigungssysteme, sobald sie öffnen.',
+      name: 'Morgenbringer – wir greifen das Hochsicherheitslabor an',
+      desc: 'Absprache mit der Partner-Allianz: Wir nehmen das Hochsicherheitslabor, die Partner halten die Gebäude dazwischen. Die 5 Stärksten sichern ab 0:30 den Energieturm und greifen um 12:00 gemeinsam das Hochsicherheitslabor an. Der Rest hält Datenzentren und Probenlager und holt sich Serumfabriken und Verteidigungssysteme, sobald sie öffnen.',
       en: 'Agreed with our partner alliance: we take the Virus Lab, they hold the buildings in between. The 5 strongest secure the Power Tower from 0:30 and attack the Virus Lab together at 12:00. The rest hold the Data Centers and Sample Warehouses and take the Serum Factories and Defense Systems as soon as they open.',
       when: 'Wenn eure Allianz die stärkere der beiden Morgenbringer ist.',
-      pro: 'Das Viruslabor bringt mit 120 Punkten/Sek. am meisten.',
+      pro: 'Das Hochsicherheitslabor bringt mit 120 Punkten/Sek. am meisten.',
       con: 'Klappt nur mit Absprache – sonst greifen beide Allianzen dasselbe an und die Außengebäude bleiben leer.',
       ph: ['p0','p10','p12'],
       groups: [
@@ -1532,7 +1525,7 @@
     },
     mid: {
       name: 'Morgenbringer – Partner greift an, wir halten die Mitte',
-      desc: 'Absprache mit der Partner-Allianz: Die Partner nehmen das Viruslabor, wir halten Energieturm, Datenzentren und Probenlager und besetzen ab 10 Minuten beide Verteidigungssysteme, die die Wege zur Mitte bewachen.',
+      desc: 'Absprache mit der Partner-Allianz: Die Partner nehmen das Hochsicherheitslabor, wir halten Energieturm, Datenzentren und Probenlager und besetzen ab 10 Minuten beide Verteidigungssysteme, die die Wege zur Mitte bewachen.',
       en: 'Agreed with our partner alliance: they take the Virus Lab, we hold the Power Tower, Data Centers and Sample Warehouses and occupy both Defense Systems from minute 10, which guard the paths to the center.',
       when: 'Wenn die Partner-Allianz stärker ist oder das Labor angreifen will.',
       pro: 'Sichere Punkte von vielen Gebäuden, die Wege zur Mitte sind geschützt.',
@@ -1554,8 +1547,8 @@
       ]
     },
     rule: {
-      name: 'Ordnungshüter (wir allein) – konzentrieren',
-      desc: 'Als einzelne Allianz nicht alles verteidigen: Die 5 Stärksten nehmen den Energieturm (Schild über die Schutzzone) und halten ab 12 Minuten das Viruslabor bis zum Schluss. Judicator für das Labor-Fenster aufheben. Der Rest hält Datenzentren, Serumfabriken und Verteidigungssysteme.',
+      name: 'Ordnungshüter (wir allein) – konzentrieren', top: true,
+      desc: 'Als einzelne Allianz nicht alles verteidigen: Die 5 Stärksten nehmen den Energieturm (Schild über die Schutzzone) und halten ab 12 Minuten das Hochsicherheitslabor bis zum Schluss. Judicator für das Labor-Fenster aufheben. Der Rest hält Datenzentren, Serumfabriken und Verteidigungssysteme.',
       en: 'As a single alliance, do not defend everything: the 5 strongest take the Power Tower (shield over the safe zone) and hold the Virus Lab from minute 12 to the end. Save the Judicator for the Virus Lab window. The rest hold the Data Centers, Serum Factories and Defense Systems.',
       when: 'Wenn eure Allianz in dieser Runde die Ordnungshüter-Seite spielt.',
       pro: 'Kräfte gebündelt, Labor und Schild in eurer Hand.',
@@ -1575,10 +1568,12 @@
   };
   // Vorlagen (1672×941): Gebäude-Mitte und Namensschild in Vorlagen-Pixeln; B liegt 11 px weiter rechts.
   // [Mitte x, y, Schild x, y, (optional) Namen x, y]
-  var CST_BASE = { safe:[1095,105,1095,105], tower:[1095,291,1095,232,1240,258], lab:[1093,451,1093,500], spl:[776,766,776,766], spr:[1417,766,1417,766], base:[1095,820,1095,820],
-    n1:[901,167,901,197], n2:[804,333,804,372,772,392], n3:[887,381,905,432], n4:[1386,326,1386,366], n5:[787,527,787,566], n6:[1285,471,1285,500], n7:[1400,541,1400,580], n8:[1143,645,1143,675] };
+  var CST_BASE = { safe:[1095,115,1095,115], tower:[1089,373,1089,296,1089,318], lab:[1092,486,1092,537], spl:[848,815,800,853], spr:[1347,815,1395,853],
+    base:[1092,820,1092,820], baseTop:[1095,150,1095,150],
+    dc1:[872,201,872,252], dc2:[1310,199,1310,252], sf1:[837,420,837,475], ds2:[1345,416,1345,475], ds1:[829,549,829,604], sf2:[1353,549,1353,611],
+    sw1:[758,697,758,748], sw2:[980,729,980,690,980,652], sw3:[1202,729,1202,690,1202,652], sw4:[1427,697,1427,748] };
   var CST_T = { A: { dx: 0, box:[62,368,636,790], map:[690,1510], time:[1462,47], low:700 }, B: { dx: 11, box:[62,372,646,790], map:[700,1522], time:[1430,45], low:700 } };
-  var CS_KEY = 'skws_cs', CS_MAP_KEY = 'skws_cs_map', CS_ONLYSEL = false, CS_LAST = null, CS_IMGS = {};
+  var CS_KEY = 'skws_cs', CS_ONLYSEL = false, CS_LAST = null, CS_IMGS = {};
   function csState(){
     var st = null; try { st = JSON.parse(ls(CS_KEY) || 'null'); } catch(e){}
     st = st || {}; st.assign = st.assign || {}; st.time = st.time || {A:'',B:''}; st.opp = st.opp || {A:'',B:''};
@@ -1586,24 +1581,10 @@
     return st;
   }
   function csSave(st){ try { ls(CS_KEY, JSON.stringify(st)); } catch(e){} }
-  // Abgleich mit der Übersicht auf alliance-ops.com (Serumfabrik I links/oben, Verteidigungssystem II rechts/oben,
-  // Verteidigungssystem I links/unten, Serumfabrik II rechts/unten) und den Gebäudeformen auf der Spielkarte.
-  var CS_MAP_DEF = { n2:'sf1', n4:'ds2', n5:'ds1', n7:'sf2' };
-  function csMap(){ var m = null; try { m = JSON.parse(ls(CS_MAP_KEY) || 'null'); } catch(e){} m = m || {}; var o = {}, used = {}; Object.keys(m).forEach(function(k){ o[k] = m[k]; used[m[k]] = 1; }); Object.keys(CS_MAP_DEF).forEach(function(k){ if (!(k in o) && !used[CS_MAP_DEF[k]]) o[k] = CS_MAP_DEF[k]; }); return o; }
-  function csPosKey(k){ if (CST_BASE[k]) return k; var m = csMap(); for (var n in m) if (m[n] === k) return n; return null; }
   function csAct(step, lang){ var t = CS_A[lang || 'de'][step[0]] || step[0]; return t.split('{b}').join(CS_B[lang || 'de'][step[1]] || ''); }
   function csTacInfo(t){
     var T = CS_TACTICS[$('csTac' + t).value] || CS_TACTICS.lab;
     $('csTacInfo' + t).innerHTML = '<b>' + esc(T.name) + '</b><br>' + esc(T.desc) + '<br><span class="muted">Wann: </span>' + esc(T.when) + '<br><span class="up">+ </span>' + esc(T.pro) + '<br><span class="down">− </span>' + esc(T.con);
-  }
-  function csRenderMap(){
-    var m = csMap(), used = {};
-    Object.keys(m).forEach(function(n){ used[m[n]] = n; });
-    $('csMapRow').innerHTML = [1,2,3,4,5,6,7,8].map(function(i){
-      var n = 'n' + i, v = m[n] || '';
-      return '<div><label>Gebäude ' + i + '</label><select data-csmap="' + n + '"><option value="">– noch unbekannt –</option>' +
-        CS_TYPES.map(function(k){ return '<option value="' + k + '"' + (v === k ? ' selected' : '') + (used[k] && used[k] !== n ? ' disabled' : '') + '>' + CS_B.de[k] + '</option>'; }).join('') + '</select></div>';
-    }).join('');
   }
   function csRender(){
     if (!D) return;
@@ -1613,7 +1594,7 @@
       $('csTac' + t).value = CS_TACTICS[st.tac[t]] ? st.tac[t] : 'lab'; csTacInfo(t);
     });
     $('csMetric').value = st.metric;
-    csRenderMap(); csRenderList();
+    csRenderList();
   }
   function csRenderList(){
     var st = csState(), m = st.metric, q = $('csSearch').value.trim().toLowerCase();
@@ -1644,8 +1625,6 @@
       if (stamm.length > 20) warn.push('Team ' + t + ': ' + stamm.length + ' Stammspieler – im Spiel sind nur 20 möglich.');
       plan.teams[t] = { time: st.time[t] || '', opp: st.opp[t] || '', note: st.note[t] || '', tac: tk, ph: TC.ph, m: members, s: subs.map(function(p){ return p.name; }) };
     });
-    var miss = CS_TYPES.filter(function(k){ return !csPosKey(k); });
-    if (miss.length) warn.push('Noch ohne Kartenposition (oben unter „2 · Gebäude auf der Karte“ zuordnen): ' + miss.map(function(k){ return CS_B.de[k]; }).join(', ') + '. Diese Spieler stehen im Bild nur im Briefing.');
     return { plan: plan, warn: warn, by: by };
   }
   function csGroupsOf(T){
@@ -1684,23 +1663,23 @@
   }
   function csChat(t){
     var T = CS_LAST.plan.teams[t], out = ['SKWS Schluchtsturm Team ' + t + (T.time ? ' - ' + T.time : '') + ' - Plan siehe Bild'];
-    csGroupsOf(T).forEach(function(x){ x.g.steps.forEach(function(s){ if (s[0] === 'rally') out.push('- ' + x.names.join(', ') + ': ab 11:30 sammeln, um 12:00 zusammen aufs Viruslabor und bis zum Ende halten.'); }); });
+    csGroupsOf(T).forEach(function(x){ x.g.steps.forEach(function(s){ if (s[0] === 'rally') out.push('- ' + x.names.join(', ') + ': ab 11:30 sammeln, um 12:00 zusammen aufs Hochsicherheitslabor und bis zum Ende halten.'); }); });
     if (T.s.length) out.push('- Ersatz in dieser Reihenfolge: ' + T.s.join(', ') + '. Ersatz übernimmt die Aufgabe dessen, der ausfällt.');
     out.push('- Basen nicht direkt nebeneinander stellen (Judicator trifft benachbarte Basen).');
     out.push('- Höchstens 5 Spieler pro Gebäude. Gebäude halten, Punkte-Kisten einsammeln.');
-    out.push('- Das Viruslabor in den letzten Minuten nicht verlassen.');
+    out.push('- Das Hochsicherheitslabor in den letzten Minuten nicht verlassen.');
     out.push('Deinen Einsatz siehst du auch im Bild.');
     return out.join('\n');
   }
   function csLoadTpl(t, lang, cb){
     var key = t + lang; if (CS_IMGS[key]) return cb(CS_IMGS[key]);
-    var im = new Image(); im.onload = function(){ CS_IMGS[key] = im; cb(im); }; im.onerror = function(){ cb(null); }; im.src = 'cs-vorlage-' + t.toLowerCase() + '-' + lang + '.jpg?v=1';
+    var im = new Image(); im.onload = function(){ CS_IMGS[key] = im; cb(im); }; im.onerror = function(){ cb(null); }; im.src = 'cs-vorlage-' + t.toLowerCase() + '-' + lang + '.jpg?v=2';
   }
   function csRender_img(t, lang, IMG){
     var DE = lang === 'de', L = DE ? 'de' : 'en', CT = CST_T[t], T = CS_LAST.plan.teams[t], TC = CS_TACTICS[T.tac], groups = csGroupsOf(T);
     var S = 1920 / 1672, W = 1920, H = Math.round(941 * S), c = document.createElement('canvas'); c.width = W; c.height = H;
     var g = c.getContext('2d'); g.lineJoin = 'round'; g.miterLimit = 2; g.drawImage(IMG, 0, 0, W, H);
-    function B(k){ var pk = csPosKey(k); if (!pk) return null; var p = CST_BASE[pk]; return { x: (p[0] + CT.dx) * S, y: p[1] * S, lx: (p[2] + CT.dx) * S, ly: p[3] * S, nx: ((p[4] || p[2]) + CT.dx) * S, ny: (p[5] || p[3] + 21) * S }; }
+    function B(k){ var p = CST_BASE[k === 'base' && TC.top ? 'baseTop' : k]; if (!p) return null; return { x: (p[0] + CT.dx) * S, y: p[1] * S, lx: (p[2] + CT.dx) * S, ly: p[3] * S, nx: ((p[4] || p[2]) + CT.dx) * S, ny: (p[5] || p[3] + 21) * S }; }
     // Gebäude-Beschriftungen (belegte + zugeordnete)
     g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'italic 600 19px system-ui, sans-serif';
     function tag(text, x, y){ var w = g.measureText(text).width + 18; g.fillStyle = 'rgba(10,16,28,.92)'; g.beginPath(); if (g.roundRect) g.roundRect(x - w/2, y - 14, w, 28, 7); else g.rect(x - w/2, y - 14, w, 28); g.fill(); g.fillStyle = '#fff'; g.fillText(text, x, y); }
@@ -1722,8 +1701,8 @@
       var maxW = k === 'base' ? 520 : 220;
       blocks.forEach(function(blk){ var Ls = [], cur = ''; blk.names.forEach(function(nm){ var tst = cur ? cur + ', ' + nm : nm; if (cur && g.measureText(tst).width > maxW) { Ls.push(cur); cur = nm; } else cur = tst; }); if (cur) Ls.push(cur); blk.lines = Ls; });
       var tot = blocks.reduce(function(a, b){ return a + b.lines.length * LH + 14; }, 0);
-      var y = k === 'base' ? p.y - tot + 14 : p.ny;
-      if (k === 'base') textOps.push({ s: CS_B[L].base, x: p.x, y: y - 26, small: true });
+      var y = k === 'base' ? (TC.top ? p.y : p.y - tot + 14) : p.ny;
+      if (k === 'base' && !TC.top) textOps.push({ s: CS_B[L].base, x: p.x, y: y - 26, small: true });
       blocks.forEach(function(blk){
         var w = Math.max.apply(null, blk.lines.map(function(s){ return g.measureText(s).width; }));
         var cx = Math.min(Math.max(k === 'base' ? p.x : p.nx, CT.map[0] * S + w / 2 + 26), CT.map[1] * S - w / 2 - 26);
@@ -1804,7 +1783,6 @@
     $('csOnlySel').addEventListener('click', function(){ CS_ONLYSEL = !CS_ONLYSEL; csRenderList(); });
     $('csClear').addEventListener('click', function(){ if (!confirm('Alle Schluchtsturm-Zuordnungen löschen?')) return; upd(function(st){ st.assign = {}; }); csRenderList(); });
     $('csList').addEventListener('change', function(e){ var s = e.target.closest('select[data-cs]'); if (!s) return; var n = s.dataset.cs, v = s.value; upd(function(st){ if (v) st.assign[n] = v; else delete st.assign[n]; }); csRenderList(); });
-    $('csMapRow').addEventListener('change', function(e){ var s = e.target.closest('select[data-csmap]'); if (!s) return; var m = csMap(); if (s.value) m[s.dataset.csmap] = s.value; else m[s.dataset.csmap] = ''; try { ls(CS_MAP_KEY, JSON.stringify(m)); } catch(x){} csRenderMap(); });
     $('csRun').addEventListener('click', function(){ csRun(false); });
     $('csExample').addEventListener('click', function(){ csRun(true); });
   })();
