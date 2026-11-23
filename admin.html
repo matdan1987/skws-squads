@@ -480,6 +480,12 @@
         <div id="mgLead" class="small muted" style="margin-top:10px"></div>
         <div id="mgMissing" class="small" style="margin-top:6px;color:var(--warn)"></div>
       </div>
+      <div class="card">
+        <h2>Mentor-Vorschläge</h2>
+        <p class="small muted" style="margin:0 0 8px">Starke Spieler, die noch keine Mentoren sind: T1 mindestens so hoch wie der Ø T1 der jetzigen Mentoren (<span id="mgMAvg">–</span>). Vorgeschlagen wird die eigene Gruppe – bei Spielern ohne Gruppe die Gruppe mit den meisten Spielern je Mentor.</p>
+        <label class="small" style="display:flex;align-items:center;gap:8px;margin:0 0 8px"><input type="checkbox" id="mgR1" style="width:18px;height:18px;padding:0;accent-color:var(--accent)"> auch R1 vorschlagen (meist neu in der Allianz)</label>
+        <div id="mgMent"></div>
+      </div>
     </section>
 
     <section id="tab-log" class="hide">
@@ -2037,6 +2043,12 @@
       o.push(['x', 'aus Gruppe nehmen']);
       return o.map(function(x){ return '<option value="' + x[0] + '"' + (x[0] === cur ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('');
     };
+    function r4opts(cur){
+      var used = {}; st.groups.forEach(function(G){ used[G.r4] = 1; });
+      var c = D.players.filter(function(p){ return (p.rank === 'R4' || p.rank === 'R5') && (!used[p.name] || p.name === cur); }).map(function(p){ return p.name; });
+      if (c.indexOf(cur) < 0) c.unshift(cur);
+      return c.map(function(n){ return '<option value="' + esc(n) + '"' + (n === cur ? ' selected' : '') + '>' + (n === cur ? 'R4: ' : 'wechseln zu ') + esc(n) + (by[n] && n !== cur ? ' (' + by[n].rank + ')' : '') + '</option>'; }).join('');
+    }
     function row(n, cur){
       var p = by[n]; inGroups[n] = 1;
       var v = !p ? '<span class="stale">nicht in der Mitgliederliste</span>' : p.entry ? 'T1 ' + fmt(p.t1) : 'keine Meldung';
@@ -2046,7 +2058,9 @@
       var s = mgStats(G, by); total += s.n; mentors += G.mentors.length; inGroups[G.r4] = 1;
       return '<div class="mgcard' + (G.intensive ? ' int' : '') + '"><h3>Gruppe ' + (i + 1) + ' – ' + esc(G.r4) + (G.intensive ? ' <span class="mgb m">Intensiv</span>' : '') + '</h3>' +
         '<div class="sub">' + s.n + ' Spieler + 1 R4 · Ø T1 ' + (s.known ? fmt(s.avg) : '–') + ' (' + s.known + ' mit Meldung)</div>' +
-        '<div class="mglbl">R4 – Kontrolle</div><div class="mgrow"><span class="nm">' + esc(G.r4) + '</span>' + (by[G.r4] ? '' : '<span class="v stale">nicht in der Mitgliederliste</span>') + '</div>' +
+        '<div class="mglbl">R4 – Kontrolle</div><div class="mgrow"><span class="nm">' + esc(G.r4) + '</span>' +
+          (!by[G.r4] ? '<span class="v stale">nicht in der Mitgliederliste</span>' : (by[G.r4].rank !== 'R4' && by[G.r4].rank !== 'R5') ? '<span class="v stale">ist kein R4 mehr</span>' : '') +
+          '<select data-mgr4="' + i + '" title="R4 der Gruppe wechseln">' + r4opts(G.r4) + '</select></div>' +
         '<div class="mglbl">' + (G.mentors.length === 1 ? 'Mentor' : 'Mentoren') + '</div>' + (G.mentors.map(function(n){ return row(n, 't' + i); }).join('') || '<div class="small muted">–</div>') +
         '<div class="mglbl">Mitglieder</div>' + (G.members.map(function(n){ return row(n, 'm' + i); }).join('') || '<div class="small muted">–</div>') + '</div>';
     }).join('');
@@ -2059,10 +2073,39 @@
         '<button class="mini okb" data-mgadd="' + esc(r.p.name) + '" data-g="' + r.g + '">→ Gruppe ' + (r.g + 1) + '</button></div>';
     }).join('') || '<div class="empty">Alle aktiven Spieler sind einer Gruppe zugeordnet.</div>';
     $('mgApplyAll').disabled = !recs.length; $('mgApplyAll').style.opacity = recs.length ? '' : .4;
+    mgRenderMentors(st, by);
     var lead = D.players.filter(function(p){ return (p.rank === 'R4' || p.rank === 'R5') && !inGroups[p.name]; }).map(function(p){ return p.name + ' (' + p.rank + ')'; });
     $('mgLead').textContent = lead.length ? 'R4/R5 ohne eigene Gruppe (werden nicht verteilt): ' + lead.join(', ') : '';
     var miss = Object.keys(inGroups).filter(function(n){ return !by[n]; });
     $('mgMissing').textContent = miss.length ? 'In einer Gruppe, aber nicht (mehr) als aktives Mitglied geführt: ' + miss.join(', ') : '';
+  }
+  function mgMentorRecs(st, by, withR1){
+    var ment = []; st.groups.forEach(function(G){ ment = ment.concat(G.mentors); });
+    var known = ment.filter(function(n){ return by[n] && by[n].entry && by[n].t1; });
+    var avg = known.length ? known.reduce(function(a, n){ return a + by[n].t1; }, 0) / known.length : 0;
+    var ratio = st.groups.map(function(G){ return (G.mentors.length + G.members.length) / Math.max(1, G.mentors.length); });
+    var worst = 0; ratio.forEach(function(r, i){ if (r > ratio[worst]) worst = i; });
+    var list = D.players.filter(function(p){
+      if (!p.active || !p.entry || !p.t1 || p.t1 < avg) return false;
+      if (p.rank === 'R4' || p.rank === 'R5' || (p.rank === 'R1' && !withR1)) return false;
+      var m = mgOf(p.name, st); return !m || m.role === 'member';
+    }).sort(function(a, b){ return b.t1 - a.t1; });
+    return { avg: avg, ratio: ratio, recs: list.map(function(p){ var m = mgOf(p.name, st); return { p: p, g: m ? m.g - 1 : worst, own: !!m }; }) };
+  }
+  function mgRenderMentors(st, by){
+    var r = mgMentorRecs(st, by, $('mgR1').checked);
+    $('mgMAvg').textContent = r.avg ? 'T1 ' + fmt(r.avg) : '–';
+    $('mgMent').innerHTML = r.recs.map(function(x){
+      var G = st.groups[x.g];
+      return '<div class="mgrow"><span class="nm">' + esc(x.p.name) + ' <span class="v">' + x.p.rank + ' · T1 ' + fmt(x.p.t1) + '</span><div class="tl">' +
+        (x.own ? 'jetzt Mitglied in Gruppe ' + (x.g + 1) : 'noch ohne Gruppe') + ' · Gruppe ' + (x.g + 1) + ' hat ' + G.mentors.length + ' Mentor' + (G.mentors.length === 1 ? '' : 'en') + ' für ' + (G.mentors.length + G.members.length) + ' Spieler</div></span>' +
+        '<button class="mini okb" data-mgment="' + esc(x.p.name) + '" data-g="' + x.g + '">→ Mentor G' + (x.g + 1) + '</button></div>';
+    }).join('') || '<div class="empty">Keine weiteren Kandidaten über dem Mentoren-Schnitt.</div>';
+  }
+  function mgSetR4(st, i, name){
+    var G = st.groups[i]; if (!G || !name || G.r4 === name) return;
+    // neuer R4 verlässt ggf. seine bisherige Mentoren-/Mitgliederrolle
+    mgMove(st, name, 'x'); G.r4 = name;
   }
   function mgMove(st, name, val){
     st.groups.forEach(function(G){ G.mentors = G.mentors.filter(function(n){ return n !== name; }); G.members = G.members.filter(function(n){ return n !== name; }); });
@@ -2097,6 +2140,17 @@
       var s = e.target.closest('select[data-mg]'); if (!s) return;
       var st = mgState(); mgMove(st, s.dataset.mg, s.value); mgSave(st); mgRender(); renderMembers();
     });
+    $('mgGroups').addEventListener('change', function(e){
+      var s = e.target.closest('select[data-mgr4]'); if (!s) return;
+      var st = mgState(), G = st.groups[+s.dataset.mgr4], old = G.r4;
+      if (!confirm('Gruppe ' + (+s.dataset.mgr4 + 1) + ': R4 von ' + old + ' auf ' + s.value + ' wechseln?')) { mgRender(); return; }
+      mgSetR4(st, +s.dataset.mgr4, s.value); mgSave(st); mgRender(); renderMembers();
+    });
+    $('mgMent').addEventListener('click', function(e){
+      var b = e.target.closest('[data-mgment]'); if (!b) return;
+      var st = mgState(); mgMove(st, b.dataset.mgment, 't' + b.dataset.g); mgSave(st); mgRender(); renderMembers();
+    });
+    $('mgR1').addEventListener('change', function(){ mgRender(); });
     $('mgFree').addEventListener('click', function(e){
       var b = e.target.closest('[data-mgadd]'); if (!b) return;
       var st = mgState(); mgMove(st, b.dataset.mgadd, 'm' + b.dataset.g); mgSave(st); mgRender(); renderMembers();
