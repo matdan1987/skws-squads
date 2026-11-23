@@ -1046,11 +1046,42 @@
       ]
     }
   };
-  var DS_B = { ref1:'Ölraffinerie I', ref2:'Ölraffinerie II', hosp1:'Feldlazarett I', hosp2:'Feldlazarett II', hosp3:'Feldlazarett III', hosp4:'Feldlazarett IV', sci:'Wissenschaftszentrum', info:'Infozentrum', arsenal:'Waffenlager', merc:'Söldnerfabrik', silo:'Atomsilo', wells:'Ölquellen' };
-  var DS_B_EN = { ref1:'Oil Refinery I', ref2:'Oil Refinery II', hosp1:'Field Hospital I', hosp2:'Field Hospital II', hosp3:'Field Hospital III', hosp4:'Field Hospital IV', sci:'Science Hub', info:'Info Center', arsenal:'Arsenal', merc:'Mercenary Factory', silo:'Nuclear Silo', wells:'Oil Wells' };
+  // Taktik von Moon (Allianzmitglied): vier Farbbereiche + geschlossenes gelbes Team.
+  // Bereiche nach Lage auf unserer Karte: Schwarz links, Rot rechts, Grün oben, Blau unten.
+  DS_TACTICS.moon = {
+    name: 'Farbbereiche + Gelb – Taktik von Moon',
+    desc: 'Taktik von Moon: Vier Farbbereiche mit je 2 Gebäudehaltern (schwächere Spieler: Gebäude halten, Angriffe melden, keine unnötigen Kämpfe) und 2 Unterstützern (Bereich verteidigen, verlorene Gebäude zurückerobern). Die 4 Stärksten sind das gelbe Team: immer geschlossen, nur auf Ruf des Einsatzleiters, ab 10:00 gemeinsam aufs Atomsilo. Höchstens 2 abgestimmte Silo-Versuche, sonst geschlossen auf eine gegnerische Raffinerie. Waffenlager und Söldnerfabrik erst, wenn das Silo sicher ist.',
+    when: 'Wenn eine Person im Kampfchat die Einsatzleitung übernimmt und die Bereiche selbstständig verteidigen sollen. Gut bei gemischt starken Teams.',
+    pro: 'Alle 8 Außengebäude sofort besetzt, klare Zuständigkeiten, die Stärksten bleiben zusammen und sparen Truppen fürs Silo.',
+    con: 'Nur 4 am Silo – gegen sehr starke Gegner knapp. Schwache Halter auf den Raffinerien brauchen schnelle Hilfe von Unterstützern bzw. Gelb.',
+    en: 'Moon\'s plan: four color areas, each with 2 building holders (weaker players: hold the building, report attacks, no needless fights) and 2 supporters (defend the area, retake lost buildings). The 4 strongest are the yellow team: always together, only on the leader\'s call, Nuclear Silo together at 10:00. At most 2 coordinated silo attempts, otherwise move as a group to an enemy refinery. Arsenal and Mercenary Factory only once the silo is secure.',
+    ph: ['p0','p10','p13'],
+    // Füllreihenfolge: Gelb = die Stärksten, Halter = die Schwächsten, Unterstützer = die Mitte (im Zickzack auf die Bereiche verteilt)
+    tiers: [['gelb'], ['uL','uR','uN','uS'], ['hRef1','hRef2','hH1','hH4','hH3','hH2','hInfo','hSci']],
+    sectors: { secL:['ref1','hosp1'], secR:['ref2','hosp4'], secN:['info','hosp3'], secS:['sci','hosp2'] },
+    groups: [
+      { k:'gelb',  n:4, label:'Gelbes Team',                 steps:[['yellow',''],['rally','silo'],['silob','silo']] },
+      { k:'uL',    n:2, label:'Unterstützer Schwarz (links)', steps:[['sup','secL'],['sup','secL'],['sup','secL']] },
+      { k:'uR',    n:2, label:'Unterstützer Rot (rechts)',    steps:[['sup','secR'],['sup','secR'],['sup','secR']] },
+      { k:'uN',    n:2, label:'Unterstützer Grün (oben)',     steps:[['sup','secN'],['sup','secN'],['sup','secN']] },
+      { k:'uS',    n:2, label:'Unterstützer Blau (unten)',    steps:[['sup','secS'],['sup','secS'],['sup','secS']] },
+      { k:'hRef1', n:1, label:'Halter Schwarz',  steps:[['keep','ref1'],['hold','ref1'],['hold','ref1']] },
+      { k:'hRef2', n:1, label:'Halter Rot',      steps:[['keep','ref2'],['hold','ref2'],['hold','ref2']] },
+      { k:'hH1',   n:1, label:'Halter Schwarz',  steps:[['keep','hosp1'],['holdh','hosp1'],['holdh','hosp1']] },
+      { k:'hH4',   n:1, label:'Halter Rot',      steps:[['keep','hosp4'],['holdh','hosp4'],['holdh','hosp4']] },
+      { k:'hH3',   n:1, label:'Halter Grün',     steps:[['keep','hosp3'],['holdh','hosp3'],['holdh','hosp3']] },
+      { k:'hH2',   n:1, label:'Halter Blau',     steps:[['keep','hosp2'],['holdh','hosp2'],['holdh','hosp2']] },
+      { k:'hInfo', n:1, label:'Halter Grün',     steps:[['keep','info'],['hold','info'],['hold','info']] },
+      { k:'hSci',  n:1, label:'Halter Blau',     steps:[['keep','sci'],['hold','sci'],['hold','sci']] }
+    ]
+  };
+  var DS_SEC = { secL:{ de:'Schwarz', en:'Black', col:'#111827' }, secR:{ de:'Rot', en:'Red', col:'#b91c1c' }, secN:{ de:'Grün', en:'Green', col:'#15803d' }, secS:{ de:'Blau', en:'Blue', col:'#1d4ed8' } };
+  var DS_B = { secL:'Bereich Schwarz (links)', secR:'Bereich Rot (rechts)', secN:'Bereich Grün (oben)', secS:'Bereich Blau (unten)', ref1:'Ölraffinerie I', ref2:'Ölraffinerie II', hosp1:'Feldlazarett I', hosp2:'Feldlazarett II', hosp3:'Feldlazarett III', hosp4:'Feldlazarett IV', sci:'Wissenschaftszentrum', info:'Infozentrum', arsenal:'Waffenlager', merc:'Söldnerfabrik', silo:'Atomsilo', wells:'Ölquellen' };
+  var DS_B_EN = { secL:'Black area (left)', secR:'Red area (right)', secN:'Green area (top)', secS:'Blue area (bottom)', ref1:'Oil Refinery I', ref2:'Oil Refinery II', hosp1:'Field Hospital I', hosp2:'Field Hospital II', hosp3:'Field Hospital III', hosp4:'Field Hospital IV', sci:'Science Hub', info:'Info Center', arsenal:'Arsenal', merc:'Mercenary Factory', silo:'Nuclear Silo', wells:'Oil Wells' };
   var DS_A = { take:'{b} erobern und halten', help:'bei {b} mit erobern', move:'zu {b} wechseln, erobern und halten', hold:'{b} halten', holdh:'{b} halten, geheilte Truppen abholen', rally:'ab 9:30 sammeln, um 10:00 gemeinsam {b} erobern und halten', iffree:'{b} erobern, wenn frei – sonst verstärken, wo nötig', defend:'Basis verteidigen, Punkte-Kisten einsammeln', reinforce:'Kisten einsammeln, angegriffene Gebäude verstärken', wells:'{b} sammeln',
-    watch:'Eingreiftruppe: beobachten, wo wir unter Druck sind, und dort verstärken', takeend:'{b} erobern und bis zum Ende halten', final:'ab 28:00 sammeln, um 28:30 gemeinsam {b} angreifen, danach Punkte-Kisten einsammeln', holdq:'{b} halten und Truppen schonen – nicht ins Zentrum' };
-  var DS_A_EN = { take:'capture & hold', help:'help capture', move:'move to & hold', hold:'hold', holdh:'hold', rally:'rally 9:30, attack 10:00', iffree:'take if free', defend:'defend base', reinforce:'reinforce', wells:'gather', watch:'reaction team', takeend:'capture & hold to the end', final:'final strike 28:30', holdq:'hold, save troops' };
+    watch:'Eingreiftruppe: beobachten, wo wir unter Druck sind, und dort verstärken', takeend:'{b} erobern und bis zum Ende halten', final:'ab 28:00 sammeln, um 28:30 gemeinsam {b} angreifen, danach Punkte-Kisten einsammeln', holdq:'{b} halten und Truppen schonen – nicht ins Zentrum',
+    yellow:'Gelbes Team: immer geschlossen bleiben, nur auf Ruf des Einsatzleiters eingreifen (Raffinerien retten, starke Gegner stoppen)', keep:'{b} sofort erobern, in der Nähe bleiben und Angriffe sofort melden – keine unnötigen Kämpfe', sup:'{b} absichern: Halter schützen, verlorene Gebäude gemeinsam zurückerobern, Kisten sammeln', silob:'{b} gemeinsam halten – nach 2 gescheiterten Versuchen geschlossen auf eine gegnerische Raffinerie' };
+  var DS_A_EN = { take:'capture & hold', help:'help capture', move:'move to & hold', hold:'hold', holdh:'hold', rally:'rally 9:30, attack 10:00', iffree:'take if free', defend:'defend base', reinforce:'reinforce', wells:'gather', watch:'reaction team', takeend:'capture & hold to the end', final:'final strike 28:30', holdq:'hold, save troops', yellow:'yellow team', keep:'capture & report', sup:'secure area', silob:'hold, plan B: enemy refinery' };
   var DS_PHL = { p0:'Start (0–10 Min.)', p10:'Ab 10 Min.', p13:'Ab 13 Min.', p20:'Ab 20 Min.', p28:'Ab 28 Min.' };
   var DS_PHL_EN = { p0:'phase 1, minute 0–10', p10:'phase 2, from minute 10', p13:'phase 3, from minute 13', p20:'phase 3, from minute 20', p28:'phase 3, from minute 28' };
   var DS_TIPS = [
@@ -1122,15 +1153,38 @@
       if (!stamm.length && !subs.length) return;
       var tacKey = DS_TACTICS[st.tac[t]] ? st.tac[t] : 'std', TC = DS_TACTICS[tacKey];
       var members = [], used = {}, i = 0, last = TC.groups[TC.groups.length - 1].k;
-      TC.groups.forEach(function(g){ for (var k = 0; k < g.n && i < stamm.length; k++, i++) { members.push([stamm[i].name, g.k]); used[g.k] = g.steps; } });
-      for (; i < stamm.length; i++) { members.push([stamm[i].name, last]); used[last] = TC.groups[TC.groups.length - 1].steps; }
+      if (TC.tiers) dsDealTiers(TC, stamm, members, used);
+      else {
+        TC.groups.forEach(function(g){ for (var k = 0; k < g.n && i < stamm.length; k++, i++) { members.push([stamm[i].name, g.k]); used[g.k] = g.steps; } });
+        for (; i < stamm.length; i++) { members.push([stamm[i].name, last]); used[last] = TC.groups[TC.groups.length - 1].steps; }
+      }
       if (stamm.length > 20) warn.push('Team ' + t + ': ' + stamm.length + ' Stammspieler – im Spiel sind nur 20 gleichzeitig möglich.');
       if (subs.length > 10) warn.push('Team ' + t + ': ' + subs.length + ' Ersatzspieler – im Spiel sind nur 10 möglich.');
       var nod = stamm.concat(subs).filter(function(p){ return !p.entry; }).map(function(p){ return p.name; });
       if (nod.length) warn.push('Team ' + t + ' ohne Meldung (als Schwächste eingeplant): ' + nod.join(', '));
       plan.teams[t] = { time: st.time[t] || '', opp: st.opp[t] || '', note: st.note[t] || '', tac: tacKey, ph: TC.ph, g: used, m: members, s: subs.map(function(p){ return p.name; }) };
+      // Bereichs-Taktik: jeder Ersatz bekommt einen festen Bereich (reihum)
+      if (TC.sectors) { var sk = Object.keys(TC.sectors); plan.teams[t].ss = subs.map(function(p, j){ return sk[j % sk.length]; }); }
     });
     return { plan: plan, warn: warn, by: by };
+  }
+  // Verteilung in Stufen: erste Stufe = die Stärksten, letzte = die Schwächsten (bei weniger Spielern zuerst gefüllt),
+  // mittlere Stufe bekommt den Rest im Zickzack, damit kein Bereich nur die Stärkeren oder nur die Schwächeren hat.
+  function dsDealTiers(TC, stamm, members, used){
+    var gm = {}; TC.groups.forEach(function(g){ gm[g.k] = g; });
+    var sz = TC.tiers.map(function(t){ return t.reduce(function(a, k){ return a + gm[k].n; }, 0); }), N = stamm.length;
+    var c0 = Math.min(sz[0], N), c2 = Math.min(sz[2], N - c0), c1 = N - c0 - c2;
+    var parts = [stamm.slice(0, c0), stamm.slice(c0, c0 + c1), stamm.slice(c0 + c1)];
+    TC.tiers.forEach(function(keys, ti){
+      var cnt = {}; keys.forEach(function(k){ cnt[k] = 0; });
+      var seq = []; if (ti === 1) { for (var r = 0; r < 8; r++) { var row = keys.slice(); if (r % 2) row.reverse(); seq = seq.concat(row); } }
+      parts[ti].forEach(function(p, j){
+        var k = null;
+        if (ti === 1) { for (var q = 0; q < seq.length && !k; q++) { var c = seq[(j + q) % seq.length]; if (cnt[c] < gm[c].n) k = c; } if (!k) k = seq[j % seq.length]; }
+        else { keys.forEach(function(c){ if (!k && cnt[c] < gm[c].n) k = c; }); if (!k) k = keys[keys.length - 1]; }
+        cnt[k]++; members.push([p.name, k]); used[k] = gm[k].steps;
+      });
+    });
   }
   function dsGroupsOf(team){
     var TC = DS_TACTICS[team.tac] || DS_TACTICS.std, out = [];
@@ -1183,7 +1237,14 @@
       });
       if (x.g.steps[0][0] === 'watch') out.push('- ' + x.names.join(', ') + ': Eingreiftruppe, helft dort, wo wir unter Druck sind.');
     });
-    if (T.s.length) out.push('- Ersatz in dieser Reihenfolge: ' + T.s.join(', ') + '. Ersatz übernimmt die Aufgabe dessen, der ausfällt.');
+    if (T.tac === 'moon') {
+      out.push('- Bereiche: Schwarz = Raffinerie I + Lazarett I, Rot = Raffinerie II + Lazarett IV, Grün = Infozentrum + Lazarett III, Blau = Wissenschaftszentrum + Lazarett II.');
+      out.push('- Gelb bleibt immer zusammen und kommt nur auf Ruf des Einsatzleiters. Am Silo höchstens 2 gemeinsame Versuche, sonst geschlossen auf eine gegnerische Raffinerie.');
+      out.push('- Halter: Gebäude halten, Angriffe sofort melden, keine unnötigen Kämpfe. Unterstützer: eigenen Bereich verteidigen und zurückerobern, andere Bereiche nur auf Anweisung.');
+      out.push('- Meldung im Kampfchat: Farbe - Gebäude - Gegnerzahl - Stärke, bei Bedarf "Gelb benötigt".');
+      out.push('- Waffenlager und Söldnerfabrik erst, wenn das Silo sicher ist und der Einsatzleiter freigibt.');
+      if (T.s.length) out.push('- Ersatz in dieser Reihenfolge, mit festem Bereich: ' + T.s.map(function(n, i){ return n + ' (' + DS_SEC[T.ss[i]].de + ')'; }).join(', ') + '.');
+    } else if (T.s.length) out.push('- Ersatz in dieser Reihenfolge: ' + T.s.join(', ') + '. Ersatz übernimmt die Aufgabe dessen, der ausfällt.');
     out.push('- Wer nicht kann oder früher gehen muss: bitte Bescheid geben und über die Punktetafel "Schlachtfeld verlassen", damit Ersatz nachrücken kann.');
     out.push('- Eroberte Gebäude halten (nach 60 Sek. wird ein Teil der Punkte plünderbar), Punkte-Kisten einsammeln.');
     out.push('- Geheilte Truppen im Lazarett abholen, Teleport für Notfälle aufheben.');
@@ -1196,7 +1257,7 @@
     // Startposition je Gebäude (Phase 1) und wer später wohin wechselt (Pfeile)
     var start = {}, order = [], moves = [];
     groups.forEach(function(x){
-      var b0 = x.g.steps[0][1] || (x.g.steps[0][0] === 'watch' ? 'react' : 'base');
+      var b0 = x.g.steps[0][1] || (x.g.steps[0][0] === 'watch' || x.g.steps[0][0] === 'yellow' ? 'react' : 'base');
       if (!start[b0]) { start[b0] = []; order.push(b0); }
       start[b0] = start[b0].concat(x.names);
       var prev = b0;
@@ -1351,7 +1412,7 @@
     // Start-Gebäude und Wechsel je Gruppe
     var startAt = {}, moves = [];
     groups.forEach(function(x){
-      var s0 = x.g.steps[0], b0 = s0[1] || (s0[0] === 'watch' ? 'react' : 'base'), prev = b0, mover = false;
+      var s0 = x.g.steps[0], b0 = s0[1] || (s0[0] === 'watch' || s0[0] === 'yellow' ? 'react' : 'base'), prev = b0, mover = false;
       x.g.steps.forEach(function(s, i){
         if (!i) return; var b = s[1] || null; if (!b || b === prev) return;
         moves.push({ from: prev, to: b, ph: i, names: x.names, first: !mover }); mover = true; prev = b;
@@ -1418,11 +1479,13 @@
     A: { src: 'ds-vorlage-a.jpg', w: 1672, h: 941, box: [62, 368, 636, 790], map: [690, 1510], low: 700, time: [1462, 47],
          b: { info:[930,103,931,154], arsenal:[1105,205,1107,281], hosp3:[1273,105,1270,151], ref1:[790,300,787,358], hosp4:[1420,330,1429,382],
               silo:[1103,420,1105,501], hosp1:[788,515,788,583], ref2:[1425,543,1431,595], merc:[1106,645,1107,710], hosp2:[930,745,936,810], sci:[1275,755,1270,810],
-              wells:[930,430,930,430], react:[955,455,955,455], base:[760,840,760,840] } },
+              wells:[930,430,930,430], react:[955,455,955,455], base:[760,840,760,840],
+              secL:[790,452,790,452], secR:[1300,492,1300,492], secN:[1100,128,1100,128], secS:[1090,840,1090,840] } },
     B: { src: 'ds-vorlage-b.jpg', w: 1672, h: 941, box: [62, 372, 646, 790], map: [700, 1522], low: 700, time: [1430, 45],
          b: { info:[942,103,943,153], arsenal:[1120,205,1119,282], hosp3:[1288,105,1283,151], ref1:[800,300,798,358], hosp4:[1432,330,1440,382],
               silo:[1117,420,1117,500], hosp1:[800,515,799,583], ref2:[1440,543,1442,595], merc:[1120,645,1120,711], hosp2:[943,745,948,811], sci:[1288,755,1282,811],
-              wells:[942,430,942,430], react:[967,455,967,455], base:[772,840,772,840] } }
+              wells:[942,430,942,430], react:[967,455,967,455], base:[772,840,772,840],
+              secL:[802,452,802,452], secR:[1312,492,1312,492], secN:[1112,128,1112,128], secS:[1102,840,1102,840] } }
   };
   var DST = DST_T.A, DST_IMGS = {}, DST_IMG = null;
   function dstLoad(t, cb){
@@ -1450,7 +1513,7 @@
     // Start und Wechsel je Gruppe
     var startAt = {}, moves = [], late = [];
     groups.forEach(function(x){
-      var s0 = x.g.steps[0], b0 = s0[1] || (s0[0] === 'watch' ? 'react' : 'base'), prev = b0, mover = false;
+      var s0 = x.g.steps[0], b0 = s0[1] || (s0[0] === 'watch' || s0[0] === 'yellow' ? 'react' : 'base'), prev = b0, mover = false;
       x.g.steps.forEach(function(s, i){ if (!i) return; var b = s[1] || null; if (!b || b === prev) return; if (b === 'wells') { late.push(x.names.join(', ') + (DE ? ' → Ölquellen (' : ' → Oil Wells (') + phTxt(T.ph[i]) + ')'); return; } moves.push({ from: prev, to: b, ph: i, names: x.names, first: !mover }); mover = true; prev = b; });
       (startAt[b0] = startAt[b0] || []).push({ names: x.names, mover: mover });
     });
@@ -1458,13 +1521,14 @@
     g.font = '800 ' + FS + 'px system-ui, sans-serif';
     Object.keys(startAt).forEach(function(k){
       var p = B(k), blocks = startAt[k];
-      var maxW = (k !== 'react' && k !== 'base' && k !== 'wells' && p.ly >= DST.low * S) ? 160 : 230;
+      var sec = DS_SEC[k];
+      var maxW = sec || (k !== 'react' && k !== 'base' && k !== 'wells' && p.ly >= DST.low * S) ? 160 : 230;
       blocks.forEach(function(blk){ var L = [], cur = ''; blk.names.forEach(function(nm){ var tst = cur ? cur + ', ' + nm : nm; if (cur && g.measureText(tst).width > maxW) { L.push(cur); cur = nm; } else cur = tst; }); if (cur) L.push(cur); blk.lines = L; });
       var n = blocks.reduce(function(a, b){ return a + b.lines.length; }, 0);
-      var real = k !== 'react' && k !== 'base' && k !== 'wells';
+      var real = k !== 'react' && k !== 'base' && k !== 'wells' && !sec;
       var below = !real || p.ly < DST.low * S;
       var y = real ? (below ? p.ly + 28 : p.y - 40 - n * LH - (blocks.length - 1) * 14) : p.y - n * LH / 2;
-      if (!real) { textOps.push({ s: k === 'react' ? (DE ? 'Eingreiftruppe' : 'Reaction team') : (DE ? 'Unterstützung' : 'Support'), x: p.x, y: y - 26, small: true }); }
+      if (!real) { textOps.push({ s: sec ? (DE ? 'Unterstützer ' + sec.de : sec.en + ' supporters') : k === 'react' ? (T.tac === 'moon' ? (DE ? 'Gelbes Team' : 'Yellow team') : (DE ? 'Eingreiftruppe' : 'Reaction team')) : (DE ? 'Unterstützung' : 'Support'), x: p.x, y: y - 26, small: true, col: sec ? sec.col : (k === 'react' && T.tac === 'moon' ? '#8a6a00' : null) }); }
       blocks.forEach(function(blk){
         var w = Math.max.apply(null, blk.lines.map(function(s){ return g.measureText(s).width; }));
         var cx = Math.min(Math.max(p.x, DST.map[0] * S + w / 2 + 26), DST.map[1] * S - w / 2 - 26);
@@ -1507,7 +1571,7 @@
     flex.forEach(function(x){ var silo = x.g.steps[2] && x.g.steps[2][1] === 'silo'; parts.push(x.names.join(', ') + (DE ? ': beobachten, wo wir unter Druck sind, und dort verstärken' + (silo ? '; ab Minute 20 das Atomsilo erobern.' : '.') : ': watch where we are under pressure and reinforce there' + (silo ? '; from minute 20 take the Nuclear Silo.' : '.'))); });
     if (T.note) parts.push(T.note);
     if (late.length) parts.push((DE ? 'Später: ' : 'Later: ') + late.join('; '));
-    if (T.s.length) parts.push((DE ? 'Ersatz: ' : 'Substitutes: ') + T.s.join(', '));
+    if (T.s.length) parts.push((DE ? 'Ersatz: ' : 'Substitutes: ') + T.s.map(function(n, i){ return n + (T.ss && DS_SEC[T.ss[i]] ? ' (' + DS_SEC[T.ss[i]][DE ? 'de' : 'en'] + ')' : ''); }).join(', '));
     parts.push((DE ? 'Grüne Pfeile: ' : 'Green arrows: ') + phTxt(T.ph[1]) + (DE ? ' · Orange: ' : ' · Orange: ') + phTxt(T.ph[2]));
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
     var fs = 24, lines;
