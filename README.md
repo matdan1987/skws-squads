@@ -8,5 +8,6 @@
 
 ## Android-App
 
-`android/` enthält eine schlanke App (WebView) für diese Seite inkl. Admin-Bereich, mit Speichern von CSV-Exporten nach `Downloads/SKWS` und Kopieren in die Zwischenablage.
+`android/` enthält eine schlanke App (WebView) für diese Seite inkl. Admin-Bereich, mit Speichern von CSV-Exporten nach `Downloads/SKWS`, Speichern von Plan-Bildern nach `Bilder/SKWS` (ab App 1.2) und Kopieren in die Zwischenablage.
+Release-Build: `SKWS_KEYSTORE=… SKWS_KEYSTORE_PASSWORD=… gradle assembleRelease` im Ordner `android/` (Keystore liegt nicht im Repo).
 Download: https://matdan1987.github.io/skws-squads/SKWS-Squads.apk
