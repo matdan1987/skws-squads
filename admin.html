@@ -69,6 +69,17 @@
   .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
   .stale{color:var(--warn)}
   .tl{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap}
+  .mgb{display:inline-block;font-size:10.5px;font-weight:700;border-radius:99px;padding:1px 7px;margin-left:6px;vertical-align:1px;border:1px solid rgba(92,200,255,.35);color:var(--accent);white-space:nowrap}
+  .mgb.m{border-color:rgba(245,185,66,.45);color:var(--warn)} .mgb.r{border-color:rgba(124,92,255,.5);color:#b9a8ff}
+  .mggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .mgcard{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .mgcard.int{border-color:rgba(245,185,66,.45)}
+  .mgcard h3{margin:0 0 2px;font-size:16px} .mgcard .sub{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .mgrow{display:flex;align-items:center;gap:6px;padding:4px 0;border-top:1px solid var(--line);font-size:13.5px}
+  .mgrow .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mgrow .v{color:var(--muted);font-size:12px;white-space:nowrap}
+  .mgrow select{width:auto;padding:3px 4px;font-size:12px;border-radius:7px}
+  .mglbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 2px}
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
   .toolbar input{flex:1 1 100%} .toolbar select{flex:1;width:auto;min-width:0}
   /* Diagramme */
@@ -188,6 +199,7 @@
       <button data-tab="exp">Export</button>
       <button data-tab="ds">Wüstensturm</button>
       <button data-tab="cs">Schluchtsturm</button>
+      <button data-tab="mg">Mentoren</button>
       <button data-tab="adm">Verwaltung</button>
       <button data-tab="log">Logbuch</button>
     </div>
@@ -444,6 +456,28 @@
           </div>
         </div>
         <div class="note" id="csMsg"></div>
+      </div>
+    </section>
+
+    <section id="tab-mg" class="hide">
+      <div class="tiles" id="mgTiles"></div>
+      <div class="card">
+        <h2>Mentorengruppen</h2>
+        <p class="small muted" style="margin:0 0 10px">Rolle oder Gruppe über das Auswahlfeld neben dem Namen ändern. Wird auf diesem Gerät gespeichert. Ø T1 zählt nur Spieler mit Meldung.</p>
+        <div class="mggrid" id="mgGroups"></div>
+        <div class="btnrow"><button class="btn2" id="mgCopy">Übersicht für den Chat kopieren</button><button class="btn2" id="mgReset">Auf Ausgangsliste zurücksetzen</button></div>
+        <div class="note" id="mgNote"></div>
+      </div>
+      <div class="card">
+        <h2>Ohne Gruppe – Empfehlung (<span id="mgFreeCount">0</span>)</h2>
+        <div class="formrow" style="grid-template-columns:1fr">
+          <div><label for="mgThr">Intensivgruppe, wenn T1 unter (Mio.)</label><input id="mgThr" type="number" step="0.5" min="0" max="200"></div>
+        </div>
+        <p class="small muted" style="margin:0 0 8px">Schwache Spieler (T1 unter der Grenze) kommen in die Intensivgruppe. Alle anderen werden auf die übrigen Gruppen verteilt: immer in die kleinste Gruppe, bei Gleichstand in die mit dem niedrigeren Ø T1. R4/R5 werden nicht verteilt.</p>
+        <div id="mgFree"></div>
+        <div class="btnrow"><button class="btn" id="mgApplyAll">Alle Empfehlungen übernehmen</button></div>
+        <div id="mgLead" class="small muted" style="margin-top:10px"></div>
+        <div id="mgMissing" class="small" style="margin-top:6px;color:var(--warn)"></div>
       </div>
     </section>
 
@@ -731,8 +765,8 @@
       var n = D.players.filter(function(p){ return p.rank === r; });
       h += '<tr class="rankhead"><td class="sticky">' + r + '</td><td colspan="8">' + n.filter(function(p){ return p.entry; }).length + ' / ' + n.length + ' eingetragen</td></tr>';
       list.forEach(function(p){
-        if (!p.entry) { h += '<tr class="missing"><td class="sticky">' + esc(p.name) + '</td><td colspan="8">— noch nie eingetragen</td></tr>'; return; }
-        h += '<tr class="click" data-name="' + esc(p.name) + '"><td class="sticky">' + esc(p.name) + '<div class="tl' + (p.stale ? ' stale' : '') + '">' + (p.stale ? '⚠ ' : '') + fmtDate(p.updated) + ' · ' + ago(p.updated) + '</div></td>';
+        if (!p.entry) { h += '<tr class="missing"><td class="sticky">' + esc(p.name) + mgBadge(p.name) + '</td><td colspan="8">— noch nie eingetragen</td></tr>'; return; }
+        h += '<tr class="click" data-name="' + esc(p.name) + '"><td class="sticky">' + esc(p.name) + mgBadge(p.name) + '<div class="tl' + (p.stale ? ' stale' : '') + '">' + (p.stale ? '⚠ ' : '') + fmtDate(p.updated) + ' · ' + ago(p.updated) + '</div></td>';
         for (var i = 0; i < 4; i++) {
           var s = sq(p.entry, i);
           h += '<td class="n">' + squadCell(s) + '</td>';
@@ -775,7 +809,7 @@
       tile('Gesamt', fmtM(p.total), p.delta === null ? 'erste Meldung' : fmtDelta(p.delta) + ' M seit letzter Meldung') +
       tile('T1', fmtM(p.t1), TROOPS[sq(p.entry,0).type] || '') +
       tile('Wachstum', p.growth === null ? '–' : (p.growth > 0 ? '+' : '') + fmt(p.growth) + ' M', 'seit erster Meldung (' + fmtDate(p.history[0].t) + ')') +
-      tile('Meldungen', String(p.history.length), (p.stale ? '<span class="stale">⚠ ' : '') + 'zuletzt ' + ago(p.updated) + (p.stale ? '</span>' : '') + ' · Rang ' + p.rank);
+      tile('Meldungen', String(p.history.length), (p.stale ? '<span class="stale">⚠ ' : '') + 'zuletzt ' + ago(p.updated) + (p.stale ? '</span>' : '') + ' · Rang ' + p.rank + (mgOf(p.name) ? ' · ' + mgBadge(p.name) : ''));
     lineChart($('chartPlayer'), [0,1,2,3].map(function(i){
       return { name:'T' + (i+1), color:SLOT_COLORS[i], points: p.history.filter(function(h){ return (h.squads[i] || {}).power; }).map(function(h){ return { x:h.t, y:Number(h.squads[i].power) }; }) };
     }).filter(function(s){ return s.points.length; }), { title:'Kampfkraft je Trupp', time:true });
@@ -1064,7 +1098,7 @@
       return !q || p.name.toLowerCase().indexOf(q) >= 0;
     }).map(function(p){
       var v = st.assign[p.name] || '';
-      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
+      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + mgBadge(p.name) + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
         '<select data-ds="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
     }).join('') || '<div class="empty">Keine Treffer.</div>';
   }
@@ -1607,7 +1641,7 @@
     var opts = [['','–'],['AS','A Stamm'],['AE','A Ersatz'],['BS','B Stamm'],['BE','B Ersatz']];
     $('csList').innerHTML = list.filter(function(p){ if (CS_ONLYSEL && !st.assign[p.name]) return false; return !q || p.name.toLowerCase().indexOf(q) >= 0; }).map(function(p){
       var v = st.assign[p.name] || '';
-      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
+      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + mgBadge(p.name) + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
         '<select data-cs="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
     }).join('') || '<div class="empty">Keine Treffer.</div>';
   }
@@ -1883,7 +1917,7 @@
       .sort(function(a,b){ return RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank) || a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); });
     $('admActiveCount').textContent = D.players.length;
     $('admActive').innerHTML = act.map(function(p){
-      return '<tr><td class="sticky">' + esc(p.name) + '</td><td>' + rankSelect(p) + '</td><td style="text-align:right">' +
+      return '<tr><td class="sticky">' + esc(p.name) + mgBadge(p.name) + '</td><td>' + rankSelect(p) + '</td><td style="text-align:right">' +
         '<button class="mini" data-act="rename" data-name="' + esc(p.name) + '">Umbenennen</button> ' +
         '<button class="mini danger" data-act="leave" data-name="' + esc(p.name) + '">Ausgeschieden</button></td></tr>';
     }).join('') || '<tr><td class="muted">Keine Treffer.</td></tr>';
@@ -1905,11 +1939,144 @@
       });
   }
 
+
+  /* ---------- Mentorengruppen ---------- */
+  var MG_KEY = 'skws_mg';
+  var MG_DEF = [
+    { r4:'MissLizzie', mentors:['Harald','Boss Ralle'], members:['TheEducated','G89op','Rakeeete','Valhala','RAC','AlxPWarrior','Sergio','Killergurke11','BlueeStars','Pepperpaws','soapbox169','Lizzie Pea'] },
+    { r4:'ExXos', mentors:['Bzdziszewo','Mythe'], members:['Saschmaster','rouv','Sven der Schreck','Gabberdok','Ninchen1112','Dominic u','Rasty 85','Dreadmaw','Shuuk'] },
+    { r4:'Zaradim', mentors:['Davewave','Schlöki'], members:['xX Karsten Xx','Herr BERT','Carlos23mj','Floka','PeterPan','TurbooTobse','AMILKAR WALKER','Markus'] },
+    { r4:'Bedraloç', mentors:['SSAB'], members:['nienett','Döra','Böhse Onkelz','BarryTheBelson','ruskapunkku','HandyPanda','OnkelKuschel','Rafal Sobo'] },
+    { r4:'Niek Langis', mentors:['Florinator97','Dr Blubb','BATMAN 81'], members:['Lia','Dörri','Marco oooo','Mephisto1793','Astrid','MihailaZe','Oz of the apocalypse','Master LeK','Nini','ALEKSANDAR','BayernBua','Klumpfuß'], intensive:true }
+  ];
+  function mgState(){
+    var st = null; try { st = JSON.parse(ls(MG_KEY) || 'null'); } catch(e){}
+    if (!st || !st.groups) st = { groups: JSON.parse(JSON.stringify(MG_DEF)), thr: 35 };
+    if (typeof st.thr !== 'number') st.thr = 35;
+    return st;
+  }
+  function mgSave(st){ try { ls(MG_KEY, JSON.stringify(st)); } catch(e){} }
+  // Rolle eines Spielers: { g: Gruppennummer (1-basiert), role: 'r4' | 'mentor' | 'member' }
+  function mgOf(name, st){
+    st = st || mgState(); var out = null;
+    st.groups.forEach(function(G, i){
+      if (G.r4 === name) out = { g: i + 1, role: 'r4' };
+      else if (G.mentors.indexOf(name) >= 0) out = { g: i + 1, role: 'mentor' };
+      else if (G.members.indexOf(name) >= 0) out = { g: i + 1, role: 'member' };
+    });
+    return out;
+  }
+  function mgBadge(name){
+    var m = mgOf(name); if (!m) return '';
+    return '<span class="mgb' + (m.role === 'mentor' ? ' m' : m.role === 'r4' ? ' r' : '') + '" title="Mentorengruppe ' + m.g + '">G' + m.g + (m.role === 'mentor' ? ' · Mentor' : m.role === 'r4' ? ' · R4' : '') + '</span>';
+  }
+  function mgPlayers(){ var by = {}; (D ? D.players : []).forEach(function(p){ by[p.name] = p; }); return by; }
+  function mgStats(G, by){
+    var all = G.mentors.concat(G.members).filter(function(n){ return by[n]; });
+    var known = all.filter(function(n){ return by[n].entry; });
+    return { n: G.mentors.length + G.members.length, known: known.length, avg: known.length ? known.reduce(function(a, n){ return a + by[n].t1; }, 0) / known.length : 0 };
+  }
+  function mgRecommend(st, by){
+    var stats = st.groups.map(function(G){ var s = mgStats(G, by); return { n: s.n, sum: s.avg * s.known, known: s.known }; });
+    var intensive = -1; st.groups.forEach(function(G, i){ if (G.intensive) intensive = i; });
+    var free = D.players.filter(function(p){ return p.active && !mgOf(p.name, st) && p.rank !== 'R4' && p.rank !== 'R5'; })
+      .sort(function(a, b){ return b.t1 - a.t1 || a.name.localeCompare(b.name); });
+    return free.map(function(p){
+      var weak = p.entry && p.t1 > 0 && p.t1 < st.thr, gi = -1, why;
+      if (weak && intensive >= 0) { gi = intensive; why = 'T1 ' + fmt(p.t1) + ' unter ' + fmt(st.thr) + ' → Intensivgruppe'; }
+      else {
+        stats.forEach(function(s, i){
+          if (i === intensive) return;
+          if (gi < 0) { gi = i; return; }
+          var b = stats[gi], av = s.known ? s.sum / s.known : 0, bv = b.known ? b.sum / b.known : 0;
+          if (s.n < b.n || (s.n === b.n && av < bv)) gi = i;
+        });
+        why = p.entry ? 'kleinste Gruppe' + (stats[gi] ? ' (' + stats[gi].n + ' Spieler)' : '') : 'noch keine Werte – vorläufig in die kleinste Gruppe';
+      }
+      if (gi >= 0) { stats[gi].n++; if (p.entry && p.t1) { stats[gi].sum += p.t1; stats[gi].known++; } }
+      return { p: p, g: gi, why: why };
+    });
+  }
+  function mgRender(){
+    if (!D) return;
+    var st = mgState(), by = mgPlayers();
+    $('mgThr').value = st.thr;
+    var total = 0, mentors = 0, inGroups = {};
+    var opts = function(cur){
+      var o = []; st.groups.forEach(function(G, i){ o.push(['m' + i, 'G' + (i + 1) + ' Mitglied']); o.push(['t' + i, 'G' + (i + 1) + ' Mentor']); });
+      o.push(['x', 'aus Gruppe nehmen']);
+      return o.map(function(x){ return '<option value="' + x[0] + '"' + (x[0] === cur ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('');
+    };
+    function row(n, cur){
+      var p = by[n]; inGroups[n] = 1;
+      var v = !p ? '<span class="stale">nicht in der Mitgliederliste</span>' : p.entry ? 'T1 ' + fmt(p.t1) : 'keine Meldung';
+      return '<div class="mgrow"><span class="nm">' + esc(n) + '</span><span class="v">' + v + '</span><select data-mg="' + esc(n) + '">' + opts(cur) + '</select></div>';
+    }
+    $('mgGroups').innerHTML = st.groups.map(function(G, i){
+      var s = mgStats(G, by); total += s.n; mentors += G.mentors.length; inGroups[G.r4] = 1;
+      return '<div class="mgcard' + (G.intensive ? ' int' : '') + '"><h3>Gruppe ' + (i + 1) + ' – ' + esc(G.r4) + (G.intensive ? ' <span class="mgb m">Intensiv</span>' : '') + '</h3>' +
+        '<div class="sub">' + s.n + ' Spieler + 1 R4 · Ø T1 ' + (s.known ? fmt(s.avg) : '–') + ' (' + s.known + ' mit Meldung)</div>' +
+        '<div class="mglbl">R4 – Kontrolle</div><div class="mgrow"><span class="nm">' + esc(G.r4) + '</span>' + (by[G.r4] ? '' : '<span class="v stale">nicht in der Mitgliederliste</span>') + '</div>' +
+        '<div class="mglbl">' + (G.mentors.length === 1 ? 'Mentor' : 'Mentoren') + '</div>' + (G.mentors.map(function(n){ return row(n, 't' + i); }).join('') || '<div class="small muted">–</div>') +
+        '<div class="mglbl">Mitglieder</div>' + (G.members.map(function(n){ return row(n, 'm' + i); }).join('') || '<div class="small muted">–</div>') + '</div>';
+    }).join('');
+    var recs = mgRecommend(st, by);
+    $('mgTiles').innerHTML = tile('In Gruppen', String(total), mentors + ' Mentoren · ' + st.groups.length + ' R4') + tile('Ohne Gruppe', String(recs.length), recs.length ? 'Empfehlung unten' : 'alle verteilt') +
+      tile('Größte / kleinste', Math.max.apply(null, st.groups.map(function(G){ return G.mentors.length + G.members.length; })) + ' / ' + Math.min.apply(null, st.groups.map(function(G){ return G.mentors.length + G.members.length; })), 'Spieler je Gruppe');
+    $('mgFreeCount').textContent = recs.length;
+    $('mgFree').innerHTML = recs.map(function(r){
+      return '<div class="mgrow"><span class="nm">' + esc(r.p.name) + ' <span class="v">' + r.p.rank + ' · ' + (r.p.entry ? 'T1 ' + fmt(r.p.t1) : 'keine Meldung') + '</span><div class="tl">' + esc(r.why) + '</div></span>' +
+        '<button class="mini okb" data-mgadd="' + esc(r.p.name) + '" data-g="' + r.g + '">→ Gruppe ' + (r.g + 1) + '</button></div>';
+    }).join('') || '<div class="empty">Alle aktiven Spieler sind einer Gruppe zugeordnet.</div>';
+    $('mgApplyAll').disabled = !recs.length; $('mgApplyAll').style.opacity = recs.length ? '' : .4;
+    var lead = D.players.filter(function(p){ return (p.rank === 'R4' || p.rank === 'R5') && !inGroups[p.name]; }).map(function(p){ return p.name + ' (' + p.rank + ')'; });
+    $('mgLead').textContent = lead.length ? 'R4/R5 ohne eigene Gruppe (werden nicht verteilt): ' + lead.join(', ') : '';
+    var miss = Object.keys(inGroups).filter(function(n){ return !by[n]; });
+    $('mgMissing').textContent = miss.length ? 'In einer Gruppe, aber nicht (mehr) als aktives Mitglied geführt: ' + miss.join(', ') : '';
+  }
+  function mgMove(st, name, val){
+    st.groups.forEach(function(G){ G.mentors = G.mentors.filter(function(n){ return n !== name; }); G.members = G.members.filter(function(n){ return n !== name; }); });
+    if (!val || val === 'x') return;
+    var i = +val.slice(1), G = st.groups[i]; if (!G) return;
+    (val[0] === 't' ? G.mentors : G.members).push(name);
+  }
+  function mgChat(){
+    var st = mgState(), by = mgPlayers(), out = [], tot = 0, men = 0;
+    st.groups.forEach(function(G, i){
+      var n = G.mentors.length + G.members.length; tot += n; men += G.mentors.length;
+      out.push('GRUPPE ' + (i + 1) + ' - ' + G.r4.toUpperCase() + (G.intensive ? ' (Intensiv)' : ''));
+      out.push('R4: ' + G.r4);
+      out.push((G.mentors.length === 1 ? 'Mentor: ' : 'Mentoren: ') + (G.mentors.join(', ') || '-'));
+      out.push('Mitglieder: ' + (G.members.join(', ') || '-'));
+      out.push('');
+    });
+    out.push('Gesamt: ' + tot + ' Spieler, davon ' + men + ' Mentoren, dazu ' + st.groups.length + ' R4');
+    return out.join('\n');
+  }
+  (function(){
+    $('mgGroups').addEventListener('change', function(e){
+      var s = e.target.closest('select[data-mg]'); if (!s) return;
+      var st = mgState(); mgMove(st, s.dataset.mg, s.value); mgSave(st); mgRender(); renderMembers();
+    });
+    $('mgFree').addEventListener('click', function(e){
+      var b = e.target.closest('[data-mgadd]'); if (!b) return;
+      var st = mgState(); mgMove(st, b.dataset.mgadd, 'm' + b.dataset.g); mgSave(st); mgRender(); renderMembers();
+    });
+    $('mgApplyAll').addEventListener('click', function(){
+      var st = mgState(), recs = mgRecommend(st, mgPlayers()); if (!recs.length) return;
+      if (!confirm(recs.length + ' Spieler wie empfohlen auf die Gruppen verteilen?')) return;
+      recs.forEach(function(r){ if (r.g >= 0) mgMove(st, r.p.name, 'm' + r.g); }); mgSave(st); mgRender(); renderMembers();
+    });
+    $('mgThr').addEventListener('change', function(){ var v = parseFloat(this.value); var st = mgState(); st.thr = isFinite(v) && v >= 0 ? v : 35; mgSave(st); mgRender(); });
+    $('mgCopy').addEventListener('click', function(){ copyText(mgChat(), 'mgNote'); });
+    $('mgReset').addEventListener('click', function(){ if (!confirm('Alle Änderungen an den Gruppen verwerfen und die Ausgangsliste wiederherstellen?')) return; try { ls(MG_KEY, null); } catch(e){} mgRender(); renderMembers(); });
+  })();
+
   /* ---------- Steuerung ---------- */
   function showTab(name){
     var bs = document.querySelectorAll('#tabs button');
     for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-    ['ov','mem','hist','pl','dev','exp','ds','cs','adm','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+    ['ov','mem','hist','pl','dev','exp','ds','cs','mg','adm','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
     store('skws_admin_tab', name);
     if (name === 'hist') renderHistory();
     if (name === 'ov') renderOverview();
@@ -1918,6 +2085,7 @@
     if (name === 'exp') renderExport();
     if (name === 'ds') dsRender();
     if (name === 'cs') csRender();
+    if (name === 'mg') mgRender();
     if (name === 'dev') renderDev();
     if (name === 'log') loadLog(false);
   }
