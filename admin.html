@@ -1106,7 +1106,7 @@
       'All names below are in-game nicknames of our own team members who asked to be listed – this is just a who-goes-where overview for our team chat.',
       '',
       'LAYOUT (like a classic alliance briefing slide):',
-      '- Right two thirds: the attached Desert Storm map image (use it as the background exactly as it is – do not move, add or remove buildings). If no image is attached, draw a sandy desert top-down map with 11 buildings: Nuclear Silo in the center, Arsenal above it, Mercenary Factory below it, and 8 outer buildings in a ring around them.',
+      '- Right two thirds: the attached Desert Storm map image (use it as the background exactly as it is – do not move, add or remove buildings). If no image is attached, draw a sandy desert top-down map with 11 buildings: our side is on the LEFT, the opponent on the RIGHT. Center column from top to bottom: Arsenal, Nuclear Silo (exact center), Mercenary Factory. Left side from top to bottom: Info Center (top-left corner), Oil Refinery I, Field Hospital I, Field Hospital II. Right side from top to bottom: Field Hospital III, Field Hospital IV, Oil Refinery II, Science Hub (bottom-right corner).',
       '- Left third: dark background with the neon-blue title "' + title + '" and below it a blue text box with the plan and special instructions (text below).',
       '- Top right corner: the time "' + (T.time || '') + '".',
       '',
@@ -1164,9 +1164,12 @@
 
   /* ---------- Wüstensturm: Plan-Bild selbst zeichnen ---------- */
   // Positionen in Prozent der Kartenfläche; Standard angelehnt an eure bisherige Karte, per Ziehen anpassbar.
-  var DSM_DEF = { arsenal:[51,18], silo:[51,45], merc:[50,72], ref1:[32,7], ref2:[72,6], info:[13,30], sci:[89,34], hosp1:[13,57], hosp2:[89,60], hosp3:[32,85], hosp4:[72,86], wells:[30,46], base:[8,93], react:[72,47] };
+  // Aufbau laut Guides (lastwargame.online L1–L4/R1–R4/C1–C3, lastwartutorial.com): unsere Seite links, Gegner rechts,
+  // Mitte von oben: Waffenlager, Atomsilo, Söldnerfabrik. Links von oben: Infozentrum (Ecke oben links), Raffinerie, 2 Lazarette;
+  // rechts von oben: 2 Lazarette, Raffinerie, Wissenschaftszentrum (Ecke unten rechts).
+  var DSM_DEF = { info:[32,7], ref1:[13,30], hosp1:[13,57], hosp2:[32,86], arsenal:[51,18], silo:[51,45], merc:[50,72], hosp3:[72,6], hosp4:[89,34], ref2:[89,60], sci:[72,86], wells:[24,44], base:[4,48], react:[36,60] };
   var DSM_LBL = { ref1:'Raff. I', ref2:'Raff. II', hosp1:'Laz. I', hosp2:'Laz. II', hosp3:'Laz. III', hosp4:'Laz. IV', sci:'Wiss.', info:'Info', arsenal:'Waffenl.', merc:'Söldner', silo:'Atomsilo', wells:'Ölquellen', base:'Basis', react:'Eingreif.' };
-  var DSM_KEY = 'skws_ds_map', DSM_POS_KEY = 'skws_ds_pos', DSM_BG = null, DSM_LASTURL = null;
+  var DSM_KEY = 'skws_ds_map', DSM_POS_KEY = 'skws_ds_pos2', DSM_BG = null, DSM_LASTURL = null;
   function dsmPos(){ var p = null; try { p = JSON.parse(ls(DSM_POS_KEY) || 'null'); } catch(e){} var o = {}; Object.keys(DSM_DEF).forEach(function(k){ o[k] = (p && p[k]) || DSM_DEF[k].slice(); }); return o; }
   function dsmLoadBg(cb){
     var src = ls(DSM_KEY); if (!src) { DSM_BG = null; cb && cb(); return; }
@@ -1225,6 +1228,7 @@
     var mx = MX + (MW - mw) / 2, my = MY + (MH - mh) / 2;
     if (DSM_BG) g.drawImage(DSM_BG, mx, my, mw, mh);
     else { var gr = g.createRadialGradient(mx + mw/2, my + mh/2, 50, mx + mw/2, my + mh/2, mw * .7); gr.addColorStop(0, '#e2a868'); gr.addColorStop(1, '#b87a3e'); g.fillStyle = gr; g.fillRect(mx, my, mw, mh); }
+    if (!DSM_BG) { g.font = '700 22px system-ui, sans-serif'; g.fillStyle = 'rgba(40,20,0,.55)'; g.textAlign = 'left'; g.textBaseline = 'top'; g.fillText('◀ UNSERE SEITE', mx + 14, my + mh - 34); g.textAlign = 'right'; g.fillText('GEGNER ▶', mx + mw - 14, my + mh - 34); }
     function P(k){ var p = pos[k] || [50,50]; return [mx + p[0] / 100 * mw, my + p[1] / 100 * mh]; }
     if (!DSM_BG) Object.keys(DSM_DEF).forEach(function(k){
       if (k === 'base' || k === 'react') return; var p = P(k), big = k === 'silo' || k === 'arsenal' || k === 'merc';
