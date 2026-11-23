@@ -366,8 +366,8 @@
             <button class="btn2" id="dsmToggle">Karte einrichten (Kartenbild &amp; Gebäude-Positionen)</button>
           </div>
           <div id="dsmWrap" class="hide">
-            <p class="small muted" style="margin:6px 0">1. Leere Wüstensturm-Karte als Bild wählen (Screenshot ohne Namen). 2. Die Schilder auf die richtigen Gebäude ziehen. Wird auf diesem Gerät gespeichert – das musst du nur einmal machen.</p>
-            <div class="btnrow"><label class="btn2" style="text-align:center">Kartenbild wählen<input type="file" id="dsmFile" accept="image/*" hidden></label><button class="btn2" id="dsmClearBg">Ohne Kartenbild (Schema)</button><button class="btn2" id="dsmReset">Positionen zurücksetzen</button></div>
+            <p class="small muted" style="margin:6px 0">Standard ist eure Allianz-Vorlage („Desert Storm – Briefing“) – dafür musst du hier nichts einstellen. Nur wenn du eine andere Karte willst: Bild wählen und die Schilder auf die Gebäude ziehen (wird auf diesem Gerät gespeichert).</p>
+            <div class="btnrow"><label class="btn2" style="text-align:center">Kartenbild wählen<input type="file" id="dsmFile" accept="image/*" hidden></label><button class="btn2" id="dsmClearBg">Allianz-Vorlage verwenden</button><button class="btn2" id="dsmReset">Positionen zurücksetzen</button></div>
             <div class="dsm-edit" id="dsmEdit"></div>
             <div class="note" id="dsmNote"></div>
           </div>
@@ -1208,7 +1208,7 @@
     $('dsmClearBg').addEventListener('click', function(){ ls(DSM_KEY, null); dsmLoadBg(dsmEditor); });
     $('dsmReset').addEventListener('click', function(){ ls(DSM_POS_KEY, null); dsmEditor(); });
     $('dsmToggle').addEventListener('click', function(){ var w = $('dsmWrap'); w.classList.toggle('hide'); if (!w.classList.contains('hide')) dsmLoadBg(dsmEditor); });
-    ['A','B'].forEach(function(t){ $('dsPic' + t).addEventListener('click', function(){ if (DS_LAST && DS_LAST.plan.teams[t]) dsmLoadBg(function(){ dsmRender(t); }); }); });
+    ['A','B'].forEach(function(t){ $('dsPic' + t).addEventListener('click', function(){ if (!DS_LAST || !DS_LAST.plan.teams[t]) return; if (ls(DSM_KEY)) dsmLoadBg(function(){ dsmRender(t); }); else dstLoad(function(){ if (DST_IMG) dstRender(t); else dsmLoadBg(function(){ dsmRender(t); }); }); }); });
   })();
   function dsmWrap(ctx, text, maxW){
     var out = []; String(text).split('\n').forEach(function(par){
@@ -1298,6 +1298,99 @@
     g.font = '600 20px system-ui, sans-serif'; g.textAlign = 'left';
     g.fillStyle = '#1f9d3a'; g.fillRect(MX, H - 30, 26, 8); g.fillStyle = '#cfd6e4'; g.fillText(DS_PHL[T.ph[1]], MX + 34, H - 20);
     g.fillStyle = '#e07b12'; g.fillRect(MX + 260, H - 30, 26, 8); g.fillStyle = '#cfd6e4'; g.fillText(DS_PHL[T.ph[2]], MX + 294, H - 20);
+    var url = c.toDataURL('image/png'); DSM_LASTURL = url;
+    $('dsmOut').innerHTML = '<img src="' + url + '" alt="Plan Team ' + t + '"><a class="btn" style="display:block;text-align:center;text-decoration:none;margin-top:8px" download="SKWS-Wuestensturm-Team-' + t + '.png" href="' + url + '">Bild herunterladen</a>' +
+      (window.SKWSAndroid ? '<p class="small muted">In der App: Bild lange drücken oder die Admin-Seite im Browser öffnen, um es zu speichern.</p>' : '');
+  }
+
+  /* ---------- Wüstensturm: Plan-Bild auf der Allianz-Vorlage (ds-vorlage.jpg, 1280×720) ---------- */
+  // Gebäude-Mitte [x,y] und Mitte des Namensschilds [x,y] in Pixeln der Vorlage.
+  var DST = {
+    src: 'ds-vorlage.jpg', w: 1280, h: 720, box: [66, 376, 468, 668],
+    b: { info:[712,82,714,118], arsenal:[852,158,853,215], hosp3:[980,78,980,114], ref1:[606,232,605,273], hosp4:[1095,255,1100,292],
+         silo:[850,322,850,382], hosp1:[605,388,605,446], ref2:[1097,415,1100,455], merc:[852,492,852,544], hosp2:[715,567,720,620], sci:[978,580,978,620],
+         wells:[700,330,700,330], react:[730,470,730,470], base:[580,640,580,640] }
+  };
+  var DST_IMG = null;
+  function dstLoad(cb){ if (DST_IMG) return cb(); var im = new Image(); im.onload = function(){ DST_IMG = im; cb(); }; im.onerror = function(){ cb(); }; im.src = DST.src + '?v=1'; }
+  function dstRender(t){
+    var T = DS_LAST.plan.teams[t], TC = DS_TACTICS[T.tac], groups = dsGroupsOf(T);
+    var S = 1.5, W = DST.w * S, H = DST.h * S, c = document.createElement('canvas'); c.width = W; c.height = H;
+    var g = c.getContext('2d'); g.lineJoin = 'round'; g.miterLimit = 2;
+    g.drawImage(DST_IMG, 0, 0, W, H);
+    function B(k){ var p = DST.b[k] || DST.b.react; return { x: p[0] * S, y: p[1] * S, lx: p[2] * S, ly: p[3] * S }; }
+    // Start und Wechsel je Gruppe
+    var startAt = {}, moves = [], late = [];
+    groups.forEach(function(x){
+      var s0 = x.g.steps[0], b0 = s0[1] || (s0[0] === 'watch' ? 'react' : 'base'), prev = b0, mover = false;
+      x.g.steps.forEach(function(s, i){ if (!i) return; var b = s[1] || null; if (!b || b === prev) return; if (b === 'wells') { late.push(x.names.join(', ') + ' → Oil Wells (' + DS_PHL_EN[T.ph[i]].replace(/^phase \d, /, '') + ')'); return; } moves.push({ from: prev, to: b, ph: i, names: x.names, first: !mover }); mover = true; prev = b; });
+      (startAt[b0] = startAt[b0] || []).push({ names: x.names, mover: mover });
+    });
+    var FS = 22, LH = 25, textOps = [], anchor = {};
+    g.font = '800 ' + FS + 'px system-ui, sans-serif';
+    Object.keys(startAt).forEach(function(k){
+      var p = B(k), blocks = startAt[k];
+      var maxW = (k !== 'react' && k !== 'base' && k !== 'wells' && p.ly >= 560 * S) ? 160 : 230;
+      blocks.forEach(function(blk){ var L = [], cur = ''; blk.names.forEach(function(nm){ var tst = cur ? cur + ', ' + nm : nm; if (cur && g.measureText(tst).width > maxW) { L.push(cur); cur = nm; } else cur = tst; }); if (cur) L.push(cur); blk.lines = L; });
+      var n = blocks.reduce(function(a, b){ return a + b.lines.length; }, 0);
+      var real = k !== 'react' && k !== 'base' && k !== 'wells';
+      var below = !real || p.ly < 560 * S;
+      var y = real ? (below ? p.ly + 28 : p.y - 40 - n * LH - (blocks.length - 1) * 14) : p.y - n * LH / 2;
+      if (!real) { textOps.push({ s: k === 'react' ? 'Reaction team' : 'Support', x: p.x, y: y - 26, small: true }); }
+      blocks.forEach(function(blk){
+        var w = Math.max.apply(null, blk.lines.map(function(s){ return g.measureText(s).width; }));
+        var cx = Math.min(Math.max(p.x, 530 * S + w / 2 + 26), 1158 * S - w / 2 - 26);
+        blk.lines.forEach(function(s, i){ textOps.push({ s: s, x: cx, y: y + i * LH }); });
+        if (blk.mover) {
+          var cy = y + blk.lines.length * LH / 2 - 2, rx = w / 2 + 22, ry = blk.lines.length * LH / 2 + 10;
+          g.strokeStyle = '#22c55e'; g.lineWidth = 4.5; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); g.stroke();
+          blk.names.forEach(function(s){ anchor[s] = [cx, cy, rx]; });
+        }
+        y += blk.lines.length * LH + 14;
+      });
+    });
+    var COL = ['#22c55e', '#22c55e', '#f59e0b'];
+    function arrow(x1, y1, x2, y2, col){
+      var mxp = (x1 + x2) / 2 + (y2 - y1) * .18, myp = (y1 + y2) / 2 - (x2 - x1) * .18;
+      var ang = Math.atan2(y2 - myp, x2 - mxp), ex = x2 - Math.cos(ang) * 42, ey = y2 - Math.sin(ang) * 42;
+      g.strokeStyle = col; g.fillStyle = col; g.lineWidth = 5; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(x1, y1); g.quadraticCurveTo(mxp, myp, ex, ey); g.stroke();
+      var a2 = Math.atan2(ey - myp, ex - mxp); g.beginPath(); g.moveTo(ex + Math.cos(a2) * 16, ey + Math.sin(a2) * 16);
+      g.lineTo(ex + Math.cos(a2 + 2.5) * 20, ey + Math.sin(a2 + 2.5) * 20); g.lineTo(ex + Math.cos(a2 - 2.5) * 20, ey + Math.sin(a2 - 2.5) * 20); g.closePath(); g.fill();
+    }
+    moves.forEach(function(m){
+      var a = m.first ? anchor[m.names[0]] : null, f = B(m.from), to = B(m.to);
+      var sx = a ? a[0] : f.x, sy = a ? a[1] : f.y; if (a) sx += (to.x >= sx ? 1 : -1) * a[2];
+      arrow(sx, sy, to.x, to.y, COL[m.ph] || COL[1]);
+      if (!m.first) textOps.push({ s: m.names.join(', ') + ' (' + DS_PHL_EN[T.ph[m.ph]].replace(/^phase \d, /, '') + ')', x: to.x, y: to.y - 62, small: true, col: '#7a4a00' });
+    });
+    g.textAlign = 'center'; g.textBaseline = 'top';
+    textOps.forEach(function(o){
+      g.font = (o.small ? '700 17px' : '800 ' + FS + 'px') + ' system-ui, sans-serif';
+      g.lineWidth = 5; g.strokeStyle = 'rgba(255,255,255,.9)'; g.strokeText(o.s, o.x, o.y);
+      g.fillStyle = o.col || '#0b0f19'; g.fillText(o.s, o.x, o.y);
+    });
+    // Briefing-Text (Englisch)
+    var bx = DST.box[0] * S, by = DST.box[1] * S, bw = (DST.box[2] - DST.box[0]) * S, bh = (DST.box[3] - DST.box[1]) * S;
+    var head = 'TEAM ' + t + (T.time ? ' · ' + T.time : '') + (T.opp ? ' · vs ' + T.opp : '');
+    var parts = [TC.en];
+    var flex = groups.filter(function(x){ return x.g.steps.some(function(s){ return s[0] === 'watch'; }); });
+    flex.forEach(function(x){ parts.push(x.names.join(', ') + ': watch where we are under pressure and reinforce there' + (x.g.steps[2] && x.g.steps[2][1] === 'silo' ? '; from minute 20 take the Nuclear Silo.' : '.')); });
+    if (T.note) parts.push(T.note);
+    if (late.length) parts.push('Later: ' + late.join('; '));
+    if (T.s.length) parts.push('Substitutes: ' + T.s.join(', '));
+    parts.push('Green arrows: ' + DS_PHL_EN[T.ph[1]].replace(/^phase \d, /, '') + ' · Orange: ' + DS_PHL_EN[T.ph[2]].replace(/^phase \d, /, ''));
+    g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    var fs = 24, lines;
+    do {
+      g.font = '500 ' + fs + 'px system-ui, sans-serif';
+      lines = []; parts.forEach(function(p, i){ if (i) lines.push(''); dsmWrap(g, p, bw - 36).forEach(function(l){ lines.push(l); }); });
+      fs -= 1;
+    } while ((lines.length + 2) * fs * 1.32 > bh - 24 && fs > 12);
+    fs += 1;
+    g.fillStyle = '#7dd3fc'; g.font = '800 ' + (fs + 4) + 'px system-ui, sans-serif'; g.fillText(head, bx + 18, by + 18 + fs + 4);
+    g.fillStyle = '#e6f1ff'; g.font = '500 ' + fs + 'px system-ui, sans-serif';
+    lines.forEach(function(l, i){ g.fillText(l, bx + 18, by + 18 + (fs + 4) * 1.6 + (i + 1) * fs * 1.32); });
     var url = c.toDataURL('image/png'); DSM_LASTURL = url;
     $('dsmOut').innerHTML = '<img src="' + url + '" alt="Plan Team ' + t + '"><a class="btn" style="display:block;text-align:center;text-decoration:none;margin-top:8px" download="SKWS-Wuestensturm-Team-' + t + '.png" href="' + url + '">Bild herunterladen</a>' +
       (window.SKWSAndroid ? '<p class="small muted">In der App: Bild lange drücken oder die Admin-Seite im Browser öffnen, um es zu speichern.</p>' : '');
