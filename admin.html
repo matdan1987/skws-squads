@@ -1736,6 +1736,7 @@
         y += blk.lines.length * LH + 14;
       });
     });
+    var tgtUsed = {};
     var COL = ['#22c55e', '#22c55e', '#f59e0b'];
     function arrow(x1, y1, x2, y2, col){
       var mxp = (x1 + x2) / 2 + (y2 - y1) * .18, myp = (y1 + y2) / 2 - (x2 - x1) * .18;
@@ -1750,7 +1751,8 @@
       if (!a && !f) return;
       var sx = a ? a[0] : f.x, sy = a ? a[1] : f.y; if (a) sx += (to.x >= sx ? 1 : -1) * a[2];
       arrow(sx, sy, to.x, to.y, COL[m.ph] || COL[1]);
-      if (!m.first) textOps.push({ s: m.names.join(', ') + ' (' + CS_PHL[L][T.ph[m.ph]].toLowerCase() + ')', x: to.x, y: to.y - 62, small: true, col: '#7a4a00' });
+      // Wer hinkommt, steht unter dem Ziel-Schild (z. B. Gruppen, die von der Basis aus losgehen)
+      if (!a || !m.first) { var ty = (tgtUsed[m.to] || to.ny); textOps.push({ s: m.names.join(', ') + ' (' + CS_PHL[L][T.ph[m.ph]].toLowerCase() + ')', x: to.nx, y: ty, small: true, col: m.ph === 2 ? '#7a4a00' : '#0b5d1e' }); tgtUsed[m.to] = ty + 22; }
     });
     g.textAlign = 'center'; g.textBaseline = 'top';
     textOps.forEach(function(o){
