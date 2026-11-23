@@ -463,9 +463,10 @@
       <div class="tiles" id="mgTiles"></div>
       <div class="card">
         <h2>Mentorengruppen</h2>
-        <p class="small muted" style="margin:0 0 10px">Rolle oder Gruppe über das Auswahlfeld neben dem Namen ändern. Wird auf diesem Gerät gespeichert. Ø T1 zählt nur Spieler mit Meldung.</p>
+        <p class="small muted" style="margin:0 0 4px">Rolle oder Gruppe über das Auswahlfeld neben dem Namen ändern. Jede Änderung wird sofort zentral gespeichert und ist für alle R4/R5 sichtbar. Ø T1 zählt nur Spieler mit Meldung.</p>
+        <p class="small muted" id="mgInfo" style="margin:0 0 10px"></p>
         <div class="mggrid" id="mgGroups"></div>
-        <div class="btnrow"><button class="btn2" id="mgCopy">Übersicht für den Chat kopieren</button><button class="btn2" id="mgReset">Auf Ausgangsliste zurücksetzen</button></div>
+        <div class="btnrow"><button class="btn hide" id="mgSaveAll">Für alle speichern</button><button class="btn2" id="mgCopy">Übersicht für den Chat kopieren</button><button class="btn2" id="mgReset">Auf Ausgangsliste zurücksetzen</button></div>
         <div class="note" id="mgNote"></div>
       </div>
       <div class="card">
@@ -1850,6 +1851,7 @@
     }
     if (a === 'self_join') return { tag:'adm', label:'Beitritt', text: who(r.target) + (d.returned ? ' ist zurück und hat sich selbst wieder eingetragen' : ' hat sich selbst neu eingetragen'), sub: 'Rang ' + (d.rank || 'R1') + ' · bei Bedarf im Tab Mitglieder anpassen' };
     if (a === 'unsub') return { tag:'warn', label:'Abgemeldet', text: who(r.target) + ' hat sich von der Mail-Erinnerung abgemeldet', sub: '' };
+    if (a === 'mg_save') return { tag:'adm', label:'Mentoren', text: who(r.actor) + ' hat die Mentorengruppen geändert', sub: (d.players || 0) + ' Spieler in ' + (d.groups || 0) + ' Gruppen' };
     if (a === 'ds_publish') return { tag:'adm', label:'Wüstensturm', text: who(r.actor) + (d.cleared ? ' hat den Einsatzplan zurückgenommen' : ' hat den Wüstensturm-Einsatzplan veröffentlicht'), sub: d.cleared ? '' : ('Team A: ' + (d.a || 0) + ' · Team B: ' + (d.b || 0) + ' Spieler') };
     if (a === 'admin_login') return { tag:'adm', label:'Admin', text: who(r.actor) + ' hat sich im Admin-Bereich angemeldet', sub: '' };
     if (a === 'admin_add') return { tag:'adm', label:'Verwaltung', text: who(r.actor) + ' hat ' + who(r.target) + (d.returned ? ' wieder aufgenommen' : ' hinzugefügt'), sub: 'Rang ' + (d.rank || '–') };
@@ -1949,13 +1951,41 @@
     { r4:'Bedraloç', mentors:['SSAB'], members:['nienett','Döra','Böhse Onkelz','BarryTheBelson','ruskapunkku','HandyPanda','OnkelKuschel','Rafal Sobo'] },
     { r4:'Niek Langis', mentors:['Florinator97','Dr Blubb','BATMAN 81'], members:['Lia','Dörri','Marco oooo','Mephisto1793','Astrid','MihailaZe','Oz of the apocalypse','Master LeK','Nini','ALEKSANDAR','BayernBua','Klumpfuß'], intensive:true }
   ];
+  // Stand kommt aus der Datenbank (für alle R4/R5 gleich). Noch nichts gespeichert: früherer Gerätestand bzw. Ausgangsliste.
+  var MG_CUR = null, MG_INFO = null, MG_DIRTY = false;
+  function mgInit(raw){
+    var st = raw && raw.mg && raw.mg.data, local = null;
+    MG_INFO = raw && raw.mg ? { updated: raw.mg.updated, by: raw.mg.by } : null;
+    MG_DIRTY = false;
+    if (!st || !st.groups) { try { local = JSON.parse(ls(MG_KEY) || 'null'); } catch(e){} st = local && local.groups ? local : { groups: JSON.parse(JSON.stringify(MG_DEF)), thr: 35 }; MG_DIRTY = true; }
+    MG_CUR = st;
+  }
   function mgState(){
-    var st = null; try { st = JSON.parse(ls(MG_KEY) || 'null'); } catch(e){}
-    if (!st || !st.groups) st = { groups: JSON.parse(JSON.stringify(MG_DEF)), thr: 35 };
+    if (!MG_CUR) mgInit(null);
+    var st = JSON.parse(JSON.stringify(MG_CUR));
     if (typeof st.thr !== 'number') st.thr = 35;
     return st;
   }
-  function mgSave(st){ try { ls(MG_KEY, JSON.stringify(st)); } catch(e){} }
+  function mgSave(st){
+    MG_CUR = JSON.parse(JSON.stringify(st));
+    var n = $('mgNote'); n.textContent = 'Speichere …'; n.className = 'note ok';
+    return rpc('admin_mg_save', { p_pw: PW, p_data: MG_CUR, p_actor: ACTOR || null }).then(function(){
+      MG_DIRTY = false; MG_INFO = { updated: new Date().toISOString(), by: ACTOR || 'Admin' };
+      try { ls(MG_KEY, null); } catch(e){}
+      n.textContent = 'Gespeichert – für alle R4/R5 sichtbar.'; n.className = 'note ok'; mgInfo();
+    }).catch(function(err){
+      var m = String(err && err.message);
+      n.textContent = m.indexOf('ERR_AUTH') >= 0 ? 'Nicht angemeldet – bitte neu anmelden.' : 'Speichern fehlgeschlagen – Änderung ist nur auf diesem Gerät.';
+      n.className = 'note err'; try { ls(MG_KEY, JSON.stringify(MG_CUR)); } catch(e){}
+    });
+  }
+  function mgInfo(){
+    var el = $('mgInfo'); if (!el) return;
+    el.textContent = MG_DIRTY ? 'Noch nicht zentral gespeichert – „Für alle speichern“ drücken, damit alle R4/R5 diesen Stand sehen.'
+      : MG_INFO ? 'Zuletzt gespeichert am ' + fmtDateTime(new Date(MG_INFO.updated)) + (MG_INFO.by ? ' von ' + MG_INFO.by : '') + '.' : '';
+    el.style.color = MG_DIRTY ? 'var(--warn)' : '';
+    $('mgSaveAll').classList.toggle('hide', !MG_DIRTY);
+  }
   // Rolle eines Spielers: { g: Gruppennummer (1-basiert), role: 'r4' | 'mentor' | 'member' }
   function mgOf(name, st){
     st = st || mgState(); var out = null;
@@ -2000,7 +2030,7 @@
   function mgRender(){
     if (!D) return;
     var st = mgState(), by = mgPlayers();
-    $('mgThr').value = st.thr;
+    $('mgThr').value = st.thr; mgInfo();
     var total = 0, mentors = 0, inGroups = {};
     var opts = function(cur){
       var o = []; st.groups.forEach(function(G, i){ o.push(['m' + i, 'G' + (i + 1) + ' Mitglied']); o.push(['t' + i, 'G' + (i + 1) + ' Mentor']); });
@@ -2040,6 +2070,15 @@
     var i = +val.slice(1), G = st.groups[i]; if (!G) return;
     (val[0] === 't' ? G.mentors : G.members).push(name);
   }
+  function mgRename(o, nn){
+    if (!D || !D.players.some(function(p){ return p.name === nn; })) return;
+    var st = mgState(), hit = false;
+    st.groups.forEach(function(G){
+      if (G.r4 === o) { G.r4 = nn; hit = true; }
+      ['mentors','members'].forEach(function(k){ G[k] = G[k].map(function(x){ if (x === o) { hit = true; return nn; } return x; }); });
+    });
+    if (hit) mgSave(st).then(renderMembers);
+  }
   function mgChat(){
     var st = mgState(), by = mgPlayers(), out = [], tot = 0, men = 0;
     st.groups.forEach(function(G, i){
@@ -2069,7 +2108,8 @@
     });
     $('mgThr').addEventListener('change', function(){ var v = parseFloat(this.value); var st = mgState(); st.thr = isFinite(v) && v >= 0 ? v : 35; mgSave(st); mgRender(); });
     $('mgCopy').addEventListener('click', function(){ copyText(mgChat(), 'mgNote'); });
-    $('mgReset').addEventListener('click', function(){ if (!confirm('Alle Änderungen an den Gruppen verwerfen und die Ausgangsliste wiederherstellen?')) return; try { ls(MG_KEY, null); } catch(e){} mgRender(); renderMembers(); });
+    $('mgReset').addEventListener('click', function(){ if (!confirm('Gruppen für alle auf die Ausgangsliste zurücksetzen?')) return; var st = { groups: JSON.parse(JSON.stringify(MG_DEF)), thr: mgState().thr }; mgSave(st); mgRender(); renderMembers(); });
+    $('mgSaveAll').addEventListener('click', function(){ mgSave(mgState()); });
   })();
 
   /* ---------- Steuerung ---------- */
@@ -2099,7 +2139,7 @@
       DS_PUB = raw.ds || null;
       var first = !PW && !silent;
       PW = pw; store('skws_admin_pw', pw); if (!silent) { if ($('remember').checked) ls('skws_admin_pw_keep', pw); else ls('skws_admin_pw_keep', null); }
-      D = prep(raw);
+      D = prep(raw); mgInit(raw);
       $('who').textContent = ACTOR ? ACTOR : 'R4/R5';
       if (first) rpc('admin_login', { p_pw: pw, p_actor: ACTOR || null }).catch(function(){});
       $('loginView').classList.add('hide'); $('app').classList.remove('hide');
@@ -2207,7 +2247,7 @@
     if (a === 'leave' && confirm(n + ' als ausgeschieden markieren?\nDer Spieler verschwindet von der Eintragsseite und bekommt keine Erinnerungen mehr. Sein Verlauf bleibt erhalten.'))
       memberAction('leave', n, null, n + ' ist als ausgeschieden markiert.');
     if (a === 'rejoin') memberAction('rejoin', n, null, n + ' ist wieder aktiv.');
-    if (a === 'rename') { var nn = prompt('Neuer Name für ' + n + ':', n); if (nn && nn.trim() && nn.trim() !== n) memberAction('rename', n, nn.trim(), n + ' heißt jetzt ' + nn.trim() + '.'); }
+    if (a === 'rename') { var nn = prompt('Neuer Name für ' + n + ':', n); if (nn && nn.trim() && nn.trim() !== n) { nn = nn.trim(); memberAction('rename', n, nn, n + ' heißt jetzt ' + nn + '.').then(function(){ mgRename(n, nn); }); } }
   });
 
   var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (!D) return; var t = store('skws_admin_tab') || 'ov'; showTab(t); }, 200); });
