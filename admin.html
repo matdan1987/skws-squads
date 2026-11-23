@@ -317,7 +317,7 @@
     <section id="tab-ds" class="hide">
       <div class="card">
         <h2>1 · Runden</h2>
-        <p class="small muted" style="margin:0 0 10px">Die Spieler melden sich im Spiel an. Hier trägst du ein, wer bei Team A und B als Stamm- oder Ersatzspieler gemeldet ist – daraus entsteht der Einsatzplan.</p>
+        <p class="small muted" style="margin:0 0 10px">Die Spieler melden sich im Spiel selbst für Team A oder B an – als Stammspieler oder als Ersatz. Hier trägst du genau diese Anmeldungen ein; daraus entsteht der Einsatzplan. Die Stärke entscheidet nur, wer innerhalb eines Teams welches Gebäude bekommt.</p>
         <div class="formrow">
           <div><label for="dsTimeA">Team A – Uhrzeit</label><input id="dsTimeA" type="text" placeholder="z. B. Fr 14:00"></div>
           <div><label for="dsTimeB">Team B – Uhrzeit</label><input id="dsTimeB" type="text" placeholder="z. B. Fr 21:00"></div>
@@ -350,7 +350,7 @@
       <div class="card">
         <h2>3 · Taktik &amp; Einsatzplan</h2>
         <div class="btnrow"><button class="btn" id="dsRun">Taktik erstellen</button><button class="btn2" id="dsExample">Beispiel zeigen</button></div>
-        <p class="small muted" style="margin:6px 0 0">Beispiel: nimmt die aktiven Spieler nach Stärke (Plätze 1–20 Team A, 21–30 Ersatz A, 31–50 Team B, 51–60 Ersatz B) mit den oben gewählten Taktiken. Deine Zuordnung bleibt unverändert, veröffentlicht wird nichts.</p>
+        <p class="small muted" style="margin:6px 0 0">Beispiel: verteilt eure aktiven Spieler gemischt auf Team A und B (je 20 Stamm, 10 Ersatz), so wie sie sich auch im Spiel anmelden könnten, und zeigt die gewählten Taktiken. Echte Pläne entstehen immer aus deiner Zuordnung oben – es wird nie automatisch auf Teams verteilt. Deine Zuordnung bleibt unverändert, veröffentlicht wird nichts.</p>
         <div id="dsResult"></div>
         <div class="hide" id="dsActions">
           <div class="btnrow">
@@ -1041,7 +1041,8 @@
     var st = JSON.parse(JSON.stringify(dsState())), m = st.metric;
     var list = D.players.filter(function(p){ return p.active && p.entry; }).sort(function(a,b){ return dsMetricVal(b,m) - dsMetricVal(a,m) || a.name.localeCompare(b.name); });
     st.assign = {};
-    list.forEach(function(p, i){ var v = i < 20 ? 'AS' : i < 30 ? 'AE' : i < 50 ? 'BS' : i < 60 ? 'BE' : ''; if (v) st.assign[p.name] = v; });
+    // Beispiel: gemischt wie bei echten Anmeldungen (abwechselnd A/B), nicht die Stärksten nur in A
+    list.forEach(function(p, i){ var v = i < 40 ? (i % 2 ? 'BS' : 'AS') : i < 60 ? (i % 2 ? 'BE' : 'AE') : ''; if (v) st.assign[p.name] = v; });
     st.time = { A: st.time.A || 'Fr 14:00', B: st.time.B || 'Fr 21:00' };
     return st;
   }
@@ -1073,18 +1074,23 @@
     $('dsMsg').textContent = ''; $('dsMsg').className = 'note';
   }
   function dsChat(t){
-    var T = DS_LAST.plan.teams[t], TC = DS_TACTICS[T.tac];
-    var out = ['SKWS Wüstensturm – Team ' + t + (T.time ? ' – ' + T.time : '') + (T.opp ? ' – gegen ' + T.opp : ''), 'Taktik: ' + TC.name, TC.desc];
-    if (T.note) out.push('', '‼ ' + T.note);
+    // Kurz und ohne Emojis und Symbole (Spiel-Chat): nur, was nicht schon im Bild steht.
+    var T = DS_LAST.plan.teams[t], out = ['SKWS Wüstensturm Team ' + t + (T.time ? ' - ' + T.time : '') + ' - Plan siehe Bild'];
     dsGroupsOf(T).forEach(function(x){
-      out.push('', '▶ ' + x.g.label + ': ' + x.names.join(', '));
-      x.g.steps.forEach(function(s, i){ out.push('  ' + DS_PHL[T.ph[i]] + ': ' + dsAct(s)); });
+      x.g.steps.forEach(function(s){
+        if (s[0] === 'rally') out.push('- ' + x.names.join(', ') + ': ab 9:30 sammeln, um 10:00 zusammen aufs Atomsilo.');
+        if (s[0] === 'final') out.push('- ' + x.names.join(', ') + ': ab 28:00 sammeln, um 28:30 zusammen aufs Atomsilo, danach Kisten einsammeln.');
+      });
+      if (x.g.steps[0][0] === 'watch') out.push('- ' + x.names.join(', ') + ': Eingreiftruppe, helft dort, wo wir unter Druck sind.');
     });
-    if (T.s.length) out.push('', 'Ersatz (rücken in dieser Reihenfolge nach und übernehmen die Aufgabe des Ausgefallenen): ' + T.s.join(', '));
-    out.push('', 'Regeln:'); DS_TIPS.forEach(function(x){ out.push('• ' + x); });
-    out.push('', 'Deinen eigenen Einsatz siehst du auch auf der Squad-Seite: https://matdan1987.github.io/skws-squads/');
+    if (T.s.length) out.push('- Ersatz in dieser Reihenfolge: ' + T.s.join(', ') + '. Ersatz übernimmt die Aufgabe dessen, der ausfällt.');
+    out.push('- Wer nicht kann oder früher gehen muss: bitte Bescheid geben und über die Punktetafel "Schlachtfeld verlassen", damit Ersatz nachrücken kann.');
+    out.push('- Eroberte Gebäude halten (nach 60 Sek. wird ein Teil der Punkte plünderbar), Punkte-Kisten einsammeln.');
+    out.push('- Geheilte Truppen im Lazarett abholen, Teleport für Notfälle aufheben.');
+    out.push('Deinen Einsatz siehst du auch auf der Squad-Seite.');
     return out.join('\n');
   }
+
   function dsImgPrompt(t){
     var T = DS_LAST.plan.teams[t], TC = DS_TACTICS[T.tac], groups = dsGroupsOf(T);
     // Startposition je Gebäude (Phase 1) und wer später wohin wechselt (Pfeile)
