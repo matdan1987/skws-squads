@@ -117,6 +117,11 @@
   .dscount .over{color:var(--err)}
   .pick label select{width:auto;flex:none;padding:5px 8px;font-size:13px;border-radius:8px}
   .pick label.as{background:rgba(92,200,255,.08)} .pick label.bs{background:rgba(168,120,255,.10)}
+  .dsm-out img{width:100%;border-radius:10px;margin-top:10px;display:block}
+  .dsm-edit{position:relative;width:100%;max-width:720px;margin:8px auto 0;background-size:100% 100%;border-radius:10px;border:1px solid var(--line);touch-action:none;user-select:none}
+  .dsm-edit.schem{background:radial-gradient(circle,#e2a868,#b87a3e)}
+  .dsm-pin{position:absolute;transform:translate(-50%,-50%);background:rgba(10,17,32,.85);color:#fff;border:2px solid var(--accent);border-radius:8px;padding:3px 7px;font-size:12px;font-weight:700;cursor:grab;white-space:nowrap}
+  .dsm-pin.aux{border-color:#e07b12}
   .tacinfo{font-size:12px;line-height:1.45;margin-top:6px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
   #tab-ds textarea{width:100%;height:68px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text);font:inherit;font-size:14px;resize:vertical;box-sizing:border-box}
   .phase{font-size:12px;color:var(--muted);margin-top:2px;white-space:normal}
@@ -353,10 +358,24 @@
             <button class="btn2" id="dsCopyB">Chat-Text Team B kopieren</button>
           </div>
           <div class="btnrow">
+            <button class="btn" id="dsPicA">Plan-Bild Team A</button>
+            <button class="btn" id="dsPicB">Plan-Bild Team B</button>
+          </div>
+          <div id="dsmOut" class="dsm-out"></div>
+          <div class="btnrow">
+            <button class="btn2" id="dsmToggle">Karte einrichten (Kartenbild &amp; Gebäude-Positionen)</button>
+          </div>
+          <div id="dsmWrap" class="hide">
+            <p class="small muted" style="margin:6px 0">1. Leere Wüstensturm-Karte als Bild wählen (Screenshot ohne Namen). 2. Die Schilder auf die richtigen Gebäude ziehen. Wird auf diesem Gerät gespeichert – das musst du nur einmal machen.</p>
+            <div class="btnrow"><label class="btn2" style="text-align:center">Kartenbild wählen<input type="file" id="dsmFile" accept="image/*" hidden></label><button class="btn2" id="dsmClearBg">Ohne Kartenbild (Schema)</button><button class="btn2" id="dsmReset">Positionen zurücksetzen</button></div>
+            <div class="dsm-edit" id="dsmEdit"></div>
+            <div class="note" id="dsmNote"></div>
+          </div>
+          <div class="btnrow">
             <button class="btn2" id="dsImgA">Bild-KI-Prompt Team A</button>
             <button class="btn2" id="dsImgB">Bild-KI-Prompt Team B</button>
           </div>
-          <p class="small muted" style="margin:6px 0 0">Bild-KI: Prompt kopieren, in z. B. ChatGPT oder Gemini einfügen und eure leere Wüstensturm-Karte (ohne Namen) als Bild anhängen. Die KI schreibt dann die Namen an die Gebäude, kreist Spieler ein, die später wechseln, und zeichnet Pfeile – im Stil eures bisherigen Plans. Namen bitte gegenlesen.</p>
+          <p class="small muted" style="margin:6px 0 0">„Plan-Bild“ zeichnet den Plan direkt hier – zuverlässig und mit korrekt geschriebenen Namen. Der Bild-KI-Prompt ist nur noch eine Alternative (Bild-KIs lehnen solche Anfragen manchmal ab oder verschreiben Namen).</p>
           <div class="btnrow" style="margin-top:12px">
             <button class="btn" id="dsPublish">Für Spieler veröffentlichen</button>
             <button class="btn2" id="dsUnpublish">Veröffentlichung zurücknehmen</button>
@@ -851,7 +870,7 @@
       when: 'Gegner ungefähr gleich stark. Guter Standard, wenn ihr den Gegner nicht kennt.',
       pro: 'Holt das Silo (meiste Punkte) früh, ohne die Außengebäude aufzugeben.',
       con: 'Wenn der Gegner das Silo härter verteidigt, binden sich eure Stärksten dort.',
-      en: 'Balanced: the 5 strongest take Oil Refinery I, then storm the Nuclear Silo together at 10:00; the rest hold refineries, Info Center/Arsenal, three hospitals and the Science Hub.',
+      en: 'Balanced: the 5 strongest take Oil Refinery I, then move into the Nuclear Silo together at 10:00; the rest hold refineries, Info Center/Arsenal, three hospitals and the Science Hub.',
       ph: ['p0','p10','p13'],
       groups: [
         { k:'silo',  n:5, label:'Silo-Trupp',              steps:[['take','ref1'],['rally','silo'],['hold','silo']] },
@@ -891,7 +910,7 @@
       when: 'Wenn ihr klar stärker seid oder unbedingt das Silo dominieren wollt.',
       pro: 'Bis zu 30 % Werte-Vorteil in der Mitte; das Silo bringt die meisten Punkte.',
       con: 'Lazarette und Wissenschaft werden kaum besetzt – gegen starke Gegner riskant.',
-      en: 'Center & buffs: 6 strong players take Oil Refinery I and storm the Nuclear Silo at 10:00; at the same time 3 players each take the Arsenal and the Mercenary Factory (buff triangle).',
+      en: 'Center & buffs: 6 strong players take Oil Refinery I and move into the Nuclear Silo at 10:00; at the same time 3 players each take the Arsenal and the Mercenary Factory (buff triangle).',
       ph: ['p0','p10','p13'],
       groups: [
         { k:'silo',  n:6, label:'Silo-Trupp',         steps:[['take','ref1'],['rally','silo'],['hold','silo']] },
@@ -909,7 +928,7 @@
       when: 'Wenn der Gegner deutlich stärker ist. Riskant: Der Schlussangriff muss gut abgestimmt sein.',
       pro: 'Wenig Verluste, viel Heilung, sichere Punkte; der späte Angriff erwischt den Gegner oft unvorbereitet.',
       con: 'Lange kein Silo-Punktestrom; scheitert der Schlussangriff, fehlen die Punkte.',
-      en: 'Bulwark & final strike: hold all 4 field hospitals and both refineries, stay out of the center and save troops; from 28:00 the 5 strongest gather and attack the Nuclear Silo together at 28:30, then collect the point boxes.',
+      en: 'Bulwark & final strike: hold all 4 field hospitals and both refineries, stay out of the center; from 28:00 the 5 strongest gather and move into the Nuclear Silo together at 28:30, then collect the point boxes.',
       ph: ['p0','p10','p28'],
       groups: [
         { k:'strike', n:5, label:'Schlussangriff',  steps:[['take','ref1'],['holdq','ref1'],['final','silo']] },
@@ -1045,7 +1064,8 @@
     $('dsResult').innerHTML = h;
     $('dsActions').classList.toggle('hide', !Object.keys(P.teams).length);
     $('dsPublish').disabled = !!r.example; $('dsPublish').style.opacity = r.example ? .4 : '';
-    ['A','B'].forEach(function(t){ ['dsCopy','dsImg'].forEach(function(id){ $(id + t).classList.toggle('hide', !P.teams[t]); }); });
+    ['A','B'].forEach(function(t){ ['dsCopy','dsImg','dsPic'].forEach(function(id){ $(id + t).classList.toggle('hide', !P.teams[t]); }); });
+    $('dsmOut').innerHTML = '';
     $('dsMsg').textContent = ''; $('dsMsg').className = 'note';
   }
   function dsChat(t){
@@ -1072,21 +1092,22 @@
       var prev = b0;
       x.g.steps.forEach(function(s, i){
         if (!i) return; var b = s[1] || (s[0] === 'watch' || s[0] === 'reinforce' || s[0] === 'defend' ? 'flex' : prev);
-        if (b !== prev && b !== 'flex') moves.push(x.names.join(', ') + ': ' + (prev === 'base' ? 'own base' : prev === 'react' ? 'reaction team' : DS_B_EN[prev]) + ' → ' + DS_B_EN[b] + ' (' + DS_PHL_EN[T.ph[i]] + (s[0] === 'rally' ? ', rally 9:30, attack 10:00' : s[0] === 'final' ? ', rally 28:00, attack 28:30' : '') + ')');
+        if (b !== prev && b !== 'flex') moves.push(x.names.join(', ') + ': ' + (prev === 'base' ? 'own base' : prev === 'react' ? 'reaction team' : DS_B_EN[prev]) + ' → ' + DS_B_EN[b] + ' (' + DS_PHL_EN[T.ph[i]] + (s[0] === 'rally' ? ', meet at 9:30, move in at 10:00' : s[0] === 'final' ? ', meet at 28:00, move in at 28:30' : '') + ')');
         if (b !== 'flex') prev = b;
       });
     });
     function bn(b){ return b === 'base' ? 'Own base / support' : b === 'react' ? 'Reaction team (write these names near the center of the map)' : DS_B_EN[b]; }
     var title = 'DESERT STORM – TEAM ' + t;
     var notes = [];
-    groups.forEach(function(x){ if (x.g.steps.some(function(s){ return s[0] === 'watch'; })) notes.push(x.names.join(', ') + ' are the reaction team: watch where our players are under heavy pressure and reinforce there' + (x.g.steps[2][1] === 'silo' ? '; from minute 20 they take the Nuclear Silo.' : '.')); });
+    groups.forEach(function(x){ if (x.g.steps.some(function(s){ return s[0] === 'watch'; })) notes.push(x.names.join(', ') + ' are the helper team: they watch where teammates need help and go there' + (x.g.steps[2][1] === 'silo' ? '; from minute 20 they take the Nuclear Silo.' : '.')); });
     if (T.note) notes.push(T.note);
     return [
-      'Create a tactical battle plan graphic for the mobile game "Last War: Survival", event "Desert Storm", in landscape format 16:9.',
+      'Please create a friendly team coordination board (like a sports team line-up sheet) for our group in the mobile strategy game "Last War: Survival", for the weekly team event called "Desert Storm". Landscape format 16:9.',
+      'All names below are in-game nicknames of our own team members who asked to be listed – this is just a who-goes-where overview for our team chat.',
       '',
       'LAYOUT (like a classic alliance briefing slide):',
       '- Right two thirds: the attached Desert Storm map image (use it as the background exactly as it is – do not move, add or remove buildings). If no image is attached, draw a sandy desert top-down map with 11 buildings: Nuclear Silo in the center, Arsenal above it, Mercenary Factory below it, and 8 outer buildings in a ring around them.',
-      '- Left third: dark background with the neon-blue title "' + title + '" and below it a blue text box with the tactic and special instructions (text below).',
+      '- Left third: dark background with the neon-blue title "' + title + '" and below it a blue text box with the plan and special instructions (text below).',
       '- Top right corner: the time "' + (T.time || '') + '".',
       '',
       'ON THE MAP:',
@@ -1096,7 +1117,7 @@
       (moves.length ? moves.map(function(x){ return '  • ' + x; }).join('\n') : '  • (none)'),
       '',
       'TEXT BOX (left side, white text on blue):',
-      'Tactic: ' + TC.en,
+      'Plan: ' + TC.en,
       notes.map(function(x){ return x; }).join('\n'),
       'Substitutes (in this order): ' + (T.s.join(', ') || '–'),
       '',
@@ -1140,6 +1161,143 @@
     $('dsPublish').addEventListener('click', function(){ if (!DS_LAST || DS_LAST.example) return; dsRun(false); if (!confirm('Einsatzplan für die Spieler veröffentlichen?')) return; dsPublish(DS_LAST.plan); });
     $('dsUnpublish').addEventListener('click', function(){ if (confirm('Veröffentlichten Einsatzplan zurücknehmen?')) dsPublish(null); });
   })();
+
+  /* ---------- Wüstensturm: Plan-Bild selbst zeichnen ---------- */
+  // Positionen in Prozent der Kartenfläche; Standard angelehnt an eure bisherige Karte, per Ziehen anpassbar.
+  var DSM_DEF = { arsenal:[51,18], silo:[51,45], merc:[50,72], ref1:[32,7], ref2:[72,6], info:[13,30], sci:[89,34], hosp1:[13,57], hosp2:[89,60], hosp3:[32,85], hosp4:[72,86], wells:[30,46], base:[8,93], react:[72,47] };
+  var DSM_LBL = { ref1:'Raff. I', ref2:'Raff. II', hosp1:'Laz. I', hosp2:'Laz. II', hosp3:'Laz. III', hosp4:'Laz. IV', sci:'Wiss.', info:'Info', arsenal:'Waffenl.', merc:'Söldner', silo:'Atomsilo', wells:'Ölquellen', base:'Basis', react:'Eingreif.' };
+  var DSM_KEY = 'skws_ds_map', DSM_POS_KEY = 'skws_ds_pos', DSM_BG = null, DSM_LASTURL = null;
+  function dsmPos(){ var p = null; try { p = JSON.parse(ls(DSM_POS_KEY) || 'null'); } catch(e){} var o = {}; Object.keys(DSM_DEF).forEach(function(k){ o[k] = (p && p[k]) || DSM_DEF[k].slice(); }); return o; }
+  function dsmLoadBg(cb){
+    var src = ls(DSM_KEY); if (!src) { DSM_BG = null; cb && cb(); return; }
+    var im = new Image(); im.onload = function(){ DSM_BG = im; cb && cb(); }; im.onerror = function(){ DSM_BG = null; cb && cb(); }; im.src = src;
+  }
+  function dsmEditor(){
+    var box = $('dsmEdit'), pos = dsmPos(), src = ls(DSM_KEY);
+    box.style.backgroundImage = src ? 'url(' + src + ')' : '';
+    box.classList.toggle('schem', !src);
+    if (DSM_BG) box.style.aspectRatio = DSM_BG.naturalWidth + ' / ' + DSM_BG.naturalHeight; else box.style.aspectRatio = '1 / 1';
+    box.innerHTML = Object.keys(pos).map(function(k){ return '<span class="dsm-pin' + (k === 'base' || k === 'react' || k === 'wells' ? ' aux' : '') + '" data-k="' + k + '" style="left:' + pos[k][0] + '%;top:' + pos[k][1] + '%">' + DSM_LBL[k] + '</span>'; }).join('');
+  }
+  (function(){
+    var drag = null;
+    $('dsmEdit').addEventListener('pointerdown', function(e){ var p = e.target.closest('.dsm-pin'); if (!p) return; drag = p; p.setPointerCapture(e.pointerId); e.preventDefault(); });
+    $('dsmEdit').addEventListener('pointermove', function(e){
+      if (!drag) return; var r = this.getBoundingClientRect();
+      var x = Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)), y = Math.max(0, Math.min(100, (e.clientY - r.top) / r.height * 100));
+      drag.style.left = x + '%'; drag.style.top = y + '%';
+    });
+    $('dsmEdit').addEventListener('pointerup', function(){
+      if (!drag) return; var pos = dsmPos(); pos[drag.dataset.k] = [parseFloat(drag.style.left), parseFloat(drag.style.top)];
+      ls(DSM_POS_KEY, JSON.stringify(pos)); drag = null;
+    });
+    $('dsmFile').addEventListener('change', function(){
+      var f = this.files && this.files[0]; if (!f) return;
+      var fr = new FileReader(); fr.onload = function(){
+        var im = new Image(); im.onload = function(){
+          var sc = Math.min(1, 1400 / Math.max(im.width, im.height)), c = document.createElement('canvas');
+          c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+          try { ls(DSM_KEY, c.toDataURL('image/jpeg', .85)); } catch(e){ $('dsmNote').textContent = 'Bild zu groß zum Speichern.'; return; }
+          dsmLoadBg(dsmEditor); $('dsmNote').textContent = 'Kartenbild gespeichert. Zieh jetzt die Schilder auf die passenden Gebäude.'; $('dsmNote').className = 'note ok';
+        }; im.src = fr.result;
+      }; fr.readAsDataURL(f);
+    });
+    $('dsmClearBg').addEventListener('click', function(){ ls(DSM_KEY, null); dsmLoadBg(dsmEditor); });
+    $('dsmReset').addEventListener('click', function(){ ls(DSM_POS_KEY, null); dsmEditor(); });
+    $('dsmToggle').addEventListener('click', function(){ var w = $('dsmWrap'); w.classList.toggle('hide'); if (!w.classList.contains('hide')) dsmLoadBg(dsmEditor); });
+    ['A','B'].forEach(function(t){ $('dsPic' + t).addEventListener('click', function(){ if (DS_LAST && DS_LAST.plan.teams[t]) dsmLoadBg(function(){ dsmRender(t); }); }); });
+  })();
+  function dsmWrap(ctx, text, maxW){
+    var out = []; String(text).split('\n').forEach(function(par){
+      var words = par.split(' '), line = '';
+      words.forEach(function(w){ var tst = line ? line + ' ' + w : w; if (ctx.measureText(tst).width > maxW && line) { out.push(line); line = w; } else line = tst; });
+      out.push(line);
+    }); return out;
+  }
+  function dsmRender(t){
+    var T = DS_LAST.plan.teams[t], TC = DS_TACTICS[T.tac], groups = dsGroupsOf(T), pos = dsmPos();
+    var W = 1920, H = 1080, c = document.createElement('canvas'); c.width = W; c.height = H;
+    var g = c.getContext('2d'); g.lineJoin = 'round'; g.miterLimit = 2;
+    g.fillStyle = '#05070d'; g.fillRect(0, 0, W, H);
+    // Kartenfläche
+    var MX = 660, MY = 40, MW = 1220, MH = 1000, ar = DSM_BG ? DSM_BG.naturalWidth / DSM_BG.naturalHeight : 1;
+    var mw = MW, mh = mw / ar; if (mh > MH) { mh = MH; mw = mh * ar; }
+    var mx = MX + (MW - mw) / 2, my = MY + (MH - mh) / 2;
+    if (DSM_BG) g.drawImage(DSM_BG, mx, my, mw, mh);
+    else { var gr = g.createRadialGradient(mx + mw/2, my + mh/2, 50, mx + mw/2, my + mh/2, mw * .7); gr.addColorStop(0, '#e2a868'); gr.addColorStop(1, '#b87a3e'); g.fillStyle = gr; g.fillRect(mx, my, mw, mh); }
+    function P(k){ var p = pos[k] || [50,50]; return [mx + p[0] / 100 * mw, my + p[1] / 100 * mh]; }
+    if (!DSM_BG) Object.keys(DSM_DEF).forEach(function(k){
+      if (k === 'base' || k === 'react') return; var p = P(k), big = k === 'silo' || k === 'arsenal' || k === 'merc';
+      g.font = '600 18px system-ui, sans-serif';
+      var s = Math.max(big ? 46 : 34, g.measureText(DS_B[k] || '').width / 2 + 12), hh = big ? 30 : 22;
+      g.fillStyle = big ? '#5d616b' : '#7d8089'; g.strokeStyle = '#3a3d44'; g.lineWidth = 3;
+      g.beginPath(); g.roundRect ? g.roundRect(p[0]-s, p[1]-hh, s*2, hh*2, 10) : g.rect(p[0]-s, p[1]-hh, s*2, hh*2); g.fill(); g.stroke();
+      g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(DS_B[k] || '', p[0], p[1]);
+    });
+    // Start-Gebäude und Wechsel je Gruppe
+    var startAt = {}, moves = [];
+    groups.forEach(function(x){
+      var s0 = x.g.steps[0], b0 = s0[1] || (s0[0] === 'watch' ? 'react' : 'base'), prev = b0, mover = false;
+      x.g.steps.forEach(function(s, i){
+        if (!i) return; var b = s[1] || null; if (!b || b === prev) return;
+        moves.push({ from: prev, to: b, ph: i, names: x.names, first: !mover }); mover = true; prev = b;
+      });
+      (startAt[b0] = startAt[b0] || []).push({ names: x.names, mover: mover });
+    });
+    g.textAlign = 'center'; g.textBaseline = 'top';
+    var labelBox = {}, textOps = [];
+    Object.keys(startAt).forEach(function(b){
+      var p = P(b), y = p[1] + 34;
+      startAt[b].forEach(function(blk){
+        g.font = '700 26px system-ui, sans-serif';
+        var lines = blk.names.map(function(n){ return n; }), lh = 30, w = Math.max.apply(null, lines.map(function(l){ return g.measureText(l).width; }));
+        lines.forEach(function(l, i){ textOps.push([l, p[0], y + i * lh]); });
+        if (blk.mover) {
+          g.strokeStyle = '#1f9d3a'; g.lineWidth = 5; g.beginPath();
+          g.ellipse(p[0], y + lines.length * lh / 2 - 2, w / 2 + 26, lines.length * lh / 2 + 12, 0, 0, Math.PI * 2); g.stroke();
+          blk.names.forEach(function(n){ labelBox[n] = [p[0], y + lines.length * lh / 2, w / 2 + 26]; });
+        }
+        y += lines.length * lh + 14;
+      });
+    });
+    // Pfeile
+    var COL = ['#1f9d3a', '#1f9d3a', '#e07b12'];
+    function arrow(x1, y1, x2, y2, col){
+      var mxp = (x1 + x2) / 2 + (y2 - y1) * .18, myp = (y1 + y2) / 2 - (x2 - x1) * .18;
+      var ang = Math.atan2(y2 - myp, x2 - mxp), ex = x2 - Math.cos(ang) * 46, ey = y2 - Math.sin(ang) * 46;
+      g.strokeStyle = col; g.fillStyle = col; g.lineWidth = 6; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(x1, y1); g.quadraticCurveTo(mxp, myp, ex, ey); g.stroke();
+      var a2 = Math.atan2(ey - myp, ex - mxp); g.beginPath(); g.moveTo(ex + Math.cos(a2) * 18, ey + Math.sin(a2) * 18);
+      g.lineTo(ex + Math.cos(a2 + 2.5) * 22, ey + Math.sin(a2 + 2.5) * 22); g.lineTo(ex + Math.cos(a2 - 2.5) * 22, ey + Math.sin(a2 - 2.5) * 22); g.closePath(); g.fill();
+    }
+    moves.forEach(function(m){
+      var a = m.first && labelBox[m.names[0]] ? labelBox[m.names[0]] : null, f = P(m.from), to = P(m.to);
+      var sx = a ? a[0] : f[0], sy = a ? a[1] : f[1];
+      if (a) { var dir = to[0] >= sx ? 1 : -1; sx += dir * a[2]; }
+      arrow(sx, sy, to[0], to[1], COL[m.ph] || COL[1]);
+      if (!m.first || !a) { g.font = '700 22px system-ui, sans-serif'; g.textAlign = 'center'; g.lineWidth = 5; g.strokeStyle = 'rgba(255,255,255,.85)'; var tx = to[0], ty = to[1] - 70; var lbl = m.names.join(', ') + ' ' + DS_PHL[T.ph[m.ph]].toLowerCase(); g.strokeText(lbl, tx, ty); g.fillStyle = COL[m.ph] === '#e07b12' ? '#a34f00' : '#126b26'; g.fillText(lbl, tx, ty); }
+    });
+    g.font = '700 26px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'top';
+    textOps.forEach(function(o){ g.lineWidth = 6; g.strokeStyle = 'rgba(255,255,255,.85)'; g.strokeText(o[0], o[1], o[2]); g.fillStyle = '#111'; g.fillText(o[0], o[1], o[2]); });
+    // linke Spalte
+    g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    g.shadowColor = '#3d8bff'; g.shadowBlur = 24; g.fillStyle = '#7fb8ff'; g.font = '800 64px system-ui, sans-serif';
+    g.fillText('DESERT STORM', 320, 120); g.font = '800 56px system-ui, sans-serif'; g.fillText('TEAM ' + t, 320, 190); g.shadowBlur = 0;
+    g.fillStyle = '#cfe3ff'; g.font = '700 40px system-ui, sans-serif'; g.fillText([T.time, T.opp ? 'vs ' + T.opp : ''].filter(Boolean).join(' · '), 320, 250);
+    g.textAlign = 'left';
+    var bx = 40, by = 290, bw = 560, bh = H - by - 40; g.fillStyle = '#1d5b86'; g.fillRect(bx, by, bw, bh);
+    var txt = TC.name + '\n' + TC.desc + (T.note ? '\n\n' + T.note : '') + (T.s.length ? '\n\nErsatz: ' + T.s.join(', ') : '');
+    g.fillStyle = '#fff'; var fs = 28, lines;
+    do { g.font = '500 ' + fs + 'px system-ui, sans-serif'; lines = dsmWrap(g, txt, bw - 48); fs -= 1; } while (lines.length * fs * 1.35 > bh - 48 && fs > 14);
+    lines.forEach(function(l, i){ if (!i) g.font = '700 ' + (fs + 1) + 'px system-ui, sans-serif'; else g.font = '500 ' + (fs + 1) + 'px system-ui, sans-serif'; g.fillText(l, bx + 24, by + 24 + (fs + 1) + i * (fs + 1) * 1.35); });
+    // Legende
+    g.font = '600 20px system-ui, sans-serif'; g.textAlign = 'left';
+    g.fillStyle = '#1f9d3a'; g.fillRect(MX, H - 30, 26, 8); g.fillStyle = '#cfd6e4'; g.fillText(DS_PHL[T.ph[1]], MX + 34, H - 20);
+    g.fillStyle = '#e07b12'; g.fillRect(MX + 260, H - 30, 26, 8); g.fillStyle = '#cfd6e4'; g.fillText(DS_PHL[T.ph[2]], MX + 294, H - 20);
+    var url = c.toDataURL('image/png'); DSM_LASTURL = url;
+    $('dsmOut').innerHTML = '<img src="' + url + '" alt="Plan Team ' + t + '"><a class="btn" style="display:block;text-align:center;text-decoration:none;margin-top:8px" download="SKWS-Wuestensturm-Team-' + t + '.png" href="' + url + '">Bild herunterladen</a>' +
+      (window.SKWSAndroid ? '<p class="small muted">In der App: Bild lange drücken oder die Admin-Seite im Browser öffnen, um es zu speichern.</p>' : '');
+  }
 
   /* ---------- Logbuch ---------- */
   var LOG = null, LOG_PAGE = 1000, logLoading = false;
