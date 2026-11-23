@@ -970,7 +970,7 @@
   var DS_TACTICS = {
     std: {
       name: 'Ausgewogen – Silo-Sturm um 10:00',
-      desc: 'Die 5 Stärksten nehmen zuerst Ölraffinerie I und stürmen um 10:00 gemeinsam das Atomsilo. Der Rest hält Raffinerien, Infozentrum/Waffenlager, drei Lazarette und das Wissenschaftszentrum.',
+      desc: 'Die 5 Stärksten nehmen zuerst Ölraffinerie I und stürmen um 10:00 gemeinsam das Atomsilo. Der Rest hält Raffinerien, Infozentrum/Waffenlager, drei Lazarette und das Tech-Zentrum.',
       when: 'Gegner ungefähr gleich stark. Guter Standard, wenn ihr den Gegner nicht kennt.',
       pro: 'Holt das Silo (meiste Punkte) früh, ohne die Außengebäude aufzugeben.',
       con: 'Wenn der Gegner das Silo härter verteidigt, binden sich eure Stärksten dort.',
@@ -983,14 +983,14 @@
         { k:'info',  n:2, label:'Info-/Waffenlager-Trupp', steps:[['take','info'],['move','arsenal'],['hold','arsenal']] },
         { k:'hosp1', n:2, label:'Lazarett I',              steps:[['take','hosp1'],['holdh','hosp1'],['holdh','hosp1']] },
         { k:'hosp2', n:2, label:'Lazarett II',             steps:[['take','hosp2'],['holdh','hosp2'],['holdh','hosp2']] },
-        { k:'sci',   n:1, label:'Wissenschaft',            steps:[['take','sci'],['iffree','merc'],['wells','wells']] },
+        { k:'sci',   n:1, label:'Tech-Zentrum',            steps:[['take','sci'],['iffree','merc'],['wells','wells']] },
         { k:'hosp3', n:2, label:'Lazarett III',            steps:[['take','hosp3'],['holdh','hosp3'],['reinforce','']] },
         { k:'supp',  n:2, label:'Unterstützung',           steps:[['defend',''],['reinforce',''],['wells','wells']] }
       ]
     },
     wide: {
       name: 'Breit verteilt + Eingreiftruppe',
-      desc: 'Alle 8 Außengebäude werden ab Start mit 1–3 Spielern besetzt. Die 3 Stärksten sind eine Eingreiftruppe: Sie beobachten, wo wir unter Druck sind, und verstärken dort. Ab 10 Min. übernehmen Info- und Wissenschafts-Trupp Waffenlager und Söldnerfabrik, ab 20 Min. geht die Eingreiftruppe aufs Atomsilo.',
+      desc: 'Alle 8 Außengebäude werden ab Start mit 1–3 Spielern besetzt. Die 3 Stärksten sind eine Eingreiftruppe: Sie beobachten, wo wir unter Druck sind, und verstärken dort. Ab 10 Min. übernehmen Info- und Tech-Trupp Waffenlager und Söldnerfabrik, ab 20 Min. geht die Eingreiftruppe aufs Atomsilo.',
       when: 'Wenn ihr viele Gebäude sicher halten wollt und der Gegner unberechenbar ist. Entspricht eurem letzten Plan.',
       pro: 'Viele Gebäude produzieren gleichzeitig Punkte; die Eingreiftruppe stopft Lücken.',
       con: 'Wenig Leute pro Gebäude – ein konzentrierter Angriff kann einzelne Gebäude kippen.',
@@ -1001,7 +1001,7 @@
         { k:'ref1',  n:3, label:'Raffinerie I',            steps:[['take','ref1'],['hold','ref1'],['hold','ref1']] },
         { k:'ref2',  n:3, label:'Raffinerie II',           steps:[['take','ref2'],['hold','ref2'],['hold','ref2']] },
         { k:'info',  n:2, label:'Info-/Waffenlager-Trupp', steps:[['take','info'],['move','arsenal'],['hold','arsenal']] },
-        { k:'sci',   n:2, label:'Wissenschaft/Söldner',    steps:[['take','sci'],['move','merc'],['hold','merc']] },
+        { k:'sci',   n:2, label:'Tech/Söldner',    steps:[['take','sci'],['move','merc'],['hold','merc']] },
         { k:'hosp1', n:2, label:'Lazarett I',              steps:[['take','hosp1'],['holdh','hosp1'],['holdh','hosp1']] },
         { k:'hosp2', n:2, label:'Lazarett II',             steps:[['take','hosp2'],['holdh','hosp2'],['holdh','hosp2']] },
         { k:'hosp3', n:2, label:'Lazarett III',            steps:[['take','hosp3'],['holdh','hosp3'],['holdh','hosp3']] },
@@ -1013,7 +1013,7 @@
       desc: '6 Starke nehmen Ölraffinerie I und stürmen um 10:00 das Atomsilo. Je 3 Spieler holen sich parallel Waffenlager (+15 % eigene Werte) und Söldnerfabrik (−15 % Gegner). Zusammen mit dem Silo ergibt das das „Buff-Dreieck“.',
       when: 'Wenn ihr klar stärker seid oder unbedingt das Silo dominieren wollt.',
       pro: 'Bis zu 30 % Werte-Vorteil in der Mitte; das Silo bringt die meisten Punkte.',
-      con: 'Lazarette und Wissenschaft werden kaum besetzt – gegen starke Gegner riskant.',
+      con: 'Lazarette und Tech-Zentrum werden kaum besetzt – gegen starke Gegner riskant.',
       en: 'Center & buffs: 6 strong players take Oil Refinery I and move into the Nuclear Silo at 10:00; at the same time 3 players each take the Arsenal and the Mercenary Factory (buff triangle).',
       ph: ['p0','p10','p13'],
       groups: [
@@ -1076,7 +1076,7 @@
     ]
   };
   var DS_SEC = { secL:{ de:'Schwarz', en:'Black', col:'#111827' }, secR:{ de:'Rot', en:'Red', col:'#b91c1c' }, secN:{ de:'Grün', en:'Green', col:'#15803d' }, secS:{ de:'Blau', en:'Blue', col:'#1d4ed8' } };
-  var DS_B = { secL:'Bereich Schwarz (links)', secR:'Bereich Rot (rechts)', secN:'Bereich Grün (oben)', secS:'Bereich Blau (unten)', ref1:'Ölraffinerie I', ref2:'Ölraffinerie II', hosp1:'Feldlazarett I', hosp2:'Feldlazarett II', hosp3:'Feldlazarett III', hosp4:'Feldlazarett IV', sci:'Wissenschaftszentrum', info:'Infozentrum', arsenal:'Waffenlager', merc:'Söldnerfabrik', silo:'Atomsilo', wells:'Ölquellen' };
+  var DS_B = { secL:'Bereich Schwarz (links)', secR:'Bereich Rot (rechts)', secN:'Bereich Grün (oben)', secS:'Bereich Blau (unten)', ref1:'Ölraffinerie I', ref2:'Ölraffinerie II', hosp1:'Feldlazarett I', hosp2:'Feldlazarett II', hosp3:'Feldlazarett III', hosp4:'Feldlazarett IV', sci:'Tech-Zentrum', info:'Infozentrum', arsenal:'Waffenlager', merc:'Söldnerfabrik', silo:'Atomsilo', wells:'Ölquellen' };
   var DS_B_EN = { secL:'Black area (left)', secR:'Red area (right)', secN:'Green area (top)', secS:'Blue area (bottom)', ref1:'Oil Refinery I', ref2:'Oil Refinery II', hosp1:'Field Hospital I', hosp2:'Field Hospital II', hosp3:'Field Hospital III', hosp4:'Field Hospital IV', sci:'Science Hub', info:'Info Center', arsenal:'Arsenal', merc:'Mercenary Factory', silo:'Nuclear Silo', wells:'Oil Wells' };
   var DS_A = { take:'{b} erobern und halten', help:'bei {b} mit erobern', move:'zu {b} wechseln, erobern und halten', hold:'{b} halten', holdh:'{b} halten, geheilte Truppen abholen', rally:'ab 9:30 sammeln, um 10:00 gemeinsam {b} erobern und halten', iffree:'{b} erobern, wenn frei – sonst verstärken, wo nötig', defend:'Basis verteidigen, Punkte-Kisten einsammeln', reinforce:'Kisten einsammeln, angegriffene Gebäude verstärken', wells:'{b} sammeln',
     watch:'Eingreiftruppe: beobachten, wo wir unter Druck sind, und dort verstärken', takeend:'{b} erobern und bis zum Ende halten', final:'ab 28:00 sammeln, um 28:30 gemeinsam {b} angreifen, danach Punkte-Kisten einsammeln', holdq:'{b} halten und Truppen schonen – nicht ins Zentrum',
@@ -1238,7 +1238,7 @@
       if (x.g.steps[0][0] === 'watch') out.push('- ' + x.names.join(', ') + ': Eingreiftruppe, helft dort, wo wir unter Druck sind.');
     });
     if (T.tac === 'moon') {
-      out.push('- Bereiche: Schwarz = Raffinerie I + Lazarett I, Rot = Raffinerie II + Lazarett IV, Grün = Infozentrum + Lazarett III, Blau = Wissenschaftszentrum + Lazarett II.');
+      out.push('- Bereiche: Schwarz = Raffinerie I + Lazarett I, Rot = Raffinerie II + Lazarett IV, Grün = Infozentrum + Lazarett III, Blau = Tech-Zentrum + Lazarett II.');
       out.push('- Gelb bleibt immer zusammen und kommt nur auf Ruf des Einsatzleiters. Am Silo höchstens 2 gemeinsame Versuche, sonst geschlossen auf eine gegnerische Raffinerie.');
       out.push('- Halter: Gebäude halten, Angriffe sofort melden, keine unnötigen Kämpfe. Unterstützer: eigenen Bereich verteidigen und zurückerobern, andere Bereiche nur auf Anweisung.');
       out.push('- Meldung im Kampfchat: Farbe - Gebäude - Gegnerzahl - Stärke, bei Bedarf "Gelb benötigt".');
@@ -1337,7 +1337,7 @@
   // Positionen in Prozent der Kartenfläche; Standard angelehnt an eure bisherige Karte, per Ziehen anpassbar.
   // Aufbau laut Guides (lastwargame.online L1–L4/R1–R4/C1–C3, lastwartutorial.com): unsere Seite links, Gegner rechts,
   // Mitte von oben: Waffenlager, Atomsilo, Söldnerfabrik. Links von oben: Infozentrum (Ecke oben links), Raffinerie, 2 Lazarette;
-  // rechts von oben: 2 Lazarette, Raffinerie, Wissenschaftszentrum (Ecke unten rechts).
+  // rechts von oben: 2 Lazarette, Raffinerie, Tech-Zentrum (Ecke unten rechts).
   var DSM_DEF = { info:[32,7], ref1:[13,30], hosp1:[13,57], hosp2:[32,86], arsenal:[51,18], silo:[51,45], merc:[50,72], hosp3:[72,6], hosp4:[89,34], ref2:[89,60], sci:[72,86], wells:[24,44], base:[4,48], react:[36,60] };
   var DSM_LBL = { ref1:'Raff. I', ref2:'Raff. II', hosp1:'Laz. I', hosp2:'Laz. II', hosp3:'Laz. III', hosp4:'Laz. IV', sci:'Wiss.', info:'Info', arsenal:'Waffenl.', merc:'Söldner', silo:'Atomsilo', wells:'Ölquellen', base:'Basis', react:'Eingreif.' };
   var DSM_KEY = 'skws_ds_map', DSM_POS_KEY = 'skws_ds_pos2', DSM_BG = null, DSM_LASTURL = null;
@@ -1492,7 +1492,7 @@
     if (typeof t === 'function') { cb = t; t = 'A'; }
     DST = DST_T[t] || DST_T.A;
     if (DST_IMGS[t]) { DST_IMG = DST_IMGS[t]; return cb(); }
-    var im = new Image(); im.onload = function(){ DST_IMGS[t] = DST_IMG = im; cb(); }; im.onerror = function(){ DST_IMG = null; cb(); }; im.src = DST.src + '?v=2';
+    var im = new Image(); im.onload = function(){ DST_IMGS[t] = DST_IMG = im; cb(); }; im.onerror = function(){ DST_IMG = null; cb(); }; im.src = DST.src + '?v=3';
   }
   function dsmShow(url, t, lang){
     var name = 'SKWS-Wuestensturm-Team-' + t + (lang ? '-' + lang.toUpperCase() : '') + '-' + fileDate() + '.png', A = window.SKWSAndroid, h = '<img src="' + url + '" alt="Plan Team ' + t + '">';
