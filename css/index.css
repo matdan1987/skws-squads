@@ -196,3 +196,7 @@
   .ovcol{min-width:0;display:flex;flex-direction:column;gap:2px}
   .ovn{font-weight:600;font-size:16px;overflow-wrap:anywhere}
   .hof-row{padding:5px 0}
+  .fk-forgot{display:block;width:100%;margin-top:8px}
+  .fk-step{display:block;margin-top:10px;color:#9cc7f0}
+  .fk-modal input{width:100%;box-sizing:border-box;margin-top:8px}
+  .fk-modal .ghost{width:100%}

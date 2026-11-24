@@ -219,3 +219,14 @@
 .av-big{position:fixed;inset:0;z-index:200;background:rgba(3,6,12,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;cursor:zoom-out;padding:16px}
 .av-big img{width:min(88vw,420px);height:min(88vw,420px);object-fit:cover;border-radius:24px;border:3px solid rgba(92,200,255,.6);box-shadow:0 0 40px rgba(92,200,255,.35)}
 .av-big div{font-size:20px;font-weight:700;color:#9cc7f0}
+/* ---------- Zugänge ---------- */
+.acc-row{display:grid;grid-template-columns:44px minmax(0,1.1fr) minmax(0,1.6fr) auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.acc-row time{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.acc-row a{color:var(--text);font-weight:600;cursor:pointer;display:flex;align-items:center;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.acc-ok span:first-of-type{color:var(--ok)} .acc-bad span:first-of-type{color:var(--err)} .acc-warn span:first-of-type{color:var(--warn)} .acc-adm span:first-of-type{color:var(--accent)}
+.acc-bad{background:linear-gradient(90deg,rgba(255,107,107,.08),transparent)}
+.acc-out{margin-top:12px;text-align:center;background:var(--bg2);border:1px solid rgba(92,200,255,.4);border-radius:14px;padding:14px;box-shadow:0 0 18px rgba(92,200,255,.15)}
+.acc-out b{font-size:18px}
+.acc-pin{font-size:34px;font-weight:800;letter-spacing:.25em;color:#7dd3fc;text-shadow:0 0 12px rgba(92,200,255,.6);margin:6px 0}
+.acc-out .mini{margin-top:10px}
+@media(max-width:520px){ .acc-row{grid-template-columns:40px 1fr;} .acc-row > span{grid-column:2} }

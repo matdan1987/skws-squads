@@ -1,7 +1,7 @@
 /* SKWS Squads – Admin: start (gemeinsamer globaler Bereich, Reihenfolge der Dateien beachten) */
 /* ---------- Steuerung ---------- */
 // Bereiche der Navigation: jeder Reiter gehört zu genau einem Bereich
-var NAV = { sp:['ov','mem','pl','dev','hist'], ev:['ds','cs'], al:['mg','mer','msg'], sy:['exp','adm','log'] };
+var NAV = { sp:['ov','mem','pl','dev','hist'], ev:['ds','cs'], al:['mg','mer','msg'], sy:['adm','acc','log','exp'] };
 function navGroupOf(t){ for (var g in NAV) if (NAV[g].indexOf(t) >= 0) return g; return 'sp'; }
 function navRender(name){
   var g = navGroupOf(name);
@@ -13,7 +13,7 @@ function showTab(name){
   navRender(name);
   var bs = document.querySelectorAll('#tabs button');
   for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-  ['ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','msg','adm','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+  ['ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','msg','adm','acc','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
   store('skws_admin_tab', name); store('skws_admin_tab_' + navGroupOf(name), name);
   if (name === 'hist') renderHistory();
   if (name === 'ov') renderOverview();
@@ -25,6 +25,7 @@ function showTab(name){
   if (name === 'mg') mgRender();
   if (name === 'mer') merRender();
   if (name === 'msg') { fkRender(); fkLoad(); }
+  if (name === 'acc') { accRender(); fkLoad().then(accLoad); }
   if (name === 'dev') renderDev();
   if (name === 'log') loadLog(false);
 }
@@ -69,6 +70,7 @@ $('plSelect').addEventListener('change', function(){ curPlayer = this.value; ren
 $('plAkte').addEventListener('click', function(e){
   var b = e.target.closest('[data-akte]');
   if (b && b.dataset.akte === 'pin') { fkPinReset(curPlayer); return; }
+  if (b && b.dataset.akte === 'init') { showTab('acc'); accPick(curPlayer); window.scrollTo(0, 0); return; }
   if (b && b.dataset.akte === 'pm') { showTab('msg'); fkPick([curPlayer]); $('fkBody').focus(); window.scrollTo(0, 0); return; }
   if (b) { showTab('mer'); $('merName').value = curPlayer; merHint(false); window.scrollTo(0, 0); return; }
   var rv = e.target.closest('[data-merrev]'); if (rv) { var m = MER.filter(function(x){ return x.id === +rv.dataset.merrev; })[0]; if (!m || !confirm('„' + m.reason + '“ von ' + m.name + ' zurücknehmen?')) return;

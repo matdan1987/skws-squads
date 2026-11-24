@@ -118,7 +118,7 @@ function renderAkte(){
     '<div>Wüstensturm gespielt<b>' + (s.pds || 0) + '</b></div><div>Schluchtsturm gespielt<b>' + (s.pcs || 0) + '</b></div><div>Als Ersatz eingeplant<b>' + (s.sub || 0) + '</b></div>' +
     '<div>Gefehlt<b' + (s.abs ? ' class="down"' : '') + '>' + (s.abs || 0) + '</b></div><div>Anmeldungen<b>' + (s.su || 0) + '</b></div><div>Meldetage<b>' + (s.hn || 0) + '</b></div></div>';
   h += '<div class="btnrow"><button class="btn2" data-akte="merit">Bonus/Malus vergeben</button>' + (p.active ? '<button class="btn2" data-akte="pm">✉️ Nachricht senden</button>' : '') +
-    (typeof fkHasPin === 'function' && (fkHasPin(p.name) || fkLocked(p.name)) ? '<button class="btn2" data-akte="pin">🔑 PIN zurücksetzen</button>' : '') + '</div></div>';
+    (typeof fkHasPin === 'function' && (fkHasPin(p.name) || fkLocked(p.name)) ? '<button class="btn2" data-akte="pin">🔑 PIN zurücksetzen</button>' : '') + (p.active ? '<button class="btn2" data-akte="init">🛡️ Start-PIN / Anmeldungen</button>' : '') + '</div></div>';
   // Bonus/Malus
   var ml = MER.filter(function(m){ return m.name === p.name; });
   h += '<div class="card"><h2>Bonus/Malus (' + ml.length + ')</h2>' + (ml.length ? ml.map(function(m){ var bad = m.kind === 'malus';
