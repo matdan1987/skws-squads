@@ -90,7 +90,7 @@ var Funk = (function(){
     function fail(r){ msg.textContent = r && r.err === 'ERR_NOMAIL' ? L.noMail : errText(r); msg.className = 'msg err'; }
     function input(type, ph){ var i = el('input'); i.type = type; i.placeholder = ph; i.autocomplete = type === 'email' ? 'email' : 'off'; box.appendChild(i); return i; }
     function link(txt, fn){ var a = el('a', 'fk-link', txt); a.href = '#'; a.addEventListener('click', function(e){ e.preventDefault(); fn(); }); return a; }
-    function done(r){ if (!r || !r.ok) { fail(r); return; } adopt(r.token, r.name, r.level); if (onOk) onOk(); }
+    function done(r){ if (!r || !r.ok) { fail(r); return; } var old = p1 && p1.value; adopt(r.token, r.name, r.level); if (r.must_change) mustChange(old); if (onOk) onOk(); }
     var st = ST[name];
     if (!st) {
       box.appendChild(el('div', 'hint', '…'));
@@ -111,11 +111,12 @@ var Funk = (function(){
       go = btn('btn', L.login, function(){
         go.disabled = true; rpc('auth_login', { p_name: name, p_pin: p1.value }).then(function(r){ go.disabled = false; done(r); }, function(){ go.disabled = false; fail(null); });
       });
-      box.appendChild(go); box.appendChild(msg); box.appendChild(link(L.forgot, function(){ authBox(box, name, onOk, 'reset'); }));
+      box.appendChild(go); box.appendChild(msg); box.appendChild(btn('ghost fk-forgot', '🔑 ' + L.forgot, function(){ authBox(box, name, onOk, 'reset'); }));
     } else {
+      box.appendChild(el('b', 'fk-step', L.newPinTitle));
       box.appendChild(el('div', 'hint fk-first', L.pinFirst));
       p1 = input('password', L.pinNew); p2 = input('password', L.pinAgain);
-      if (st.need_email) em = input('email', L.email);
+      if (st.need_email) { em = input('email', L.email); box.appendChild(el('div', 'hint', L.mailHint)); }
       go = btn('btn', L.login, function(){
         if (p1.value !== p2.value) { msg.textContent = L.pinMismatch; msg.className = 'msg err'; return; }
         go.disabled = true; rpc('auth_login', { p_name: name, p_pin: p1.value, p_email: em ? em.value : null }).then(function(r){ go.disabled = false; if (r && r.ok) ST[name] = null; done(r); }, function(){ go.disabled = false; fail(null); });
@@ -123,6 +124,23 @@ var Funk = (function(){
       box.appendChild(go); box.appendChild(msg);
     }
     box.querySelectorAll('input').forEach(function(i){ i.addEventListener('keydown', function(e){ if (e.key === 'Enter') go.click(); }); });
+  }
+  // Nach Anmeldung mit Start-PIN von R4/R5: eigene PIN festlegen
+  function mustChange(old){
+    var L = T(), o = el('div', 'fk-overlay'), c = el('div', 'card fk-modal');
+    c.appendChild(el('div', 'fk-mtitle', '🔑 ' + L.newPinTitle));
+    c.appendChild(el('div', 'hint', L.mustChange));
+    var p1 = el('input'); p1.type = 'password'; p1.placeholder = L.pinNew; c.appendChild(p1);
+    var p2 = el('input'); p2.type = 'password'; p2.placeholder = L.pinAgain; c.appendChild(p2);
+    var m = el('div', 'msg');
+    var b = btn('btn', L.save, function(){
+      if (p1.value !== p2.value) { m.textContent = L.pinMismatch; m.className = 'msg err'; return; }
+      b.disabled = true;
+      call('auth_change_pin', { p_old: old || '', p_new: p1.value }).then(function(r){ b.disabled = false; if (r.ok) { o.remove(); document.body.classList.remove('fk-lock'); } else { m.textContent = errText(r); m.className = 'msg err'; } });
+    });
+    c.appendChild(b); c.appendChild(m);
+    c.appendChild(btn('ghost', L.later, function(){ o.remove(); document.body.classList.remove('fk-lock'); }));
+    o.appendChild(c); document.body.appendChild(o); document.body.classList.add('fk-lock');
   }
   // Anmeldung übernehmen (auch von der Neu-Eintragung)
   function adopt(tok, name, level){

@@ -68,7 +68,9 @@ function fkPinReset(n){
 // Spieler-Akte: PIN-Status
 function fkAkte(name){
   if (!FK) return '';
-  return '<span class="mgb">' + (fkHasPin(name) ? '🔑 PIN eingerichtet' : '🔑 keine PIN') + (fkLocked(name) ? ' · gesperrt' : '') + '</span>';
+  var last = FK.last && FK.last[name];
+  return '<span class="mgb">' + (fkHasPin(name) ? '🔑 PIN eingerichtet' : '🔑 keine PIN') + ((FK.must || []).indexOf(name) >= 0 ? ' · Start-PIN' : '') + (fkLocked(name) ? ' · gesperrt' : '') + '</span>' +
+    (last ? '<span class="mgb">zuletzt angemeldet ' + fmtDateTime(last) + '</span>' : '');
 }
 $('fkAll').addEventListener('change', fkPreview);
 $('fkMent').addEventListener('change', fkPreview);

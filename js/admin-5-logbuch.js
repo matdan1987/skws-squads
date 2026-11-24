@@ -39,6 +39,7 @@ function logText(r){
   if (a === 'msg_bc') return { tag:'adm', label:'Nachricht', text: d.what === 'delete' ? who(r.actor) + ' hat eine Rundnachricht gelöscht' : who(r.actor) + ' hat eine Rundnachricht gesendet' + (d.subject ? ': „' + d.subject + '“' : ''), sub: d.count ? d.count + ' Empfänger' : '' };
   if (a === 'pin_set') return { tag:'', label:'PIN', text: who(r.target) + ' hat eine PIN für Funk eingerichtet', sub: '' };
   if (a === 'pin_lock') return { tag:'warn', label:'PIN', text: 'Anmeldung von ' + (r.target || '') + ' nach Fehlversuchen gesperrt', sub: 'falsche PIN oder E-Mail · zurücksetzen unter Nachrichten oder in der Spieler-Akte' };
+  if (a === 'pin_initial') return { tag:'adm', label:'PIN', text: who(r.actor) + ' hat eine Start-PIN für ' + (r.target || '') + ' vergeben', sub: 'Spieler wird beim ersten Anmelden gebeten, eine eigene PIN festzulegen' };
   if (a === 'pin_reset_self') return { tag:'warn', label:'PIN', text: who(r.target) + ' hat eine neue PIN über „PIN vergessen“ festgelegt', sub: 'mit der hinterlegten E-Mail bestätigt' };
   if (a === 'pin_reset') return { tag:'adm', label:'PIN', text: who(r.actor) + ' hat die PIN von ' + (r.target || '') + ' zurückgesetzt', sub: '' };
   if (a === 'shout_del') return { tag:'warn', label:'Shoutbox', text: who(r.actor) + ' hat einen Beitrag von ' + (r.target || '') + ' gelöscht', sub: ({all:'Alle', mentor:'Mentoren', lead:'R4/R5'}[d.room] || '') + ' · „' + (d.body || '') + '“' };

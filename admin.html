@@ -6,7 +6,7 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=3">
+<link rel="stylesheet" href="css/admin.css?v=4">
 </head>
 <body>
 <div class="wrap">
@@ -51,6 +51,7 @@
       <button data-tab="mer">Bonus/Malus</button>
       <button data-tab="msg">Nachrichten</button>
       <button data-tab="adm">Verwaltung</button>
+      <button data-tab="acc">Zugänge</button>
       <button data-tab="log">Logbuch</button>
     </div>
 
@@ -347,6 +348,29 @@
       </div>
     </section>
 
+    <section id="tab-acc" class="hide">
+      <div class="tiles" id="accTiles"></div>
+      <div class="card">
+        <h2>Start-PIN vergeben</h2>
+        <p class="small muted" style="margin-top:0">Für Spieler, die keine eigene PIN hinbekommen oder sie nicht über „PIN vergessen“ zurücksetzen können. Eine bisherige PIN wird ersetzt. Beim ersten Anmelden wird der Spieler gebeten, eine eigene PIN festzulegen.</p>
+        <div class="formrow">
+          <div><label for="accInitName">Spieler</label><select id="accInitName"></select></div>
+          <div><label for="accPin">Start-PIN</label><div style="display:flex;gap:6px"><input id="accPin" maxlength="32" autocomplete="off" style="flex:1"><button class="mini" id="accNew" title="Neue Zufalls-PIN">🎲</button></div></div>
+        </div>
+        <button class="btn" id="accSet">🔑 Start-PIN setzen</button>
+        <div class="msg" id="accInitMsg"></div>
+        <div id="accInitOut"></div>
+      </div>
+      <div class="card">
+        <h2>Anmelde-Protokoll</h2>
+        <div class="formrow">
+          <div><label for="accName">Spieler</label><select id="accName"></select></div>
+          <div><label>&nbsp;</label><label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text)"><input type="checkbox" id="accFails" style="width:18px;height:18px"> nur Fehlversuche</label></div>
+        </div>
+        <div id="accList"></div>
+      </div>
+    </section>
+
     <section id="tab-msg" class="hide">
       <div class="card">
         <h2>Rundnachricht senden</h2>
@@ -458,15 +482,16 @@
   </div>
 </div>
 
-<script src="js/admin-1-core.js?v=3"></script>
-<script src="js/admin-2-ansichten.js?v=3"></script>
-<script src="js/admin-3-wuestensturm.js?v=3"></script>
-<script src="js/admin-4-schluchtsturm.js?v=3"></script>
-<script src="js/admin-5-logbuch.js?v=3"></script>
-<script src="js/admin-6-anmeldung.js?v=3"></script>
-<script src="js/admin-7-bonusmalus.js?v=3"></script>
-<script src="js/admin-8-mentoren.js?v=3"></script>
-<script src="js/admin-8b-funk.js?v=3"></script>
-<script src="js/admin-9-start.js?v=3"></script>
+<script src="js/admin-1-core.js?v=4"></script>
+<script src="js/admin-2-ansichten.js?v=4"></script>
+<script src="js/admin-3-wuestensturm.js?v=4"></script>
+<script src="js/admin-4-schluchtsturm.js?v=4"></script>
+<script src="js/admin-5-logbuch.js?v=4"></script>
+<script src="js/admin-6-anmeldung.js?v=4"></script>
+<script src="js/admin-7-bonusmalus.js?v=4"></script>
+<script src="js/admin-8-mentoren.js?v=4"></script>
+<script src="js/admin-8b-funk.js?v=4"></script>
+<script src="js/admin-8c-zugaenge.js?v=4"></script>
+<script src="js/admin-9-start.js?v=4"></script>
 </body>
 </html>
