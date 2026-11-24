@@ -173,3 +173,10 @@
   .fk-modal{width:100%;max-width:520px;max-height:85vh;overflow-y:auto;border-color:rgba(255,92,122,.45);box-shadow:0 0 30px rgba(255,92,122,.2)}
   .fk-mtitle{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#ff8aa0;margin-bottom:8px}
   body.fk-lock{overflow:hidden}
+  .authbox{margin-top:8px}
+  .authbox input{width:100%;box-sizing:border-box;margin-top:8px}
+  .authbox .btn{margin-top:10px}
+  .fk-authok{color:var(--ok);font-size:14px;font-weight:600;padding:6px 0}
+  .fk-link{display:inline-block;color:var(--accent);font-size:13px;margin-top:8px;text-decoration:none}
+  .fk-authok .fk-link{margin-top:0}
+  #newPin{width:100%;box-sizing:border-box;margin-top:8px}

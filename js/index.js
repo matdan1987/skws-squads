@@ -72,6 +72,8 @@
     for (var i = 0; i < els.length; i++) els[i].textContent = t(els[i].dataset.t);
     $('tabProfile').textContent = (PROF_I18N[LANG] || PROF_I18N.en).tab;
     if (window.Funk && DATA) Funk.lang();
+    $('newPinHint').textContent = F_().regPin; $('newPin').placeholder = F_().pinNew; $('newPin2').placeholder = F_().pinAgain;
+    renderAuth();
     if (!$('profileView').classList.contains('hide')) renderProfile();
     var ph = document.querySelectorAll('[data-tp]');
     for (var j = 0; j < ph.length; j++) ph[j].placeholder = t(ph[j].dataset.tp);
@@ -136,8 +138,27 @@
     $('gstage').value = e && e.gstage ? String(e.gstage) : '';
     $('gpower').value = e && e.gpower ? String(Math.round(e.gpower)) : '';
     $('email').value = '';
+    renderAuth();
     if (e && e.lang && DATA.i18n[e.lang] && !store('skws_lang_manual')) setLang(e.lang, false);
     showMeta(); setMsg('');
+  }
+
+  /* ---------- Anmeldung mit PIN (gemeinsam mit Funk) ---------- */
+  function F_(){ return FUNK_I18N[LANG] || FUNK_I18N.en; }
+  function authed(n){ var s = window.Funk && Funk.session(); return !!(s && n && s.name === n); }
+  function tok(){ var s = window.Funk && Funk.session(); return s ? s.tok : null; }
+  function renderAuth(){
+    var box = $('authBox'); if (!box || !window.Funk || !Funk.ready()) return;
+    var n = $('name').value, F = F_(); box.innerHTML = '';
+    if (!n) return;
+    if (authed(n)) {
+      var d = document.createElement('div'); d.className = 'fk-authok'; d.textContent = F.loggedIn.replace('{n}', n) + ' · ';
+      var a = document.createElement('a'); a.href = '#'; a.className = 'fk-link'; a.textContent = F.notYou;
+      a.addEventListener('click', function(e){ e.preventDefault(); Funk.logout(); }); d.appendChild(a); box.appendChild(d); return;
+    }
+    var h = document.createElement('div'); h.className = 'hint'; h.textContent = F.needPin; box.appendChild(h);
+    var inner = document.createElement('div'); box.appendChild(inner);
+    Funk.authBox(inner, n, null);
   }
 
   function renderEv(){
@@ -158,20 +179,22 @@
       card.appendChild(meta);
       if (!n) { var pn = document.createElement('div'); pn.className = 'hint'; pn.textContent = T.pickName; card.appendChild(pn); box.appendChild(card); return; }
       var note = document.createElement('input'); note.type = 'text'; note.maxLength = 120; note.placeholder = T.note; note.style.marginTop = '8px';
-      if (r.open) card.appendChild(note);
+      var ok = authed(n);
+      if (r.open && !ok) { var lf = document.createElement('div'); lf.className = 'hint fk-first'; lf.textContent = F_().loginFirst; card.appendChild(lf); }
+      if (r.open && ok) card.appendChild(note);
       function lbl(c){ return c === 'no' ? T.no : (c.indexOf('sub') === 0 ? T.hE : T.hS) + ': ' + (/A$/.test(c) && c !== 'AB' && c !== 'sub' ? T.tA : /B$/.test(c) && c !== 'AB' && c !== 'sub' ? T.tB : T.AB); }
       [['hS', [['A', T.tA, r.time_a], ['B', T.tB, r.time_b], ['AB', T.AB, '']]], ['hE', [['subA', T.tA, r.time_a], ['subB', T.tB, r.time_b], ['sub', T.AB, '']]], ['', [['no', T.no, '']]]].forEach(function(grp){
         if (grp[0]) { var gh = document.createElement('div'); gh.className = 'hint'; gh.style.margin = '10px 0 0'; gh.style.fontWeight = '700'; gh.textContent = T[grp[0]]; card.appendChild(gh); }
         grp[1].forEach(function(o){
           var bt = document.createElement('button'); bt.type = 'button'; bt.className = 'evopt' + (mine === o[0] ? ' on' : '');
           bt.textContent = (mine === o[0] ? '✓ ' : '') + o[1] + (o[2] ? ' (' + o[2] + ')' : '');
-          bt.disabled = !r.open;
+          bt.disabled = !r.open || !ok;
           bt.addEventListener('click', function(){
             bt.disabled = true; msg.textContent = '…';
-            rpc('event_signup', { p_name: n, p_round: r.id, p_choice: o[0], p_note: note.value || null }).then(function(){
+            rpc('event_signup', { p_name: n, p_round: r.id, p_choice: o[0], p_note: note.value || null, p_token: tok() }).then(function(){
               r.signups = r.signups || {}; r.signups[n] = o[0]; renderEv();
               var m2 = document.querySelector('#evCards [data-ev="' + kind + '"]'); if (m2) { m2.textContent = T.saved + ' – ' + T.hint; m2.style.color = 'var(--ok)'; }
-            }).catch(function(){ bt.disabled = false; msg.textContent = T.err; msg.style.color = 'var(--err)'; });
+            }).catch(function(e){ bt.disabled = false; if (String(e && e.message).indexOf('ERR_LOGIN') >= 0) { Funk.expired(); return; } msg.textContent = T.err; msg.style.color = 'var(--err)'; });
           });
           card.appendChild(bt);
         });
@@ -327,7 +350,10 @@
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { err: t('errEmail') };
     var ex = NEW_MODE ? null : DATA.entries[name];
     if (!email && !(ex && ex.hasEmail)) return { err: t('errEmailReq') };
-    return { data: { name: name, squads: squads, email: email, removeEmail: false, lang: LANG, hero: hero, gorilla: gor, gstage: gst, gpower: gpw } };
+    var pin = null;
+    if (NEW_MODE) { pin = $('newPin').value; if (pin.length < 4 || pin.length > 32) return { err: F_().err.ERR_PINLEN }; if (pin !== $('newPin2').value) return { err: F_().pinMismatch }; }
+    else if (!authed(name)) return { err: F_().loginFirst };
+    return { data: { pin: pin, name: name, squads: squads, email: email, removeEmail: false, lang: LANG, hero: hero, gorilla: gor, gstage: gst, gpower: gpw } };
   }
 
   function errText(m){
@@ -342,6 +368,9 @@
     if (m.indexOf('ERR_GPOWER') >= 0) return t('errGpower');
     if (m.indexOf('ERR_NEWNAME') >= 0) return t('errNewName');
     if (m.indexOf('ERR_EXISTS') >= 0) return t('errExists');
+    if (m.indexOf('ERR_LOGIN') >= 0) return F_().loginFirst;
+    if (m.indexOf('ERR_PINLEN') >= 0) return F_().err.ERR_PINLEN;
+    if (m.indexOf('ERR_PIN') >= 0) return F_().err.ERR_PIN.split('.')[0] + '.';
     if (m.indexOf('ERR_RATE') >= 0) return t('errRate');
     if (m.indexOf('ERR_NAME') >= 0) return t('errName');
     if (m.indexOf('ERR_T1') >= 0) return t('errT1');
@@ -359,8 +388,8 @@
     busy = true; $('save').disabled = true; $('save').textContent = t('saving'); setMsg('');
     var isNew = NEW_MODE;
     var call = isNew
-      ? rpc('register_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_lang: r.data.lang, p_hero: r.data.hero, p_gorilla: r.data.gorilla, p_gstage: r.data.gstage, p_gpower: r.data.gpower })
-      : rpc('save_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_remove_email: false, p_lang: r.data.lang, p_hero: r.data.hero, p_gorilla: r.data.gorilla, p_gstage: r.data.gstage, p_gpower: r.data.gpower });
+      ? rpc('register_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_lang: r.data.lang, p_hero: r.data.hero, p_gorilla: r.data.gorilla, p_gstage: r.data.gstage, p_gpower: r.data.gpower, p_pin: r.data.pin })
+      : rpc('save_entry', { p_name: r.data.name, p_squads: r.data.squads, p_email: r.data.email, p_remove_email: false, p_lang: r.data.lang, p_hero: r.data.hero, p_gorilla: r.data.gorilla, p_gstage: r.data.gstage, p_gpower: r.data.gpower, p_token: tok() });
     call
       .then(function(res){
         var nm = (isNew && res.name) || r.data.name;
@@ -368,6 +397,7 @@
         DATA.entries[nm] = { squads: res.squads, hasEmail: res.hasEmail, lang: res.lang, updated: res.updated, hero: res.hero, gorilla: res.gorilla, gstage: res.gstage, gpower: res.gpower };
         done();
         $('email').value = '';
+        if (isNew && res.token) { $('newPin').value = $('newPin2').value = ''; Funk.adopt(res.token, nm, res.level); }
         if (isNew) {
           setNewMode(false); fillNames(); $('name').value = nm;
           store('skws_name', nm);
@@ -376,7 +406,7 @@
         fillNames(); showMeta(); renderOverview();
         setMsg(t('saved'), 'ok');
       })
-      .catch(function(err){ done(); setMsg(errText(err && err.message), 'err'); });
+      .catch(function(err){ done(); if (String(err && err.message).indexOf('ERR_LOGIN') >= 0 && authed(r.data.name)) Funk.expired(); setMsg(errText(err && err.message), 'err'); });
     function done(){ busy = false; $('save').disabled = false; $('save').textContent = t('save'); }
   }
 
@@ -506,7 +536,7 @@
     if (A && !A.canPickFile) { var o = document.createElement('div'); o.className = 'hint'; o.style.color = 'var(--warn)'; o.textContent = AT.oldApp; bx.appendChild(o); }
     var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none'; bx.appendChild(fi);
     var pv = document.createElement('div'); pv.style.cssText = 'display:flex;align-items:center;gap:10px;margin-top:8px'; bx.appendChild(pv);
-    var mail = document.createElement('input'); mail.type = 'email'; mail.autocomplete = 'email'; mail.placeholder = AT.mail; mail.style.marginTop = '8px'; bx.appendChild(mail);
+    if (!authed(n)) { var lg = document.createElement('div'); lg.className = 'hint fk-first'; lg.textContent = F_().avLogin; bx.appendChild(lg); return w; }
     var row = document.createElement('div'); row.className = 'row2'; bx.appendChild(row);
     var bp = document.createElement('button'); bp.type = 'button'; bp.textContent = AT.pick; row.appendChild(bp);
     var bs = document.createElement('button'); bs.type = 'button'; bs.className = 'pri'; bs.textContent = AT.save; bs.disabled = true; row.appendChild(bs);
@@ -518,15 +548,15 @@
     fi.addEventListener('change', function(){ var f = fi.files && fi.files[0]; if (!f) return; msg.textContent = '…';
       avShrink(f, function(u){ data = u; msg.textContent = u ? '' : AT.err; pv.innerHTML = ''; if (u) { var im = document.createElement('img'); im.src = u; im.style.cssText = 'width:64px;height:64px;border-radius:50%;object-fit:cover'; pv.appendChild(im); } bs.disabled = !u; }); });
     function send(d){
-      if (!mail.value.trim()) { msg.textContent = AT.mail; msg.style.color = 'var(--warn)'; mail.focus(); return; }
       msg.textContent = '…'; msg.style.color = '';
-      rpc('set_avatar', { p_name: n, p_email: mail.value.trim(), p_data: d || '' }).then(function(r){
+      rpc('set_avatar', { p_token: tok(), p_data: d || '' }).then(function(r){
         if (r && r.ok === false) throw new Error(r.err || 'ERR');
         var v = Math.floor(Date.now() / 1000); DATA.av = DATA.av || {};
         if (d) { DATA.av[n] = v; AV[n] = { d: d, v: v }; } else { delete DATA.av[n]; delete AV[n]; }
         avStore(); renderProfile(); if (typeof renderOverview === 'function') renderOverview();
       }).catch(function(e){ var m = String(e && e.message); msg.style.color = 'var(--err)';
-        msg.textContent = m.indexOf('ERR_LOCK') >= 0 ? AT.lock : m.indexOf('ERR_MAIL') >= 0 ? AT.errMail : m.indexOf('ERR_NOENTRY') >= 0 ? AT.noEntry : m.indexOf('ERR_RATE') >= 0 ? AT.rate : AT.err; });
+        if (m.indexOf('ERR_LOGIN') >= 0) { msg.textContent = F_().avLogin; Funk.expired(); return; }
+        msg.textContent = m.indexOf('ERR_RATE') >= 0 ? AT.rate : AT.err; });
     }
     bs.addEventListener('click', function(){ if (data) send(data); });
     bd.addEventListener('click', function(){ send(null); });
@@ -689,10 +719,12 @@
 
     setupRem();
     setupLinks();
+    Funk.init({ data: function(){ return DATA; }, lang: function(){ return LANG; }, myName: function(){ return $('name').value; },
+      avEl: avEl, loadAvatars: loadAvatars, openProfile: openProfile,
+      onAuth: function(){ renderAuth(); renderEv(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
     var last = store('skws_name');
     if (last && DATA.members.indexOf(last) >= 0){ $('name').value = last; loadMember(); }
-    Funk.init({ data: function(){ return DATA; }, lang: function(){ return LANG; }, myName: function(){ return $('name').value; },
-      avEl: avEl, loadAvatars: loadAvatars, openProfile: openProfile });
+    renderAuth();
   }
 
   var nl = (navigator.language || 'en').slice(0,2);

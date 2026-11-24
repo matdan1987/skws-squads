@@ -19,7 +19,7 @@ var Funk = (function(){
     body = body || {}; if (S.tok) body.p_token = S.tok;
     return rpc(fn, body).then(function(r){ if (r && r.err === 'ERR_SESSION') drop(); return r || {}; }, function(){ return { ok:false, err:'ERR' }; });
   }
-  function drop(){ S.tok = S.name = S.level = null; S.inbox = S.sent = null; S.items = []; S.unacked = 0; S.rooms = {}; ls('skws_funk', null); badge(); render(); }
+  function drop(){ S.tok = S.name = S.level = null; S.inbox = S.sent = null; S.items = []; S.unacked = 0; S.rooms = {}; ls('skws_funk', null); badge(); render(); if (A && A.onAuth) A.onAuth(); }
 
   /* ---------- Status, Abfrage im Hintergrund ---------- */
   function status(){
@@ -81,51 +81,71 @@ var Funk = (function(){
   }
 
   /* ---------- Anmeldung ---------- */
+  // Anmeldefeld für einen festen Namen: PIN eingeben, beim ersten Mal festlegen, oder PIN vergessen (E-Mail-Abgleich)
+  var ST = {};
+  function authBox(box, name, onOk, mode){
+    var L = T(); box.innerHTML = '';
+    if (!name) return;
+    var msg = el('div', 'msg');
+    function fail(r){ msg.textContent = r && r.err === 'ERR_NOMAIL' ? L.noMail : errText(r); msg.className = 'msg err'; }
+    function input(type, ph){ var i = el('input'); i.type = type; i.placeholder = ph; i.autocomplete = type === 'email' ? 'email' : 'off'; box.appendChild(i); return i; }
+    function link(txt, fn){ var a = el('a', 'fk-link', txt); a.href = '#'; a.addEventListener('click', function(e){ e.preventDefault(); fn(); }); return a; }
+    function done(r){ if (!r || !r.ok) { fail(r); return; } adopt(r.token, r.name, r.level); if (onOk) onOk(); }
+    var st = ST[name];
+    if (!st) {
+      box.appendChild(el('div', 'hint', '…'));
+      rpc('auth_status', { p_name: name }).then(function(r){ ST[name] = r; authBox(box, name, onOk, mode); }, function(){ box.innerHTML = ''; fail(null); box.appendChild(msg); });
+      return;
+    }
+    var go, p1, p2, em;
+    if (mode === 'reset') {
+      box.appendChild(el('div', 'hint fk-first', L.resetHint));
+      em = input('email', L.email); p1 = input('password', L.pinNew); p2 = input('password', L.pinAgain);
+      go = btn('btn', L.resetBtn, function(){
+        if (p1.value !== p2.value) { msg.textContent = L.pinMismatch; msg.className = 'msg err'; return; }
+        go.disabled = true; rpc('auth_reset_pin', { p_name: name, p_email: em.value, p_pin: p1.value }).then(function(r){ go.disabled = false; if (r && r.ok) ST[name] = null; done(r); }, function(){ go.disabled = false; fail(null); });
+      });
+      box.appendChild(go); box.appendChild(msg); box.appendChild(link(L.back, function(){ authBox(box, name, onOk); }));
+    } else if (st.has_pin) {
+      p1 = input('password', L.pin);
+      go = btn('btn', L.login, function(){
+        go.disabled = true; rpc('auth_login', { p_name: name, p_pin: p1.value }).then(function(r){ go.disabled = false; done(r); }, function(){ go.disabled = false; fail(null); });
+      });
+      box.appendChild(go); box.appendChild(msg); box.appendChild(link(L.forgot, function(){ authBox(box, name, onOk, 'reset'); }));
+    } else {
+      box.appendChild(el('div', 'hint fk-first', L.pinFirst));
+      p1 = input('password', L.pinNew); p2 = input('password', L.pinAgain);
+      if (st.need_email) em = input('email', L.email);
+      go = btn('btn', L.login, function(){
+        if (p1.value !== p2.value) { msg.textContent = L.pinMismatch; msg.className = 'msg err'; return; }
+        go.disabled = true; rpc('auth_login', { p_name: name, p_pin: p1.value, p_email: em ? em.value : null }).then(function(r){ go.disabled = false; if (r && r.ok) ST[name] = null; done(r); }, function(){ go.disabled = false; fail(null); });
+      });
+      box.appendChild(go); box.appendChild(msg);
+    }
+    box.querySelectorAll('input').forEach(function(i){ i.addEventListener('keydown', function(e){ if (e.key === 'Enter') go.click(); }); });
+  }
+  // Anmeldung übernehmen (auch von der Neu-Eintragung)
+  function adopt(tok, name, level){
+    S.tok = tok; S.name = name; S.level = level || null; S.login = null; S.inbox = null;
+    ls('skws_funk', JSON.stringify({ tok: tok, name: name }));
+    status().then(function(){ loadInbox(); if (visible()) { loadShouts(); render(); } });
+    if (A && A.onAuth) A.onAuth();
+  }
+
   function loginCard(box){
     var L = T(), D = A.data(), c = el('div', 'card');
     c.appendChild(el('h2', '', L.loginTitle));
     c.appendChild(el('div', 'hint', L.loginHint));
-    var lab = el('label', 'l', L.name); c.appendChild(lab);
-    var sel = el('select'); sel.id = 'fkName';
+    c.appendChild(el('label', 'l', L.name));
+    var sel = el('select');
     var o0 = el('option', '', L.pickName); o0.value = ''; sel.appendChild(o0);
     D.members.forEach(function(n){ var o = el('option', '', n); o.value = n; sel.appendChild(o); });
-    sel.value = (S.login && S.login.name) || A.myName() || ls('skws_name') || '';
+    sel.value = S.loginName || A.myName() || ls('skws_name') || '';
     c.appendChild(sel);
     var more = el('div'); c.appendChild(more);
-    var msg = el('div', 'msg' + (S.msg ? ' err' : ''), S.msg); S.msg = '';
-    function input(type, ph, id){ var i = el('input'); i.type = type; i.placeholder = ph; i.id = id; i.autocomplete = 'off'; if (type === 'password') i.setAttribute('inputmode', 'text'); more.appendChild(i); return i; }
-    function fields(){
-      more.innerHTML = ''; var st = S.login && S.login.name === sel.value ? S.login.st : null;
-      if (!sel.value || !st) return;
-      if (st.has_pin) { input('password', L.pin, 'fkPin'); }
-      else {
-        more.appendChild(el('div', 'hint fk-first', L.pinFirst));
-        input('password', L.pinNew, 'fkPin'); input('password', L.pinAgain, 'fkPin2');
-        if (st.need_email) input('email', L.email, 'fkMail');
-      }
-      var b = btn('btn', L.login, doLogin); b.id = 'fkGo'; more.appendChild(b);
-      more.querySelectorAll('input').forEach(function(i){ i.addEventListener('keydown', function(e){ if (e.key === 'Enter') doLogin(); }); });
-    }
-    function check(){
-      if (!sel.value) { fields(); return; }
-      if (S.login && S.login.name === sel.value && S.login.st) { fields(); return; }
-      rpc('auth_status', { p_name: sel.value }).then(function(st){ S.login = { name: sel.value, st: st }; fields(); }, function(){ msg.textContent = L.err.ERR; msg.className = 'msg err'; });
-    }
-    function doLogin(){
-      var st = S.login.st, pin = $('fkPin').value, b = $('fkGo');
-      if (!st.has_pin && pin !== $('fkPin2').value) { msg.textContent = L.pinMismatch; msg.className = 'msg err'; return; }
-      b.disabled = true; msg.textContent = '';
-      rpc('auth_login', { p_name: sel.value, p_pin: pin, p_email: $('fkMail') ? $('fkMail').value : null }).then(function(r){
-        b.disabled = false;
-        if (!r || !r.ok) { msg.textContent = errText(r); msg.className = 'msg err'; return; }
-        S.tok = r.token; S.name = r.name; S.level = r.level; S.login = null;
-        ls('skws_funk', JSON.stringify({ tok: r.token, name: r.name }));
-        status().then(function(){ loadInbox(); loadShouts(); render(); });
-      }, function(){ b.disabled = false; msg.textContent = L.err.ERR; msg.className = 'msg err'; });
-    }
-    sel.addEventListener('change', check);
-    c.appendChild(msg); box.appendChild(c);
-    check();
+    sel.addEventListener('change', function(){ S.loginName = sel.value; authBox(more, sel.value); });
+    box.appendChild(c);
+    authBox(more, sel.value);
   }
 
   /* ---------- Ansicht nach dem Anmelden ---------- */
@@ -290,6 +310,11 @@ var Funk = (function(){
       setInterval(function(){ if (S.tok && visible()) loadShouts(); }, 8000);
       document.addEventListener('visibilitychange', function(){ if (!document.hidden && S.tok) { status(); if (visible()) loadShouts(); } });
     },
+    ready: function(){ return !!A; },
+    session: function(){ return S.tok ? { tok: S.tok, name: S.name } : null; },
+    authBox: authBox, adopt: adopt,
+    logout: function(){ call('auth_logout').then(drop); },
+    expired: function(){ drop(); },
     show: function(){ render(); if (S.tok) { loadInbox(); loadShouts(); } },
     lang: function(){ if (!A) return; badge(); if (!$('funkView').classList.contains('hide')) render(); modal(); }
   };
