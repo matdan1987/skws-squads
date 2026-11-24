@@ -83,6 +83,8 @@
   .evcnt div{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:12px;color:var(--muted)}
   .evcnt b{display:block;font-size:16px;color:var(--text)}
   .evgrp{margin:8px 0 2px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .av{display:inline-grid;place-items:center;border-radius:50%;overflow:hidden;vertical-align:middle;margin-right:6px;font-weight:700;color:#06101f;flex:none}
+  .av img{width:100%;height:100%;object-fit:cover}
   .mglbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 2px}
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
   .toolbar input{flex:1 1 100%} .toolbar select{flex:1;width:auto;min-width:0}
@@ -817,8 +819,8 @@
       var n = D.players.filter(function(p){ return p.rank === r; });
       h += '<tr class="rankhead"><td class="sticky">' + r + '</td><td colspan="8">' + n.filter(function(p){ return p.entry; }).length + ' / ' + n.length + ' eingetragen</td></tr>';
       list.forEach(function(p){
-        if (!p.entry) { h += '<tr class="missing"><td class="sticky">' + esc(p.name) + mgBadge(p.name) + merBadge(p.name) + '</td><td colspan="8">— noch nie eingetragen</td></tr>'; return; }
-        h += '<tr class="click" data-name="' + esc(p.name) + '"><td class="sticky">' + esc(p.name) + mgBadge(p.name) + merBadge(p.name) + '<div class="tl' + (p.stale ? ' stale' : '') + '">' + (p.stale ? '⚠ ' : '') + fmtDate(p.updated) + ' · ' + ago(p.updated) + '</div></td>';
+        if (!p.entry) { h += '<tr class="missing"><td class="sticky">' + av(p.name) + esc(p.name) + mgBadge(p.name) + merBadge(p.name) + '</td><td colspan="8">— noch nie eingetragen</td></tr>'; return; }
+        h += '<tr class="click" data-name="' + esc(p.name) + '"><td class="sticky">' + av(p.name) + esc(p.name) + mgBadge(p.name) + merBadge(p.name) + '<div class="tl' + (p.stale ? ' stale' : '') + '">' + (p.stale ? '⚠ ' : '') + fmtDate(p.updated) + ' · ' + ago(p.updated) + '</div></td>';
         for (var i = 0; i < 4; i++) {
           var s = sq(p.entry, i);
           h += '<td class="n">' + squadCell(s) + '</td>';
@@ -1182,7 +1184,7 @@
       return !q || p.name.toLowerCase().indexOf(q) >= 0;
     }).map(function(p){
       var v = st.assign[p.name] || '';
-      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'ds') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
+      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + av(p.name, 20) + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'ds') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
         '<select data-ds="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
     }).join('') || '<div class="empty">Keine Treffer.</div>';
   }
@@ -1786,7 +1788,7 @@
     var opts = [['','–'],['AS','A Stamm'],['AE','A Ersatz'],['BS','B Stamm'],['BE','B Ersatz']];
     $('csList').innerHTML = list.filter(function(p){ if (CS_ONLYSEL && !st.assign[p.name]) return false; return !q || p.name.toLowerCase().indexOf(q) >= 0; }).map(function(p){
       var v = st.assign[p.name] || '';
-      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'cs') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
+      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + av(p.name, 20) + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'cs') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
         '<select data-cs="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
     }).join('') || '<div class="empty">Keine Treffer.</div>';
   }
@@ -1998,6 +2000,7 @@
     }
     if (a === 'self_join') return { tag:'adm', label:'Beitritt', text: who(r.target) + (d.returned ? ' ist zurück und hat sich selbst wieder eingetragen' : ' hat sich selbst neu eingetragen'), sub: 'Rang ' + (d.rank || 'R1') + ' · bei Bedarf im Tab Mitglieder anpassen' };
     if (a === 'unsub') return { tag:'warn', label:'Abgemeldet', text: who(r.target) + ' hat sich von der Mail-Erinnerung abgemeldet', sub: '' };
+    if (a === 'avatar') return { tag: d.what === 'admin_remove' ? 'warn' : '', label:'Avatar', text: d.what === 'admin_remove' ? who(r.actor) + ' hat den Avatar von ' + (r.target || '') + ' entfernt' : who(r.actor) + (d.what === 'remove' ? ' hat seinen Avatar entfernt' : ' hat einen neuen Avatar hochgeladen'), sub: '' };
     if (a === 'merit') return { tag: d.what === 'add' && d.kind === 'malus' ? 'warn' : 'adm', label: d.what === 'config' ? 'Bonus/Malus' : (d.kind === 'bonus' ? 'Bonus' : 'Malus'),
       text: d.what === 'config' ? who(r.actor) + ' hat die Gründe-Liste geändert' : d.what === 'revoke' ? who(r.actor) + ' hat ' + (d.kind === 'bonus' ? 'den Bonus' : 'den Malus') + ' „' + (d.reason || '') + '“ von ' + (r.target || '') + ' zurückgenommen'
         : who(r.actor) + ': ' + (d.kind === 'bonus' ? 'Bonus' : 'Malus') + ' für ' + (r.target || '') + ' – ' + (d.reason || ''), sub: d.what === 'add' ? (MER_EFF[d.effect] || '') + ' · ' + (MER_SCOPE[d.scope] || '') + (d.rounds ? ' · ' + d.rounds + ' Runde(n)' : '') + (d.until ? ' · bis ' + fmtDate(new Date(d.until)) : '') : '' };
@@ -2071,7 +2074,8 @@
       .sort(function(a,b){ return RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank) || a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); });
     $('admActiveCount').textContent = D.players.length;
     $('admActive').innerHTML = act.map(function(p){
-      return '<tr><td class="sticky">' + esc(p.name) + mgBadge(p.name) + '</td><td>' + rankSelect(p) + '</td><td style="text-align:right">' +
+      return '<tr><td class="sticky">' + av(p.name) + esc(p.name) + mgBadge(p.name) + '</td><td>' + rankSelect(p) + '</td><td style="text-align:right">' +
+        (AVA[p.name] ? '<button class="mini" data-act="avdel" data-name="' + esc(p.name) + '">Avatar entfernen</button> ' : '') +
         '<button class="mini" data-act="rename" data-name="' + esc(p.name) + '">Umbenennen</button> ' +
         '<button class="mini danger" data-act="leave" data-name="' + esc(p.name) + '">Ausgeschieden</button></td></tr>';
     }).join('') || '<tr><td class="muted">Keine Treffer.</td></tr>';
@@ -2144,7 +2148,7 @@
         if (!list.length) return;
         h += '<div class="evgrp">' + EV_CH[c] + ' (' + list.length + ')</div><div class="small">' + list.map(function(p){ var x = by[p.name], sx = ES.by[p.name];
           var rt = cfg.fixed.indexOf(p.name) >= 0 ? ' <span class="mgb r">gesetzt</span>' : (ES.n && sx ? (sx.benched ? ' <span class="mgb m">' + sx.benched + '× pausiert</span>' : '') + ' <span class="muted">· ' + sx.played + '/' + ES.n + ' gespielt</span>' : (ES.n ? ' <span class="muted">· 0/' + ES.n + ' gespielt</span>' : ''));
-          return '<span class="chip" style="cursor:default;display:inline-block;margin:2px">' + esc(p.name) + ' <span class="muted">' + dsMetricTxt(p, st.metric) + '</span>' + merBadge(p.name, kind) + rt + (x.admin ? ' <span class="muted">(R4)</span>' : '') + (x.note ? ' · <i>' + esc(x.note) + '</i>' : '') + '</span>'; }).join('') + '</div>';
+          return '<span class="chip" style="cursor:default;display:inline-block;margin:2px">' + av(p.name, 18) + esc(p.name) + ' <span class="muted">' + dsMetricTxt(p, st.metric) + '</span>' + merBadge(p.name, kind) + rt + (x.admin ? ' <span class="muted">(R4)</span>' : '') + (x.note ? ' · <i>' + esc(x.note) + '</i>' : '') + '</span>'; }).join('') + '</div>';
       });
       if (none.length) h += '<details style="margin-top:6px"><summary class="small">Keine Antwort (' + none.length + ')</summary><div class="small" style="margin-top:4px">' + none.map(function(p){ return esc(p.name); }).join(', ') + '</div></details>';
       h += '<details style="margin-top:10px"><summary class="small">Rotation &amp; gesetzte Spieler (' + cfg.fixed.length + ' gesetzt, Rotation ' + (cfg.rot ? 'an' : 'aus') + ')</summary>' +
@@ -2249,6 +2253,20 @@
   });
 
 
+
+  /* ---------- Avatare ---------- */
+  var AVA = {}, AVA_DONE = false;
+  function avLoad(){
+    rpc('get_avatars', { p_names: null }).then(function(r){ AVA = {}; Object.keys(r || {}).forEach(function(n){ AVA[n] = r[n].d; }); AVA_DONE = true;
+      var t = store('skws_admin_tab') || 'ov'; if (D) { renderMembers(); showTab(t); } }).catch(function(){});
+  }
+  function av(name, size){
+    size = size || 22;
+    if (AVA[name]) return '<span class="av" style="width:' + size + 'px;height:' + size + 'px"><img src="' + AVA[name] + '" alt=""></span>';
+    var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+    return '<span class="av" style="width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * .45) + 'px;background:hsl(' + h + ',60%,62%)">' + esc((name.match(/[A-Za-z0-9À-ž]/) || [name[0] || '?'])[0].toUpperCase()) + '</span>';
+  }
+
   /* ---------- Bonus/Malus ---------- */
   var MER = [], MERCFG = null;
   var MER_EFF = { block:'gesperrt', sub:'nur Ersatz', prio:'Vorrang', none:'nur vermerkt' };
@@ -2323,7 +2341,7 @@
   }
   function merRow(m, old){
     var bad = m.kind === 'malus';
-    return '<tr><td class="sticky"><b>' + esc(m.name) + '</b><div class="tl">' + fmtDate(new Date(m.created_at)) + (m.by ? ' · ' + esc(m.by) : '') + '</div></td>' +
+    return '<tr><td class="sticky">' + av(m.name) + '<b>' + esc(m.name) + '</b><div class="tl">' + fmtDate(new Date(m.created_at)) + (m.by ? ' · ' + esc(m.by) : '') + '</div></td>' +
       '<td><span class="' + (bad ? 'down' : 'up') + '">' + (bad ? '▼ Malus' : '▲ Bonus') + '</span><div class="tl">' + MER_EFF[m.effect] + ' · ' + MER_SCOPE[m.scope] + '</div></td>' +
       '<td style="white-space:normal">' + esc(m.reason) + (m.note ? '<div class="tl" style="white-space:normal">' + esc(m.note) + '</div>' : '') + '</td>' +
       '<td style="white-space:normal">' + (m.revoked_at ? '<span class="muted">zurückgenommen ' + fmtDate(new Date(m.revoked_at)) + (m.revoked_by ? ' von ' + esc(m.revoked_by) : '') + '</span>' : esc(old ? 'abgelaufen' : merDur(m))) + '</td>' +
@@ -2496,7 +2514,7 @@
     function row(n, cur){
       var p = by[n]; inGroups[n] = 1;
       var v = !p ? '<span class="stale">nicht in der Mitgliederliste</span>' : p.entry ? 'T1 ' + fmt(p.t1) : 'keine Meldung';
-      return '<div class="mgrow"><span class="nm">' + esc(n) + '</span><span class="v">' + v + '</span><select data-mg="' + esc(n) + '">' + opts(cur) + '</select></div>';
+      return '<div class="mgrow"><span class="nm">' + av(n, 20) + esc(n) + '</span><span class="v">' + v + '</span><select data-mg="' + esc(n) + '">' + opts(cur) + '</select></div>';
     }
     $('mgGroups').innerHTML = st.groups.map(function(G, i){
       var s = mgStats(G, by); total += s.n; mentors += G.mentors.length; inGroups[G.r4] = 1;
@@ -2643,7 +2661,7 @@
       if (first) rpc('admin_login', { p_pw: pw, p_actor: ACTOR || null }).catch(function(){});
       $('loginView').classList.add('hide'); $('app').classList.remove('hide');
       $('reload').classList.remove('hide'); $('logout').classList.remove('hide');
-      renderAll();
+      renderAll(); avLoad();
     }).catch(function(err){
       if (String(err && err.message).indexOf('ERR_AUTH') >= 0) forgetPw();
       if (!silent) $('loginMsg').textContent = String(err && err.message).indexOf('ERR_AUTH') >= 0 ? 'Kennwort falsch.' : 'Laden fehlgeschlagen – bitte erneut versuchen.';
@@ -2746,6 +2764,7 @@
     if (a === 'leave' && confirm(n + ' als ausgeschieden markieren?\nDer Spieler verschwindet von der Eintragsseite und bekommt keine Erinnerungen mehr. Sein Verlauf bleibt erhalten.'))
       memberAction('leave', n, null, n + ' ist als ausgeschieden markiert.');
     if (a === 'rejoin') memberAction('rejoin', n, null, n + ' ist wieder aktiv.');
+    if (a === 'avdel' && confirm('Avatar von ' + n + ' entfernen?')) rpc('admin_avatar', { p_pw: PW, p_name: n, p_actor: ACTOR || null }).then(function(){ delete AVA[n]; renderAdmin(); note('Avatar von ' + n + ' entfernt.', true); }).catch(function(){ note('Fehler – ist die Datenbank-Erweiterung „avatar“ eingespielt?', false); });
     if (a === 'rename') { var nn = prompt('Neuer Name für ' + n + ':', n); if (nn && nn.trim() && nn.trim() !== n) { nn = nn.trim(); memberAction('rename', n, nn, n + ' heißt jetzt ' + nn + '.').then(function(){ mgRename(n, nn); }); } }
   });
 

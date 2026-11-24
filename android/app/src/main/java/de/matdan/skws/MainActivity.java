@@ -14,6 +14,7 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.view.WindowInsets;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -37,6 +38,8 @@ public class MainActivity extends Activity {
     private static final int BG = Color.parseColor("#070B14");
 
     private WebView web;
+    private ValueCallback<Uri[]> fileCb;
+    private static final int PICK = 4711;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -69,7 +72,20 @@ public class MainActivity extends Activity {
         s.setUserAgentString(s.getUserAgentString() + " SKWSApp/1.0");
 
         web.addJavascriptInterface(new Bridge(this), "SKWSAndroid");
-        web.setWebChromeClient(new WebChromeClient());   // zeigt confirm()/prompt() als Android-Dialoge
+        web.setWebChromeClient(new WebChromeClient() {   // zeigt confirm()/prompt() als Android-Dialoge
+            // <input type="file"> (z. B. Avatar hochladen) öffnet die Bildauswahl
+            @Override
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> cb, FileChooserParams params) {
+                if (fileCb != null) fileCb.onReceiveValue(null);
+                fileCb = cb;
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("image/*");
+                try { startActivityForResult(Intent.createChooser(i, "Bild auswählen"), PICK); }
+                catch (Exception e) { fileCb = null; return false; }
+                return true;
+            }
+        });
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
@@ -99,6 +115,19 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onActivityResult(int req, int res, Intent data) {
+        if (req == PICK) {
+            if (fileCb != null) {
+                Uri u = (res == RESULT_OK && data != null) ? data.getData() : null;
+                fileCb.onReceiveValue(u != null ? new Uri[]{ u } : null);
+                fileCb = null;
+            }
+            return;
+        }
+        super.onActivityResult(req, res, data);
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
         web.saveState(out);
@@ -115,6 +144,10 @@ public class MainActivity extends Activity {
     static class Bridge {
         private final Activity act;
         Bridge(Activity a) { act = a; }
+
+        /** App-Version 1.3+: Bildauswahl für <input type="file"> vorhanden */
+        @JavascriptInterface
+        public boolean canPickFile() { return true; }
 
         /** Status der Handy-Erinnerung als JSON: {"on":true,"name":"...","perm":true} */
         @JavascriptInterface
