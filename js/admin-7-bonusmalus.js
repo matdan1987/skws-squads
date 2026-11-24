@@ -6,7 +6,7 @@ function avLoad(){
     var t = store('skws_admin_tab') || 'ov'; if (D) { renderMembers(); showTab(t); } }).catch(function(){});
 }
 function av(name, size){
-  size = size || 22;
+  size = size || 32;
   if (AVA[name]) return '<span class="av" style="width:' + size + 'px;height:' + size + 'px"><img src="' + AVA[name] + '" alt=""></span>';
   var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
   return '<span class="av" style="width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * .45) + 'px;background:hsl(' + h + ',60%,62%)">' + esc((name.match(/[A-Za-z0-9À-ž]/) || [name[0] || '?'])[0].toUpperCase()) + '</span>';

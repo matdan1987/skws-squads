@@ -103,7 +103,7 @@ function mgRender(){
   function row(n, cur){
     var p = by[n]; inGroups[n] = 1;
     var v = !p ? '<span class="stale">nicht in der Mitgliederliste</span>' : p.entry ? 'T1 ' + fmt(p.t1) : 'keine Meldung';
-    return '<div class="mgrow"><span class="nm">' + av(n, 20) + esc(n) + '</span><span class="v">' + v + '</span><select data-mg="' + esc(n) + '">' + opts(cur) + '</select></div>';
+    return '<div class="mgrow"><span class="nm">' + av(n, 30) + esc(n) + '</span><span class="v">' + v + '</span><select data-mg="' + esc(n) + '">' + opts(cur) + '</select></div>';
   }
   $('mgGroups').innerHTML = st.groups.map(function(G, i){
     var s = mgStats(G, by); total += s.n; mentors += G.mentors.length; inGroups[G.r4] = 1;

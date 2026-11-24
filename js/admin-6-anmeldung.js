@@ -49,7 +49,7 @@ function evRender(kind){
       if (!list.length) return;
       h += '<div class="evgrp">' + EV_CH[c] + ' (' + list.length + ')</div><div class="small">' + list.map(function(p){ var x = by[p.name], sx = ES.by[p.name];
         var rt = cfg.fixed.indexOf(p.name) >= 0 ? ' <span class="mgb r">gesetzt</span>' : (ES.n && sx ? (sx.benched ? ' <span class="mgb m">' + sx.benched + '× pausiert</span>' : '') + ' <span class="muted">· ' + sx.played + '/' + ES.n + ' gespielt</span>' : (ES.n ? ' <span class="muted">· 0/' + ES.n + ' gespielt</span>' : ''));
-        return '<span class="chip" style="cursor:default;display:inline-block;margin:2px">' + av(p.name, 18) + esc(p.name) + ' <span class="muted">' + dsMetricTxt(p, st.metric) + '</span>' + merBadge(p.name, kind) + rt + (x.admin ? ' <span class="muted">(R4)</span>' : '') + (x.note ? ' · <i>' + esc(x.note) + '</i>' : '') + '</span>'; }).join('') + '</div>';
+        return '<span class="chip" style="cursor:default;display:inline-block;margin:2px">' + av(p.name, 26) + esc(p.name) + ' <span class="muted">' + dsMetricTxt(p, st.metric) + '</span>' + merBadge(p.name, kind) + rt + (x.admin ? ' <span class="muted">(R4)</span>' : '') + (x.note ? ' · <i>' + esc(x.note) + '</i>' : '') + '</span>'; }).join('') + '</div>';
     });
     if (none.length) h += '<details style="margin-top:6px"><summary class="small">Keine Antwort (' + none.length + ')</summary><div class="small" style="margin-top:4px">' + none.map(function(p){ return esc(p.name); }).join(', ') + '</div></details>';
     h += '<details style="margin-top:10px"><summary class="small">Rotation &amp; gesetzte Spieler (' + cfg.fixed.length + ' gesetzt, Rotation ' + (cfg.rot ? 'an' : 'aus') + ')</summary>' +
@@ -81,7 +81,7 @@ function evRender(kind){
   if (lr) {
     var abs = lr.absent || [], planned = Object.keys(lr.lineup).filter(function(nm){ return /S$/.test(lr.lineup[nm]); }).sort(function(a, b){ return a.localeCompare(b, 'de', {sensitivity:'base'}); });
     var subs = Object.keys(lr.lineup).filter(function(nm){ return /E$/.test(lr.lineup[nm]); }).sort(function(a, b){ return a.localeCompare(b, 'de', {sensitivity:'base'}); });
-    function chk(nm){ return '<label class="chip" style="display:inline-flex;align-items:center;gap:6px;margin:2px;cursor:pointer"><input type="checkbox" data-evabs="' + esc(nm) + '"' + (abs.indexOf(nm) >= 0 ? ' checked' : '') + ' style="width:16px;height:16px;padding:0;accent-color:var(--err)">' + av(nm, 18) + esc(nm) + ' <span class="muted">' + lr.lineup[nm][0] + '</span></label>'; }
+    function chk(nm){ return '<label class="chip" style="display:inline-flex;align-items:center;gap:6px;margin:2px;cursor:pointer"><input type="checkbox" data-evabs="' + esc(nm) + '"' + (abs.indexOf(nm) >= 0 ? ' checked' : '') + ' style="width:16px;height:16px;padding:0;accent-color:var(--err)">' + av(nm, 26) + esc(nm) + ' <span class="muted">' + lr.lineup[nm][0] + '</span></label>'; }
     h += '<details style="margin-top:10px"' + (abs.length ? '' : '') + '><summary class="small">Nach dem Event: Wer hat gefehlt? – ' + esc(lr.label) + (abs.length ? ' (' + abs.length + ' markiert)' : '') + '</summary>' +
       '<p class="small muted" style="margin:6px 0">Nur ankreuzen, wer eingeteilt war, aber nicht da war. Alle anderen gelten als dabei. Das zählt für Rotation, Profil-Erfolge und auf Wunsch als Malus.</p>' +
       '<div class="evgrp">Stamm (' + planned.length + ')</div><div>' + planned.map(chk).join('') + '</div>' +

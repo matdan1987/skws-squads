@@ -74,7 +74,7 @@ var Funk = (function(){
   function msgHead(m){
     var L = T(), h = el('div', 'fk-mh');
     var who = m.from || '';
-    if (A.data().members.indexOf(who) >= 0) h.appendChild(A.avEl(who, 26));
+    if (A.data().members.indexOf(who) >= 0) h.appendChild(A.avEl(who, 40));
     h.appendChild(el('span', 'fk-who', (m.kind === 'bc' ? '📢 ' + L.bc + ' · ' : '') + L.from.replace('{n}', who)));
     h.appendChild(el('span', 'fk-t', when(m.t)));
     return h;
@@ -151,7 +151,7 @@ var Funk = (function(){
   /* ---------- Ansicht nach dem Anmelden ---------- */
   function headCard(box){
     var L = T(), c = el('div', 'card fk-head');
-    var row = el('div', 'fk-me'); row.appendChild(A.avEl(S.name, 36));
+    var row = el('div', 'fk-me'); row.appendChild(A.avEl(S.name, 56));
     var tx = el('div'); tx.appendChild(el('b', '', L.as.replace('{n}', S.name))); tx.appendChild(el('div', 'hint', L.lvl[S.level] || '')); row.appendChild(tx);
     row.appendChild(btn('mini', '🔑', function(){ S.showPin = !S.showPin; render(); }));
     row.appendChild(btn('mini', L.logout, function(){ call('auth_logout').then(drop); }));
@@ -283,7 +283,7 @@ var Funk = (function(){
     if (S.itemsRoom === S.room && !S.items.length) list.appendChild(el('div', 'hint', L.empty));
     S.items.forEach(function(x){
       var it = el('div', 'fk-sh' + (x.name === S.name ? ' me' : ''));
-      var a = A.avEl(x.name, 28); a.style.cursor = 'pointer'; a.addEventListener('click', function(){ A.openProfile(x.name); }); it.appendChild(a);
+      var a = A.avEl(x.name, 42); a.style.cursor = 'pointer'; a.addEventListener('click', function(){ A.openProfile(x.name); }); it.appendChild(a);
       var b = el('div', 'fk-shb');
       var h = el('div', 'fk-shh'); h.appendChild(el('b', '', x.name)); h.appendChild(el('span', 'fk-t', when(x.t)));
       if (x.name === S.name || S.level === 'lead') h.appendChild(btn('fk-x', '✕', function(){ if (confirm(L.delQ)) call('shout_delete', { p_id: x.id }).then(loadShouts); }));
