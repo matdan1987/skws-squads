@@ -368,6 +368,7 @@
     if (m.indexOf('ERR_GPOWER') >= 0) return t('errGpower');
     if (m.indexOf('ERR_NEWNAME') >= 0) return t('errNewName');
     if (m.indexOf('ERR_EXISTS') >= 0) return t('errExists');
+    if (m.indexOf('ERR_EMAIL_RETURN') >= 0) return F_().err.ERR_EMAIL;
     if (m.indexOf('ERR_LOGIN') >= 0) return F_().loginFirst;
     if (m.indexOf('ERR_PINLEN') >= 0) return F_().err.ERR_PINLEN;
     if (m.indexOf('ERR_PIN') >= 0) return F_().err.ERR_PIN.split('.')[0] + '.';
