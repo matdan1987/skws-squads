@@ -272,14 +272,14 @@
                  [T.topEvents, top(function(s){ return (s.pds || 0) + (s.pcs || 0); }), function(v){ return T.evN.replace('{n}', v); }]];
     if (!pm && !lists.some(function(l){ return l[1].length; })) { var no = document.createElement('div'); no.className = 'hint'; no.textContent = T.none; box.appendChild(no); card.classList.remove('hide'); return; }
     loadAvatars(names, function(){ renderHof(); });
-    if (pm) { var p = document.createElement('div'); p.className = 'hof-potm'; p.appendChild(avEl(pm, 76)); var t = document.createElement('div');
+    if (pm) { var p = document.createElement('div'); p.className = 'hof-potm'; p.appendChild(avEl(pm, 96)); var t = document.createElement('div');
       var k = document.createElement('div'); k.className = 'hint'; k.style.marginTop = '0'; k.textContent = '👑 ' + T.potm; t.appendChild(k);
       var b = document.createElement('b'); b.textContent = pm; t.appendChild(b);
       var w = document.createElement('div'); w.className = 'hint'; w.style.marginTop = '0'; w.textContent = (S[pm].b30 ? T.whyB.replace('{n}', S[pm].b30) : T.whyG.replace('{g}', S[pm].g30)); t.appendChild(w);
       p.appendChild(t); p.addEventListener('click', function(){ openProfile(pm); }); box.appendChild(p); }
     var g = document.createElement('div'); g.className = 'hof-grid';
     lists.forEach(function(l){ if (!l[1].length) return; var c = document.createElement('div'); var h = document.createElement('h4'); h.textContent = l[0]; c.appendChild(h);
-      l[1].forEach(function(x, i){ var r = document.createElement('div'); r.className = 'hof-row'; r.appendChild(avEl(x.n, 34)); var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = (i + 1) + '. ' + x.n; r.appendChild(nm);
+      l[1].forEach(function(x, i){ var r = document.createElement('div'); r.className = 'hof-row'; r.appendChild(avEl(x.n, 44)); var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = (i + 1) + '. ' + x.n; r.appendChild(nm);
         var v = document.createElement('span'); v.className = 'v'; v.textContent = l[2](x.v); r.appendChild(v); r.addEventListener('click', function(){ openProfile(x.n); }); c.appendChild(r); });
       g.appendChild(c); });
     box.appendChild(g); card.classList.remove('hide');
@@ -434,14 +434,15 @@
     rows.forEach(function(r, i){
       var tr = document.createElement('tr');
       var td0 = document.createElement('td'); td0.textContent = i + 1; td0.className = 'typ';
-      var td1 = document.createElement('td'), nm = document.createElement('div'); nm.className = 'ovname'; nm.appendChild(avEl(r.name, 40));
-      var ns = document.createElement('span'); ns.textContent = r.name; nm.appendChild(ns); td1.appendChild(nm);
+      var td1 = document.createElement('td'), nm = document.createElement('div'); nm.className = 'ovname'; nm.appendChild(avEl(r.name, 64));
+      var col = document.createElement('div'); col.className = 'ovcol'; nm.appendChild(col);
+      var ns = document.createElement('span'); ns.className = 'ovn'; ns.textContent = r.name; col.appendChild(ns); td1.appendChild(nm);
       nm.addEventListener('click', (function(x){ return function(){ openProfile(x); }; })(r.name));
       if (r.hero || r.gorilla) {
         var hs = document.createElement('div'); hs.className = 'typ';
         var g = [r.gstage ? '★' + r.gstage : '', r.gorilla ? 'Lv ' + r.gorilla : '', r.gpower ? fmtPow(Math.round(r.gpower / 1e4) / 100) : ''].filter(Boolean).join(' ');
         hs.textContent = [r.hero ? t('heroShort') + ' ' + fmtPow(r.hero) : '', g ? '🦍 ' + g : ''].filter(Boolean).join(' · ');
-        td1.appendChild(hs);
+        col.appendChild(hs);
       }
       var td2 = document.createElement('td'); td2.className = 'n';
       var dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = COLORS[r.t1.type] || 'var(--mixed)';
