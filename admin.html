@@ -6,7 +6,7 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=1">
+<link rel="stylesheet" href="css/admin.css?v=2">
 </head>
 <body>
 <div class="wrap">
@@ -49,6 +49,7 @@
       <button data-tab="cs">Schluchtsturm</button>
       <button data-tab="mg">Mentoren</button>
       <button data-tab="mer">Bonus/Malus</button>
+      <button data-tab="msg">Nachrichten</button>
       <button data-tab="adm">Verwaltung</button>
       <button data-tab="log">Logbuch</button>
     </div>
@@ -346,6 +347,27 @@
       </div>
     </section>
 
+    <section id="tab-msg" class="hide">
+      <div class="card">
+        <h2>Rundnachricht senden</h2>
+        <p class="small muted" style="margin-top:0">Die Spieler sehen die Nachricht, sobald sie sich auf der Seite unter „💬 Funk“ mit ihrer PIN anmelden, und müssen sie bestätigen. Unten siehst du, wer schon bestätigt hat.</p>
+        <div class="fk-checks">
+          <label><input type="checkbox" id="fkAll"> <b>Alle</b></label>
+          <span id="fkRanks" class="fk-checks" style="margin:0"><label><input type="checkbox" value="R5"> R5</label><label><input type="checkbox" value="R4"> R4</label><label><input type="checkbox" value="R3"> R3</label><label><input type="checkbox" value="R2"> R2</label><label><input type="checkbox" value="R1"> R1</label></span>
+          <label><input type="checkbox" id="fkMent"> Mentoren</label>
+        </div>
+        <select id="fkAdd"></select>
+        <div id="fkChips"></div>
+        <div class="small" id="fkCount" style="margin-bottom:8px"></div>
+        <input id="fkSubj" maxlength="80" placeholder="Betreff (optional)" style="width:100%;box-sizing:border-box;margin-bottom:8px">
+        <textarea id="fkBody" maxlength="4000" placeholder="Nachricht"></textarea>
+        <div class="btnrow" style="margin-top:8px"><button class="btn" id="fkSend">📨 Senden</button></div>
+        <div class="msg" id="fkMsg"></div>
+      </div>
+      <div class="card"><h2>Gesendete Rundnachrichten</h2><div id="fkList"></div></div>
+      <div class="card"><h2>PINs der Spieler</h2><p class="small muted" style="margin-top:0">Jeder Spieler legt beim ersten Anmelden unter „💬 Funk“ selbst eine PIN fest (mit E-Mail-Bestätigung, falls eine hinterlegt ist). Zurücksetzen geht in der Spieler-Akte oder hier bei gesperrten Spielern.</p><div id="fkPins"></div></div>
+    </section>
+
     <section id="tab-mer" class="hide">
       <div class="tiles" id="merTiles"></div>
       <div class="card">
@@ -436,14 +458,15 @@
   </div>
 </div>
 
-<script src="js/admin-1-core.js?v=1"></script>
-<script src="js/admin-2-ansichten.js?v=1"></script>
-<script src="js/admin-3-wuestensturm.js?v=1"></script>
-<script src="js/admin-4-schluchtsturm.js?v=1"></script>
-<script src="js/admin-5-logbuch.js?v=1"></script>
-<script src="js/admin-6-anmeldung.js?v=1"></script>
-<script src="js/admin-7-bonusmalus.js?v=1"></script>
-<script src="js/admin-8-mentoren.js?v=1"></script>
-<script src="js/admin-9-start.js?v=1"></script>
+<script src="js/admin-1-core.js?v=2"></script>
+<script src="js/admin-2-ansichten.js?v=2"></script>
+<script src="js/admin-3-wuestensturm.js?v=2"></script>
+<script src="js/admin-4-schluchtsturm.js?v=2"></script>
+<script src="js/admin-5-logbuch.js?v=2"></script>
+<script src="js/admin-6-anmeldung.js?v=2"></script>
+<script src="js/admin-7-bonusmalus.js?v=2"></script>
+<script src="js/admin-8-mentoren.js?v=2"></script>
+<script src="js/admin-8b-funk.js?v=2"></script>
+<script src="js/admin-9-start.js?v=2"></script>
 </body>
 </html>

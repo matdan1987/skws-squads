@@ -31,7 +31,7 @@
   }
   .hide{display:none!important}
   .muted{color:var(--muted)} .small{font-size:12px}
-  .msg{min-height:22px;margin-top:10px;font-weight:600;color:var(--err)}
+  .msg{min-height:22px;margin-top:10px;font-weight:600;color:var(--err)} .msg.ok{color:var(--ok)}
   /* Kacheln */
   .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
   .tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
@@ -198,3 +198,17 @@
     #tabs{display:flex;grid-template-columns:none}
     #tabs button{font-size:13px;padding:9px 6px;white-space:nowrap}
   }
+/* ---------- Funk: Rundnachrichten, PINs ---------- */
+.mgb + .mgb{margin-left:6px}
+.fk-stat{display:flex;align-items:center;gap:10px;margin-top:8px}
+.fk-bar{flex:1;height:8px;border-radius:99px;background:var(--bg2);overflow:hidden}
+.fk-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--ok))}
+.fk-bc{border-top:1px solid var(--line);padding:12px 0}
+.fk-bc:first-child{border-top:0}
+.fk-bch{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.fk-bcb{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;margin:6px 0;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.fk-checks{display:flex;flex-wrap:wrap;gap:6px 14px;margin:4px 0 10px}
+.fk-checks label{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+#fkChips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#fkChips a{cursor:pointer;color:var(--muted);margin-left:4px}
+#tab-msg textarea{width:100%;min-height:110px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text);font:inherit;font-size:14px;resize:vertical;box-sizing:border-box}

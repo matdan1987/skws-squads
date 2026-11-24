@@ -71,6 +71,7 @@
     var els = document.querySelectorAll('[data-t]');
     for (var i = 0; i < els.length; i++) els[i].textContent = t(els[i].dataset.t);
     $('tabProfile').textContent = (PROF_I18N[LANG] || PROF_I18N.en).tab;
+    if (window.Funk && DATA) Funk.lang();
     if (!$('profileView').classList.contains('hide')) renderProfile();
     var ph = document.querySelectorAll('[data-tp]');
     for (var j = 0; j < ph.length; j++) ph[j].placeholder = t(ph[j].dataset.tp);
@@ -435,7 +436,10 @@
     $('formView').classList.toggle('hide', which !== 'form');
     $('overviewView').classList.toggle('hide', which !== 'overview');
     $('profileView').classList.toggle('hide', which !== 'profile');
+    $('tabFunk').classList.toggle('on', which === 'funk');
+    $('funkView').classList.toggle('hide', which !== 'funk');
     if (which === 'profile') loadProfile();
+    if (which === 'funk') Funk.show();
   }
 
   /* ---------- Avatare ---------- */
@@ -681,11 +685,14 @@
     $('tabForm').addEventListener('click', function(){ showTab('form'); });
     $('tabOverview').addEventListener('click', function(){ showTab('overview'); });
     $('tabProfile').addEventListener('click', function(){ PROF_VIEW = null; showTab('profile'); });
+    $('tabFunk').addEventListener('click', function(){ showTab('funk'); });
 
     setupRem();
     setupLinks();
     var last = store('skws_name');
     if (last && DATA.members.indexOf(last) >= 0){ $('name').value = last; loadMember(); }
+    Funk.init({ data: function(){ return DATA; }, lang: function(){ return LANG; }, myName: function(){ return $('name').value; },
+      avEl: avEl, loadAvatars: loadAvatars, openProfile: openProfile });
   }
 
   var nl = (navigator.language || 'en').slice(0,2);
