@@ -85,6 +85,13 @@
   .evgrp{margin:8px 0 2px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
   .av{display:inline-grid;place-items:center;border-radius:50%;overflow:hidden;vertical-align:middle;margin-right:6px;font-weight:700;color:#06101f;flex:none}
   .av img{width:100%;height:100%;object-fit:cover}
+  .mcrow{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
+  .mcrow .top{display:flex;gap:8px;align-items:center}
+  .mcrow .top input{flex:1;min-width:0}
+  .mcrow .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+  .mcrow .grid label{font-size:11px;color:var(--muted);display:block;margin-bottom:3px}
+  .mcrow.malus{border-left:4px solid var(--err)} .mcrow.bonus{border-left:4px solid var(--ok)}
+  @media (max-width:640px){ .mcrow .grid{grid-template-columns:1fr 1fr} }
   .mglbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 2px}
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
   .toolbar input{flex:1 1 100%} .toolbar select{flex:1;width:auto;min-width:0}
@@ -526,7 +533,7 @@
       <div class="card">
         <h2>Gründe-Liste</h2>
         <p class="small muted" style="margin:0 0 8px">Vorlagen für die Auswahl oben. Wählst du einen Grund, werden Art, Wirkung, Geltung und Dauer vorgeschlagen; ändern kannst du sie trotzdem. Wiederholt sich ein Malus mit demselben Grund innerhalb von 4 Wochen, wird die doppelte Dauer vorgeschlagen.</p>
-        <div class="tw"><table id="merCat"></table></div>
+        <div id="merCat"></div>
         <div class="btnrow"><button class="btn2" id="merCatAdd">Grund hinzufügen</button><button class="btn" id="merCatSave">Gründe-Liste speichern</button></div>
         <div class="note" id="merCatMsg"></div>
       </div>
@@ -2364,10 +2371,15 @@
   }
   function merRenderCat(){
     var cat = merCat();
-    $('merCat').innerHTML = '<tr><th>Grund</th><th>Art</th><th>Wirkung</th><th>Gilt für</th><th>Runden</th><th></th></tr>' + cat.reasons.map(function(x, i){
+    $('merCat').innerHTML = cat.reasons.map(function(x, i){
       function sel(field, opts, v){ return '<select data-mc="' + field + '" data-i="' + i + '">' + Object.keys(opts).map(function(k){ return '<option value="' + k + '"' + (k === v ? ' selected' : '') + '>' + opts[k] + '</option>'; }).join('') + '</select>'; }
-      return '<tr><td><input data-mc="r" data-i="' + i + '" type="text" maxlength="80" value="' + esc(x.r) + '"></td><td>' + sel('k', { malus:'Malus', bonus:'Bonus' }, x.k) + '</td><td>' + sel('e', MER_EFF, x.e) + '</td><td>' + sel('s', { both:'beide', ds:'Wüstensturm', cs:'Schluchtsturm' }, x.s) + '</td>' +
-        '<td><input data-mc="n" data-i="' + i + '" type="number" min="0" max="50" style="width:70px" value="' + (x.n === '' || x.n === null || x.n === undefined ? '' : x.n) + '"></td><td><button class="mini danger" data-mcdel="' + i + '">✕</button></td></tr>';
+      return '<div class="mcrow ' + x.k + '"><div class="top"><input data-mc="r" data-i="' + i + '" type="text" maxlength="80" value="' + esc(x.r) + '" aria-label="Grund">' +
+        '<button class="mini danger" data-mcdel="' + i + '" title="Grund löschen">✕</button></div><div class="grid">' +
+        '<div><label>Art</label>' + sel('k', { malus:'Malus', bonus:'Bonus' }, x.k) + '</div>' +
+        '<div><label>Wirkung</label>' + sel('e', MER_EFF, x.e) + '</div>' +
+        '<div><label>Gilt für</label>' + sel('s', { both:'beide Events', ds:'Wüstensturm', cs:'Schluchtsturm' }, x.s) + '</div>' +
+        '<div><label>Runden</label><input data-mc="n" data-i="' + i + '" type="number" min="0" max="50" placeholder="–" value="' + (x.n === '' || x.n === null || x.n === undefined ? '' : x.n) + '"></div>' +
+        '</div></div>';
     }).join('');
   }
   var MER_EDIT = null;
@@ -2401,6 +2413,7 @@
     $('merCat').addEventListener('change', function(e){
       var el = e.target.closest('[data-mc]'); if (!el) return; var c = merCatEdit(), x = c.reasons[+el.dataset.i], f = el.dataset.mc;
       x[f] = f === 'n' ? (el.value === '' ? '' : Math.max(0, Math.min(50, parseInt(el.value, 10) || 0))) : el.value; MERCFG = c; merFillForm();
+      if (f === 'k') { var rw = el.closest('.mcrow'); rw.classList.remove('malus', 'bonus'); rw.classList.add(x.k); }
       $('merCatMsg').textContent = 'Noch nicht gespeichert.'; $('merCatMsg').className = 'note err';
     });
     $('merCatAdd').addEventListener('click', function(){ var c = merCatEdit(); c.reasons.push({ r:'Neuer Grund', k:'malus', e:'sub', s:'both', n:1 }); MERCFG = c; merRenderCat(); merFillForm(); });
