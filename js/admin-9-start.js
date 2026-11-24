@@ -68,6 +68,8 @@ $('memTable').addEventListener('click', function(e){
 });
 $('plSelect').addEventListener('change', function(){ curPlayer = this.value; renderPlayer(); });
 $('plAkte').addEventListener('click', function(e){
+  var gd = e.target.closest('[data-giftdel]'); if (gd) { if (!confirm('Geschenk löschen? Es verschwindet aus dem Profil.')) return;
+    rpc('admin_gift', { p_pw: PW, p_id: +gd.dataset.giftdel, p_actor: ACTOR || null }).then(function(){ akteGifts(curPlayer); }).catch(function(e){ alert('Fehler: ' + e.message); }); return; }
   var b = e.target.closest('[data-akte]');
   if (b && b.dataset.akte === 'pin') { fkPinReset(curPlayer); return; }
   if (b && b.dataset.akte === 'init') { showTab('acc'); accPick(curPlayer); window.scrollTo(0, 0); return; }

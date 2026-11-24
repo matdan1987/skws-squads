@@ -6,7 +6,7 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=4">
+<link rel="stylesheet" href="css/admin.css?v=5">
 </head>
 <body>
 <div class="wrap">
@@ -404,12 +404,13 @@
           <div><label for="merScope">Gilt für</label><select id="merScope"><option value="both">Wüstensturm und Schluchtsturm</option><option value="ds">nur Wüstensturm</option><option value="cs">nur Schluchtsturm</option></select></div>
           <div><label for="merRounds">Dauer in Runden (leer = ohne Rundenlimit)</label><input id="merRounds" type="number" min="0" max="50" step="1"></div>
           <div><label for="merUntil">Oder bis Datum (optional)</label><input id="merUntil" type="date"></div>
+          <div><label for="merVis">Sichtbar für</label><select id="merVis"><option value="public">👁 alle (öffentlich im Profil)</option><option value="player">👤 nur den Spieler selbst</option><option value="hidden">🔒 nur R4/R5 (geheim)</option></select></div>
           <div id="merOwnBox" class="hide"><label for="merOwn">Eigener Grund</label><input id="merOwn" type="text" maxlength="80"></div>
         </div>
         <div><label for="merNote" class="small muted">Interne Notiz (sehen nur R4/R5)</label><textarea id="merNote" rows="2" maxlength="300"></textarea></div>
         <div class="note" id="merHint" style="margin-top:6px"></div>
         <div class="btnrow"><button class="btn" id="merAdd">Eintrag speichern</button></div>
-        <p class="small muted" style="margin:8px 0 0">Runden zählen je Event ab der Anmelderunde, die gerade offen ist (sonst ab der nächsten), und sind verbraucht, sobald die Runde geschlossen wird. Ohne Runden und ohne Datum gilt eine Wirkung, bis du sie zurücknimmst. Der Spieler sieht seine aktiven Einträge mit Grund und Restdauer auf der Squad-Seite, aber nicht die interne Notiz.</p>
+        <p class="small muted" style="margin:8px 0 0">Runden zählen je Event ab der Anmelderunde, die gerade offen ist (sonst ab der nächsten), und sind verbraucht, sobald die Runde geschlossen wird. Ohne Runden und ohne Datum gilt eine Wirkung, bis du sie zurücknimmst. Sichtbarkeit: „alle“ = Sticker im öffentlichen Profil und beim Spieler; „nur den Spieler“ = nur er sieht den Eintrag nach dem Anmelden; „nur R4/R5“ = geheim, auch der Spieler sieht ihn nicht. Die Wirkung im Event (gesperrt, nur Ersatz …) gilt unabhängig davon. Die interne Notiz sieht nie ein Spieler.</p>
       </div>
       <div class="card">
         <h2>Aktive Einträge (<span id="merActiveCount">0</span>)</h2>
@@ -417,6 +418,12 @@
         <div class="tw"><table id="merActive"></table></div>
         <details style="margin-top:10px"><summary>Verlauf – abgelaufene und zurückgenommene Einträge (<span id="merOldCount">0</span>)</summary><div class="tw" style="margin-top:8px"><table id="merOld"></table></div></details>
         <div class="note" id="merMsg"></div>
+      </div>
+      <div class="card">
+        <h2>Bilanz je Spieler</h2>
+        <p class="small muted" style="margin:0 0 8px">Alle Bonus- und Malus-Einträge je Spieler, auch geheime und abgelaufene (zurückgenommene zählen nicht) – auch von ausgeschiedenen Mitgliedern, z. B. wenn sich jemand erneut bewirbt. Antippen öffnet die Spieler-Akte.</p>
+        <div class="toolbar"><input id="merBilQ" type="search" placeholder="Spieler suchen…"><select id="merBilSort"><option value="d">meiste Malus zuerst</option><option value="b">meiste Bonus zuerst</option><option value="s">beste Bilanz zuerst</option><option value="n">nach Name</option></select></div>
+        <div class="tw"><table id="merBil"></table></div>
       </div>
       <div class="card">
         <h2>Gründe-Liste</h2>
@@ -482,16 +489,16 @@
   </div>
 </div>
 
-<script src="js/admin-1-core.js?v=4"></script>
-<script src="js/admin-2-ansichten.js?v=4"></script>
-<script src="js/admin-3-wuestensturm.js?v=4"></script>
-<script src="js/admin-4-schluchtsturm.js?v=4"></script>
-<script src="js/admin-5-logbuch.js?v=4"></script>
-<script src="js/admin-6-anmeldung.js?v=4"></script>
-<script src="js/admin-7-bonusmalus.js?v=4"></script>
-<script src="js/admin-8-mentoren.js?v=4"></script>
-<script src="js/admin-8b-funk.js?v=4"></script>
-<script src="js/admin-8c-zugaenge.js?v=4"></script>
-<script src="js/admin-9-start.js?v=4"></script>
+<script src="js/admin-1-core.js?v=5"></script>
+<script src="js/admin-2-ansichten.js?v=5"></script>
+<script src="js/admin-3-wuestensturm.js?v=5"></script>
+<script src="js/admin-4-schluchtsturm.js?v=5"></script>
+<script src="js/admin-5-logbuch.js?v=5"></script>
+<script src="js/admin-6-anmeldung.js?v=5"></script>
+<script src="js/admin-7-bonusmalus.js?v=5"></script>
+<script src="js/admin-8-mentoren.js?v=5"></script>
+<script src="js/admin-8b-funk.js?v=5"></script>
+<script src="js/admin-8c-zugaenge.js?v=5"></script>
+<script src="js/admin-9-start.js?v=5"></script>
 </body>
 </html>
