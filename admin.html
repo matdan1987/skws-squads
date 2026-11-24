@@ -6,13 +6,14 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=5">
+<link rel="stylesheet" href="css/admin.css?v=6">
 </head>
 <body>
 <div class="wrap">
   <header>
     <img class="logo" src="img/skws-emblem.jpg" alt="SKWS">
     <div class="htxt"><div class="a">SKWS – Skywalkers</div><h1>Admin · <span id="who">R4/R5</span></h1></div>
+    <select id="admLang" class="langsel" aria-label="Sprache"></select>
     <button class="ghost hide" id="reload" title="Neu laden">↻</button>
     <button class="ghost hide" id="logout">Abmelden</button>
   </header>
@@ -462,7 +463,7 @@
     <section id="tab-adm" class="hide">
       <div class="card">
         <h2>Datensicherung</h2>
-        <p class="small muted" style="margin:0 0 8px">Lädt alle Daten (Mitglieder, Meldungen, Verlauf, Anmeldungen, Bonus/Malus, Mentorengruppen, Avatare, Pläne, Logbuch) als eine JSON-Datei herunter. Zusätzlich läuft jede Woche automatisch eine Sicherung nach Google Drive.</p>
+        <p class="small muted" style="margin:0 0 8px">Lädt alle Daten (Mitglieder, Meldungen, Verlauf, Anmeldungen, Bonus/Malus, Mentorengruppen, Avatare, Pläne, Logbuch) als eine JSON-Datei herunter. Zusätzlich legt die Datenbank jeden Montag automatisch eine Sicherung an (die letzten 12 bleiben).</p>
         <div class="btnrow"><button class="btn2" id="bkDl">Datensicherung herunterladen</button></div>
         <div class="note" id="bkMsg"></div>
       </div>
@@ -489,16 +490,17 @@
   </div>
 </div>
 
-<script src="js/admin-1-core.js?v=5"></script>
-<script src="js/admin-2-ansichten.js?v=5"></script>
-<script src="js/admin-3-wuestensturm.js?v=5"></script>
-<script src="js/admin-4-schluchtsturm.js?v=5"></script>
-<script src="js/admin-5-logbuch.js?v=5"></script>
-<script src="js/admin-6-anmeldung.js?v=5"></script>
-<script src="js/admin-7-bonusmalus.js?v=5"></script>
-<script src="js/admin-8-mentoren.js?v=5"></script>
-<script src="js/admin-8b-funk.js?v=5"></script>
-<script src="js/admin-8c-zugaenge.js?v=5"></script>
-<script src="js/admin-9-start.js?v=5"></script>
+<script src="js/admin-0-sprache.js?v=6"></script>
+<script src="js/admin-1-core.js?v=6"></script>
+<script src="js/admin-2-ansichten.js?v=6"></script>
+<script src="js/admin-3-wuestensturm.js?v=6"></script>
+<script src="js/admin-4-schluchtsturm.js?v=6"></script>
+<script src="js/admin-5-logbuch.js?v=6"></script>
+<script src="js/admin-6-anmeldung.js?v=6"></script>
+<script src="js/admin-7-bonusmalus.js?v=6"></script>
+<script src="js/admin-8-mentoren.js?v=6"></script>
+<script src="js/admin-8b-funk.js?v=6"></script>
+<script src="js/admin-8c-zugaenge.js?v=6"></script>
+<script src="js/admin-9-start.js?v=6"></script>
 </body>
 </html>
