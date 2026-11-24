@@ -6,7 +6,7 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=6">
+<link rel="stylesheet" href="css/admin.css?v=7">
 </head>
 <body>
 <div class="wrap">
@@ -48,6 +48,7 @@
       <button data-tab="exp">Export</button>
       <button data-tab="ds">Wüstensturm</button>
       <button data-tab="cs">Schluchtsturm</button>
+      <button data-tab="bdg">Marken</button>
       <button data-tab="mg">Mentoren</button>
       <button data-tab="mer">Bonus/Malus</button>
       <button data-tab="msg">Nachrichten</button>
@@ -349,6 +350,31 @@
       </div>
     </section>
 
+    <section id="tab-bdg" class="hide">
+      <div class="card">
+        <h2>Teilnehmermarken aus Events</h2>
+        <p class="small muted" style="margin-top:0">Automatisch: Jeder Stammspieler einer geschlossenen Wüstensturm- oder Schluchtsturm-Runde bekommt eine Marke in seinem Profil – außer, er ist unter „Wer hat gefehlt?“ angekreuzt. Grundlage ist die Aufstellung, mit der du den Plan erstellt hast.</p>
+        <div id="bdgAuto"></div>
+      </div>
+      <div class="card">
+        <h2>Eigene Marke vergeben</h2>
+        <p class="small muted" style="margin-top:0">Für andere Events oder Aktionen, z. B. „Zombie-Belagerung KW 48“. Die Marke erscheint im Profil der ausgewählten Spieler.</p>
+        <input id="bdgLabel" maxlength="60" placeholder="Bezeichnung, z. B. Zombie-Belagerung KW 48" style="width:100%;box-sizing:border-box">
+        <div id="bdgIcons" class="bdg-icons"></div>
+        <div class="toolbar"><select id="bdgAdd"></select><button class="mini" id="bdgAll">alle aktiven</button><button class="mini" id="bdgNone">keine</button></div>
+        <div id="bdgChips" style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0"></div>
+        <div class="small muted" id="bdgCount"></div>
+        <button class="btn" id="bdgGive" style="margin-top:8px">🎖️ Marke vergeben</button>
+        <div class="msg" id="bdgMsg"></div>
+      </div>
+      <div class="card"><h2>Vergebene eigene Marken</h2><div id="bdgList"></div></div>
+      <div class="card">
+        <h2>Übersicht je Spieler</h2>
+        <div class="toolbar"><input id="bdgQ" type="search" placeholder="Spieler suchen…"></div>
+        <div class="tw"><table id="bdgTable"></table></div>
+      </div>
+    </section>
+
     <section id="tab-acc" class="hide">
       <div class="tiles" id="accTiles"></div>
       <div class="card">
@@ -490,17 +516,18 @@
   </div>
 </div>
 
-<script src="js/admin-0-sprache.js?v=6"></script>
-<script src="js/admin-1-core.js?v=6"></script>
-<script src="js/admin-2-ansichten.js?v=6"></script>
-<script src="js/admin-3-wuestensturm.js?v=6"></script>
-<script src="js/admin-4-schluchtsturm.js?v=6"></script>
-<script src="js/admin-5-logbuch.js?v=6"></script>
-<script src="js/admin-6-anmeldung.js?v=6"></script>
-<script src="js/admin-7-bonusmalus.js?v=6"></script>
-<script src="js/admin-8-mentoren.js?v=6"></script>
-<script src="js/admin-8b-funk.js?v=6"></script>
-<script src="js/admin-8c-zugaenge.js?v=6"></script>
-<script src="js/admin-9-start.js?v=6"></script>
+<script src="js/admin-0-sprache.js?v=7"></script>
+<script src="js/admin-1-core.js?v=7"></script>
+<script src="js/admin-2-ansichten.js?v=7"></script>
+<script src="js/admin-3-wuestensturm.js?v=7"></script>
+<script src="js/admin-4-schluchtsturm.js?v=7"></script>
+<script src="js/admin-5-logbuch.js?v=7"></script>
+<script src="js/admin-6-anmeldung.js?v=7"></script>
+<script src="js/admin-7-bonusmalus.js?v=7"></script>
+<script src="js/admin-8-mentoren.js?v=7"></script>
+<script src="js/admin-8b-funk.js?v=7"></script>
+<script src="js/admin-8c-zugaenge.js?v=7"></script>
+<script src="js/admin-8d-marken.js?v=7"></script>
+<script src="js/admin-9-start.js?v=7"></script>
 </body>
 </html>

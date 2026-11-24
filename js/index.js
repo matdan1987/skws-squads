@@ -423,6 +423,10 @@
       rows.push({ name: n, t1: e.squads[0] || {}, total: total, hero: e.hero, gorilla: e.gorilla, gstage: e.gstage, gpower: e.gpower });
     });
     rows.sort(function(a,b){ return (b.t1.power||0) - (a.t1.power||0); });
+    rows.forEach(function(r, i){ r.rank = i + 1; });
+    var XT = XTRA_I18N[LANG] || XTRA_I18N.en, q = ($('ovSearch').value || '').trim().toLowerCase();
+    $('ovSearch').placeholder = XT.search;
+    if (q) { rows = rows.filter(function(r){ return r.name.toLowerCase().indexOf(q) >= 0; }); missing = missing.filter(function(n){ return n.toLowerCase().indexOf(q) >= 0; }); }
     var x = members.length - missing.length, y = members.length;
     $('statTxt').textContent = t('submitted', {x: x, y: y});
     $('ovHint').textContent = (AV_I18N[LANG] || AV_I18N.en).tapName;
@@ -433,7 +437,7 @@
     loadAvatars(members, function(){ if (!$('overviewView').classList.contains('hide') && !renderOverview.busy) { renderOverview.busy = true; renderOverview(); renderOverview.busy = false; } });
     rows.forEach(function(r, i){
       var tr = document.createElement('tr');
-      var td0 = document.createElement('td'); td0.textContent = i + 1; td0.className = 'typ';
+      var td0 = document.createElement('td'); td0.textContent = r.rank; td0.className = 'typ';
       var td1 = document.createElement('td'), nm = document.createElement('div'); nm.className = 'ovname'; nm.appendChild(avEl(r.name, 64));
       var col = document.createElement('div'); col.className = 'ovcol'; nm.appendChild(col);
       var ns = document.createElement('span'); ns.className = 'ovn'; ns.textContent = r.name; col.appendChild(ns); td1.appendChild(nm);
@@ -455,6 +459,7 @@
       tb.appendChild(tr);
     });
 
+    if (q && !rows.length) { var nr = document.createElement('tr'), nd = document.createElement('td'); nd.colSpan = 4; nd.className = 'typ'; nd.textContent = XT.noHit; nr.appendChild(nd); tb.appendChild(nr); }
     $('missingCard').classList.toggle('hide', !missing.length);
     var ml = $('missingList'); ml.innerHTML = '';
     missing.sort(function(a,b){ return a.localeCompare(b, undefined, {sensitivity:'base'}); }).forEach(function(n){
@@ -518,7 +523,27 @@
     document.body.appendChild(o);
   }
   /* ---------- Geschenke ---------- */
-  var PROF_GIFT = {}, GIFT_PICK = null, GIFT_MSG = '';
+  var PROF_GIFT = {}, GIFT_PICK = null, GIFT_MSG = '', PROF_BADGE = {};
+  var BADGE_IC = { ds:'🏜️', cs:'🧪' };
+  // Teilnehmermarken: automatisch je Wüstensturm/Schluchtsturm als Stammspieler, dazu eigene Marken von R4/R5
+  function badgeCard(n){
+    var X = XTRA_I18N[LANG] || XTRA_I18N.en, l = PROF_BADGE[n] || [], c = document.createElement('div'); c.className = 'card';
+    function el(tag, cls, txt){ var x = document.createElement(tag); if (cls) x.className = cls; if (txt !== undefined) x.textContent = txt; return x; }
+    var hd = el('div', 'sq-h'); hd.appendChild(el('b', '', '🎖️ ' + X.bTitle)); hd.appendChild(el('span', 'tag', String(l.length))); c.appendChild(hd);
+    if (!l.length) { c.appendChild(el('div', 'hint', X.bNone)); return c; }
+    var cnt = {}; l.forEach(function(b){ var k = b.k === 'x' ? 'x:' + (b.icon || '🎖️') + (b.label || '') : b.k; cnt[k] = cnt[k] || { n:0, b:b }; cnt[k].n++; });
+    var shelf = el('div', 'gift-shelf');
+    Object.keys(cnt).forEach(function(k){ var o = cnt[k], s = el('span', 'gift-chip badge-chip');
+      s.appendChild(el('i', '', o.b.k === 'x' ? (o.b.icon || '🎖️') : BADGE_IC[o.b.k])); s.appendChild(el('b', '', (o.b.k === 'x' ? o.b.label : X[o.b.k]) + ' × ' + o.n)); shelf.appendChild(s); });
+    c.appendChild(shelf);
+    var grid = el('div', 'badge-grid');
+    l.slice(0, 24).forEach(function(b){
+      var m = el('div', 'badge-m ' + (b.k === 'x' ? 'bx' : 'b' + b.k)); m.appendChild(el('i', '', b.k === 'x' ? (b.icon || '🎖️') : BADGE_IC[b.k]));
+      m.appendChild(el('b', '', b.k === 'x' ? b.label : X[b.k])); if (b.k !== 'x') m.appendChild(el('span', '', b.label));
+      m.appendChild(el('small', '', new Date(b.t).toLocaleDateString(LANG, { day:'2-digit', month:'2-digit', year:'2-digit' }))); grid.appendChild(m);
+    });
+    c.appendChild(grid); return c;
+  }
   function giftCard(n, own){
     var G = GIFT_I18N[LANG] || GIFT_I18N.en, gd = PROF_GIFT[n] || { c:{}, l:[] }, c = document.createElement('div'); c.className = 'card';
     function el(tag, cls, txt){ var x = document.createElement(tag); if (cls) x.className = cls; if (txt !== undefined) x.textContent = txt; return x; }
@@ -541,7 +566,8 @@
       var s = window.Funk && Funk.session();
       if (!s) { c.appendChild(el('div', 'hint fk-first', G.login)); return c; }
       if (s.name === n) return c;
-      if (GIFT_PICK !== n) { var b = el('button', 'btn gift-open', G.send); b.type = 'button'; b.addEventListener('click', function(){ GIFT_PICK = n; GIFT_MSG = ''; renderProfile(); }); c.appendChild(b); }
+      if (GIFT_PICK !== n) { var gr = el('div', 'btnrow gift-btns'); var b = el('button', 'btn gift-open', G.send); b.type = 'button'; b.addEventListener('click', function(){ GIFT_PICK = n; GIFT_MSG = ''; renderProfile(); }); gr.appendChild(b);
+        var pm = el('button', 'ghost gift-open', (FUNK_I18N[LANG] || FUNK_I18N.en).newMsg); pm.type = 'button'; pm.addEventListener('click', function(){ showTab('funk'); Funk.compose(n); }); gr.appendChild(pm); c.appendChild(gr); }
       else {
         var f = el('div', 'gift-form'); f.appendChild(el('div', 'hint', G.pick.replace('{n}', n)));
         var grid = el('div', 'gift-grid'), chosen = null;
@@ -628,7 +654,7 @@
     var n = PROF_VIEW || $('name').value;
     if (n) loadAvatars([n], renderProfile);
     if (!PROF_STATS && !PROF_BUSY) { PROF_BUSY = true; rpc('profile_stats').then(function(r){ PROF_STATS = r || {}; }).catch(function(){ PROF_STATS = {}; }).then(function(){ PROF_BUSY = false; renderProfile(); }); }
-    if (n && !PROF_STK[n]) rpc('player_profile', { p_name: n }).then(function(r){ PROF_STK[n] = (r && r.stickers) || []; PROF_GIFT[n] = { c: (r && r.gifts) || {}, l: (r && r.gift_list) || [] };
+    if (n && !PROF_STK[n]) rpc('player_profile', { p_name: n }).then(function(r){ PROF_STK[n] = (r && r.stickers) || []; PROF_GIFT[n] = { c: (r && r.gifts) || {}, l: (r && r.gift_list) || [] }; PROF_BADGE[n] = (r && r.badges) || [];
       loadAvatars(PROF_GIFT[n].l.map(function(x){ return x.from; }), renderProfile); renderProfile(); }).catch(function(){ PROF_STK[n] = []; renderProfile(); });
     renderProfile();
   }
@@ -679,6 +705,7 @@
       c2.appendChild(w);
     }
     c2.appendChild(info); box.appendChild(c2);
+    box.appendChild(badgeCard(n));
     box.appendChild(giftCard(n, own));
     // Erfolge mit Seltenheit
     var all = Object.keys(PROF_STATS), c3 = el('div', 'card'), h3 = el('div', 'sq-h'); h3.appendChild(el('b', '', T.ach));
@@ -779,6 +806,7 @@
     $('tabOverview').addEventListener('click', function(){ showTab('overview'); });
     $('tabProfile').addEventListener('click', function(){ PROF_VIEW = null; showTab('profile'); });
     $('tabFunk').addEventListener('click', function(){ showTab('funk'); });
+    $('ovSearch').addEventListener('input', function(){ renderOverview(); });
 
     setupRem();
     setupLinks();
