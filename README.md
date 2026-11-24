@@ -9,6 +9,7 @@
 ## Aufbau
 
 - `index.html` + `css/index.css` + `js/index-texte.js` (Übersetzungen, Konstanten) + `js/index.js` – Spielerseite
+- `js/index-funk-texte.js` + `js/index-funk.js` – Funk auf der Spielerseite: Anmeldung mit PIN, Shoutboxen (Alle / Mentoren / R4-R5), Nachrichten mit Bestätigung
 - `admin.html` + `css/admin.css` + `js/admin-1-core.js` … `js/admin-9-start.js` – Admin-Bereich, in dieser Reihenfolge geladen (gemeinsame globale Funktionen)
 - `img/` – Allianz-Emblem und Logo
 

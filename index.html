@@ -6,7 +6,7 @@
 <title>SKWS – Skywalkers · Squads</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/index.css?v=1">
+<link rel="stylesheet" href="css/index.css?v=2">
 </head>
 <body>
 <div class="wrap">
@@ -23,6 +23,7 @@
       <button id="tabForm" class="on" data-t="form"></button>
       <button id="tabOverview" data-t="overview"></button>
       <button id="tabProfile"></button>
+      <button id="tabFunk"></button>
     </div>
 
     <!-- Formular -->
@@ -110,6 +111,10 @@
       <div id="profBox"></div>
     </section>
 
+    <section id="funkView" class="hide">
+      <div id="funkBox"></div>
+    </section>
+
     <section id="overviewView" class="hide">
       <div class="card hide" id="hofCard"><div class="sq-h"><b id="hofTitle"></b><span class="tag req">🏆</span></div><div id="hofBox"></div></div>
       <div class="card">
@@ -131,7 +136,10 @@
   <p style="text-align:center;margin-top:28px"><a href="admin.html" style="color:var(--muted);font-size:12px;text-decoration:none">🔒 Admin (R4/R5)</a></p>
 </div>
 
-<script src="js/index-texte.js?v=1"></script>
-<script src="js/index.js?v=1"></script>
+<div id="fkModal" class="fk-overlay hide"></div>
+<script src="js/index-texte.js?v=2"></script>
+<script src="js/index-funk-texte.js?v=2"></script>
+<script src="js/index-funk.js?v=2"></script>
+<script src="js/index.js?v=2"></script>
 </body>
 </html>

@@ -113,11 +113,12 @@ function renderAkte(){
   var s = (PSTATS && PSTATS[p.name]) || {}, mg = mgOf(p.name), CH = { A:'Stamm A', B:'Stamm B', AB:'Stamm, beide', subA:'Ersatz A', subB:'Ersatz B', sub:'Ersatz, beide', no:'diesmal nicht' };
   var h = '<div class="card"><div class="akte-h">' + av(p.name, 56) + '<div><b>' + esc(p.name) + '</b><div class="small muted">' + p.rank + (p.active ? '' : ' · ausgeschieden') +
     (mg ? ' · Mentorengruppe ' + mg.g + (mg.role === 'mentor' ? ' (Mentor)' : mg.role === 'r4' ? ' (Leitung)' : '') : ' · keine Mentorengruppe') +
-    (p.entry ? ' · ' + (p.entry.hasEmail ? 'E-Mail hinterlegt' : 'keine E-Mail') : '') + '</div><div>' + mgBadge(p.name) + merBadge(p.name) + '</div></div></div>';
+    (p.entry ? ' · ' + (p.entry.hasEmail ? 'E-Mail hinterlegt' : 'keine E-Mail') : '') + '</div><div>' + mgBadge(p.name) + merBadge(p.name) + (typeof fkAkte === 'function' ? fkAkte(p.name) : '') + '</div></div></div>';
   h += '<div class="akte-k"><div>Bienchen<b>🐝 ' + (s.b || 0) + '</b></div><div>Teufelchen<b>😈 ' + (s.d || 0) + '</b>' + (s.d90 ? s.d90 + ' in 90 Tagen' : '') + '</div>' +
     '<div>Wüstensturm gespielt<b>' + (s.pds || 0) + '</b></div><div>Schluchtsturm gespielt<b>' + (s.pcs || 0) + '</b></div><div>Als Ersatz eingeplant<b>' + (s.sub || 0) + '</b></div>' +
     '<div>Gefehlt<b' + (s.abs ? ' class="down"' : '') + '>' + (s.abs || 0) + '</b></div><div>Anmeldungen<b>' + (s.su || 0) + '</b></div><div>Meldetage<b>' + (s.hn || 0) + '</b></div></div>';
-  h += '<div class="btnrow"><button class="btn2" data-akte="merit">Bonus/Malus vergeben</button></div></div>';
+  h += '<div class="btnrow"><button class="btn2" data-akte="merit">Bonus/Malus vergeben</button>' + (p.active ? '<button class="btn2" data-akte="pm">✉️ Nachricht senden</button>' : '') +
+    (typeof fkHasPin === 'function' && (fkHasPin(p.name) || fkLocked(p.name)) ? '<button class="btn2" data-akte="pin">🔑 PIN zurücksetzen</button>' : '') + '</div></div>';
   // Bonus/Malus
   var ml = MER.filter(function(m){ return m.name === p.name; });
   h += '<div class="card"><h2>Bonus/Malus (' + ml.length + ')</h2>' + (ml.length ? ml.map(function(m){ var bad = m.kind === 'malus';
