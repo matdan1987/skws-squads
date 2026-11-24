@@ -63,19 +63,29 @@ var Funk = (function(){
     if (!S.tok || !open.length) { box.classList.add('hide'); box.innerHTML = ''; document.body.classList.remove('fk-lock'); return; }
     var m = open[0], L = T(); box.innerHTML = '';
     var c = el('div', 'card fk-modal');
-    c.appendChild(el('div', 'fk-mtitle', L.mustAck + (open.length > 1 ? ' · ' + L.ofN.replace('{i}', 1).replace('{n}', open.length) : '')));
+    c.appendChild(el('div', 'fk-mtitle', (m.kind === 'gift' ? '🎁 ' + giftT().got.replace('{n}', m.from) : L.mustAck) + (open.length > 1 ? ' · ' + L.ofN.replace('{i}', 1).replace('{n}', open.length) : '')));
     c.appendChild(msgHead(m));
-    if (m.subject) c.appendChild(el('b', 'fk-subj', m.subject));
-    c.appendChild(el('div', 'fk-body', m.body));
-    var b = btn('btn', '✔ ' + L.confirm, function(){ b.disabled = true; ack(m.id).then(function(){ b.disabled = false; }); });
+    msgBody(m, c);
+    var b = btn('btn', m.kind === 'gift' ? '❤ ' + giftT().thanks : '✔ ' + L.confirm, function(){ b.disabled = true; ack(m.id).then(function(){ b.disabled = false; }); });
     c.appendChild(b);
     box.appendChild(c); box.classList.remove('hide'); document.body.classList.add('fk-lock');
+  }
+  function giftT(){ return (window.GIFT_I18N && (GIFT_I18N[A.lang()] || GIFT_I18N.en)) || { g:{}, thanks:'OK', got:'{n}' }; }
+  // Nachrichtentext; Geschenke als großes Symbol mit Namen und Notiz
+  function msgBody(m, c){
+    if (m.kind === 'gift') {
+      var g = el('div', 'fk-gift'); g.appendChild(el('i', '', (window.GIFT_ICON && GIFT_ICON[m.subject]) || '🎁')); g.appendChild(el('b', '', giftT().g[m.subject] || m.subject));
+      if (m.body) g.appendChild(el('div', 'fk-body', '„' + m.body + '“'));
+      c.appendChild(g); return;
+    }
+    if (m.subject) c.appendChild(el('b', 'fk-subj', m.subject));
+    c.appendChild(el('div', 'fk-body', m.body));
   }
   function msgHead(m){
     var L = T(), h = el('div', 'fk-mh');
     var who = m.from || '';
     if (A.data().members.indexOf(who) >= 0) h.appendChild(A.avEl(who, 40));
-    h.appendChild(el('span', 'fk-who', (m.kind === 'bc' ? '📢 ' + L.bc + ' · ' : '') + L.from.replace('{n}', who)));
+    h.appendChild(el('span', 'fk-who', (m.kind === 'bc' ? '📢 ' + L.bc + ' · ' : m.kind === 'gift' ? '🎁 ' : '') + L.from.replace('{n}', who)));
     h.appendChild(el('span', 'fk-t', when(m.t)));
     return h;
   }
@@ -225,10 +235,9 @@ var Funk = (function(){
     else S.inbox.forEach(function(m){
       var it = el('div', 'fk-msg' + (m.ack ? '' : ' new'));
       it.appendChild(msgHead(m));
-      if (m.subject) it.appendChild(el('b', 'fk-subj', m.subject));
-      it.appendChild(el('div', 'fk-body', m.body));
+      msgBody(m, it);
       var row = el('div', 'fk-mf');
-      if (!m.ack) row.appendChild(btn('mini', '✔ ' + L.confirm, function(){ ack(m.id); }));
+      if (!m.ack) row.appendChild(btn('mini', m.kind === 'gift' ? '❤ ' + giftT().thanks : '✔ ' + L.confirm, function(){ ack(m.id); }));
       else row.appendChild(el('span', 'fk-ok', '✔ ' + L.confirmed));
       if (m.from && m.from !== S.name && D.members.indexOf(m.from) >= 0)
         row.appendChild(btn('mini', '↩ ' + L.reply, function(){ S.compose = { to: m.from, subject: m.subject ? (/^re:/i.test(m.subject) ? m.subject : 'Re: ' + m.subject).slice(0, 80) : '' }; render(); window.scrollTo(0, 0); }));

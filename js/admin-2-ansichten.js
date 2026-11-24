@@ -114,7 +114,9 @@ function renderAkte(){
   var h = '<div class="card"><div class="akte-h"><span class="akte-av" data-avbig="' + esc(p.name) + '">' + av(p.name, 160) + '</span><div><b>' + esc(p.name) + '</b><div class="small muted">' + p.rank + (p.active ? '' : ' · ausgeschieden') +
     (mg ? ' · Mentorengruppe ' + mg.g + (mg.role === 'mentor' ? ' (Mentor)' : mg.role === 'r4' ? ' (Leitung)' : '') : ' · keine Mentorengruppe') +
     (p.entry ? ' · ' + (p.entry.hasEmail ? 'E-Mail hinterlegt' : 'keine E-Mail') : '') + '</div><div>' + mgBadge(p.name) + merBadge(p.name) + (typeof fkAkte === 'function' ? fkAkte(p.name) : '') + '</div></div></div>';
-  h += '<div class="akte-k"><div>Bienchen<b>🐝 ' + (s.b || 0) + '</b></div><div>Teufelchen<b>😈 ' + (s.d || 0) + '</b>' + (s.d90 ? s.d90 + ' in 90 Tagen' : '') + '</div>' +
+  var mAll = MER.filter(function(m){ return m.name === p.name && !m.revoked_at; }), mB = mAll.filter(function(m){ return m.kind === 'bonus'; }).length, mD = mAll.length - mB,
+    mD90 = mAll.filter(function(m){ return m.kind === 'malus' && (Date.now() - new Date(m.created_at)) < 90 * DAY; }).length, mH = mAll.filter(function(m){ return (m.vis || 'public') !== 'public'; }).length;
+  h += '<div class="akte-k"><div>Bonus / Bienchen<b class="up">▲ ' + mB + '</b></div><div>Malus / Teufelchen<b class="down">▼ ' + mD + '</b>' + (mD90 ? mD90 + ' in 90 Tagen' : '') + (mH ? ' · 🔒 ' + mH + ' nicht öffentlich' : '') + '</div>' +
     '<div>Wüstensturm gespielt<b>' + (s.pds || 0) + '</b></div><div>Schluchtsturm gespielt<b>' + (s.pcs || 0) + '</b></div><div>Als Ersatz eingeplant<b>' + (s.sub || 0) + '</b></div>' +
     '<div>Gefehlt<b' + (s.abs ? ' class="down"' : '') + '>' + (s.abs || 0) + '</b></div><div>Anmeldungen<b>' + (s.su || 0) + '</b></div><div>Meldetage<b>' + (s.hn || 0) + '</b></div></div>';
   h += '<div class="btnrow"><button class="btn2" data-akte="merit">Bonus/Malus vergeben</button>' + (p.active ? '<button class="btn2" data-akte="pm">✉️ Nachricht senden</button>' : '') +
@@ -122,7 +124,7 @@ function renderAkte(){
   // Bonus/Malus
   var ml = MER.filter(function(m){ return m.name === p.name; });
   h += '<div class="card"><h2>Bonus/Malus (' + ml.length + ')</h2>' + (ml.length ? ml.map(function(m){ var bad = m.kind === 'malus';
-    return '<div class="akte-ev"' + (m.active ? '' : ' style="opacity:.55"') + '><b class="' + (bad ? 'down' : 'up') + '">' + (bad ? '▼ Malus' : '▲ Bonus') + '</b><span>' + esc(m.reason) + '</span><span class="muted">' + MER_EFF[m.effect] + ' · ' + (m.revoked_at ? 'zurückgenommen' : m.active ? merDur(m) : 'abgelaufen') + ' · ' + fmtDate(new Date(m.created_at)) + (m.by ? ' · ' + esc(m.by) : '') + '</span>' +
+    return '<div class="akte-ev"' + (m.active ? '' : ' style="opacity:.55"') + '><b class="' + (bad ? 'down' : 'up') + '">' + (bad ? '▼ Malus' : '▲ Bonus') + '</b><span>' + esc(m.reason) + ' ' + merVisBadge(m) + '</span><span class="muted">' + MER_EFF[m.effect] + ' · ' + (m.revoked_at ? 'zurückgenommen' : m.active ? merDur(m) : 'abgelaufen') + ' · ' + fmtDate(new Date(m.created_at)) + (m.by ? ' · ' + esc(m.by) : '') + '</span>' +
       (m.note ? '<span class="muted"><i>' + esc(m.note) + '</i></span>' : '') + (m.active && !m.revoked_at ? '<button class="mini danger" data-merrev="' + m.id + '">Zurücknehmen</button>' : '') + '</div>'; }).join('') : '<div class="small muted">Keine Einträge.</div>') + '</div>';
   // Events
   var evl = EV.filter(function(r){ return (r.signups || []).some(function(x){ return x.name === p.name; }) || (r.lineup && r.lineup[p.name]); });
@@ -131,7 +133,19 @@ function renderAkte(){
     return '<div class="akte-ev"><b>' + (r.kind === 'cs' ? 'Schluchtsturm' : 'Wüstensturm') + ' ' + esc(r.label) + '</b><span class="muted">Anmeldung: ' + (su ? CH[su.choice] || su.choice : '–') + '</span>' +
       '<span>' + (l ? 'eingeteilt: Team ' + l[0] + (l[1] === 'S' ? ' Stamm' : ' Ersatz') : '<span class="muted">nicht eingeteilt</span>') + '</span>' + (gone ? '<span class="down">gefehlt</span>' : '') + '</div>';
   }).join('') : '<div class="small muted">Noch keine Anmeldungen.</div>') + '</div>';
+  h += '<div class="card"><h2>🎁 Geschenke</h2><div id="akteGifts" class="small muted">Lädt …</div></div>';
   box.innerHTML = h;
+  akteGifts(p.name);
+}
+var GIFT_IC = { thumb:'👍', heart:'❤️', flowers:'💐', rose:'🌹', coffee:'☕', beer:'🍺', cake:'🎂', clover:'🍀', trophy:'🏆', shield:'🛡️', star:'⭐', rocket:'🚀' };
+function akteGifts(n){
+  rpc('player_profile', { p_name: n }).then(function(r){
+    var b = $('akteGifts'); if (!b || curPlayer !== n) return;
+    var l = (r && r.gift_list) || [];
+    b.className = '';
+    b.innerHTML = l.length ? l.map(function(x){ return '<div class="akte-ev"><b>' + (GIFT_IC[x.kind] || '🎁') + '</b><span>von ' + esc(x.from) + (x.note ? ' – „' + esc(x.note) + '“' : '') + '</span><span class="muted">' + fmtDateTime(x.t) + '</span>' +
+      '<button class="mini danger" data-giftdel="' + x.id + '">Löschen</button></div>'; }).join('') : '<div class="small muted">Noch keine Geschenke bekommen.</div>';
+  }).catch(function(){ var b = $('akteGifts'); if (b) b.textContent = 'Konnte nicht geladen werden.'; });
 }
 function renderPlayer(){
   renderAkte();

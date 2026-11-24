@@ -212,7 +212,7 @@
     if (!n) { MER_FOR = null; MER_DATA = []; renderMerits(); return; }
     if (n === MER_FOR) { renderMerits(); return; }
     MER_FOR = n; MER_DATA = []; renderMerits();
-    rpc('my_merits', { p_name: n }).then(function(r){ if (MER_FOR !== n) return; MER_DATA = Array.isArray(r) ? r : []; renderMerits(); renderWeek(); }).catch(function(){});
+    rpc('my_merits', { p_name: n, p_token: tok() }).then(function(r){ if (MER_FOR !== n) return; MER_DATA = Array.isArray(r) ? r : []; renderMerits(); renderWeek(); }).catch(function(){});
   }
   function renderMerits(){
     var card = $('merCard'); if (!MER_DATA.length) { card.classList.add('hide'); return; }
@@ -517,6 +517,55 @@
     o.addEventListener('click', function(){ o.remove(); });
     document.body.appendChild(o);
   }
+  /* ---------- Geschenke ---------- */
+  var PROF_GIFT = {}, GIFT_PICK = null, GIFT_MSG = '';
+  function giftCard(n, own){
+    var G = GIFT_I18N[LANG] || GIFT_I18N.en, gd = PROF_GIFT[n] || { c:{}, l:[] }, c = document.createElement('div'); c.className = 'card';
+    function el(tag, cls, txt){ var x = document.createElement(tag); if (cls) x.className = cls; if (txt !== undefined) x.textContent = txt; return x; }
+    var tot = Object.keys(gd.c).reduce(function(a, k){ return a + gd.c[k]; }, 0);
+    var hd = el('div', 'sq-h'); hd.appendChild(el('b', '', '🎁 ' + G.title)); hd.appendChild(el('span', 'tag', String(tot))); c.appendChild(hd);
+    if (tot) { var shelf = el('div', 'gift-shelf'); Object.keys(GIFT_ICON).forEach(function(k){ if (!gd.c[k]) return; var s = el('span', 'gift-chip'); s.title = G.g[k];
+      s.appendChild(el('i', '', GIFT_ICON[k])); s.appendChild(el('b', '', '× ' + gd.c[k])); shelf.appendChild(s); }); c.appendChild(shelf); }
+    else c.appendChild(el('div', 'hint', G.none));
+    if (gd.l.length) {
+      c.appendChild(el('label', 'l', G.recent));
+      gd.l.slice(0, 8).forEach(function(x){
+        var r = el('div', 'gift-row'); r.appendChild(el('i', 'gift-ic', GIFT_ICON[x.kind] || '🎁'));
+        var a = avEl(x.from, 32); a.style.cursor = 'pointer'; a.addEventListener('click', function(){ openProfile(x.from); }); r.appendChild(a);
+        var t = el('div', 'gift-tx'); t.appendChild(el('b', '', G.g[x.kind] || x.kind)); t.appendChild(el('span', '', ' ' + G.from.replace('{n}', x.from)));
+        if (x.note) t.appendChild(el('div', 'gift-note', '„' + x.note + '“'));
+        r.appendChild(t); r.appendChild(el('span', 'gift-t', new Date(x.t).toLocaleDateString(LANG, { day:'2-digit', month:'2-digit' }))); c.appendChild(r);
+      });
+    }
+    if (!own) {
+      var s = window.Funk && Funk.session();
+      if (!s) { c.appendChild(el('div', 'hint fk-first', G.login)); return c; }
+      if (s.name === n) return c;
+      if (GIFT_PICK !== n) { var b = el('button', 'btn gift-open', G.send); b.type = 'button'; b.addEventListener('click', function(){ GIFT_PICK = n; GIFT_MSG = ''; renderProfile(); }); c.appendChild(b); }
+      else {
+        var f = el('div', 'gift-form'); f.appendChild(el('div', 'hint', G.pick.replace('{n}', n)));
+        var grid = el('div', 'gift-grid'), chosen = null;
+        Object.keys(GIFT_ICON).forEach(function(k){ var g = el('button', 'gift-opt'); g.type = 'button'; g.appendChild(el('i', '', GIFT_ICON[k])); g.appendChild(el('span', '', G.g[k]));
+          g.addEventListener('click', function(){ chosen = k; Array.prototype.forEach.call(grid.children, function(x){ x.classList.remove('on'); }); g.classList.add('on'); send.disabled = false; }); grid.appendChild(g); });
+        f.appendChild(grid);
+        var note = el('input'); note.maxLength = 80; note.placeholder = G.note; f.appendChild(note);
+        var m = el('div', 'msg');
+        var send = el('button', 'btn', G.sendBtn); send.type = 'button'; send.disabled = true;
+        send.addEventListener('click', function(){
+          send.disabled = true;
+          rpc('gift_send', { p_token: s.tok, p_to: n, p_kind: chosen, p_note: note.value }).then(function(r){
+            if (r && r.err === 'ERR_SESSION') { Funk.expired(); return; }
+            if (!r || !r.ok) { send.disabled = false; m.textContent = (G.err[r && r.err] || G.err.ERR) + (r && r.left !== undefined ? ' · ' + G.left.replace('{n}', r.left) : ''); m.className = 'msg err'; return; }
+            GIFT_PICK = null; GIFT_MSG = G.sent + ' ' + G.left.replace('{n}', r.left); delete PROF_STK[n]; loadProfile();
+          }, function(){ send.disabled = false; m.textContent = G.err.ERR; m.className = 'msg err'; });
+        });
+        var row = el('div', 'btnrow'); row.appendChild(send); var cn = el('button', 'ghost', G.cancel); cn.type = 'button'; cn.addEventListener('click', function(){ GIFT_PICK = null; renderProfile(); }); row.appendChild(cn);
+        f.appendChild(row); f.appendChild(m); c.appendChild(f);
+      }
+      if (GIFT_MSG) { c.appendChild(el('div', 'msg ok', GIFT_MSG)); }
+    }
+    return c;
+  }
   var PROF_VIEW = null;
   function openProfile(n){ PROF_VIEW = n === $('name').value ? null : n; showTab('profile'); window.scrollTo(0, 0); }
 
@@ -579,7 +628,8 @@
     var n = PROF_VIEW || $('name').value;
     if (n) loadAvatars([n], renderProfile);
     if (!PROF_STATS && !PROF_BUSY) { PROF_BUSY = true; rpc('profile_stats').then(function(r){ PROF_STATS = r || {}; }).catch(function(){ PROF_STATS = {}; }).then(function(){ PROF_BUSY = false; renderProfile(); }); }
-    if (n && !PROF_STK[n]) rpc('player_profile', { p_name: n }).then(function(r){ PROF_STK[n] = (r && r.stickers) || []; renderProfile(); }).catch(function(){ PROF_STK[n] = []; renderProfile(); });
+    if (n && !PROF_STK[n]) rpc('player_profile', { p_name: n }).then(function(r){ PROF_STK[n] = (r && r.stickers) || []; PROF_GIFT[n] = { c: (r && r.gifts) || {}, l: (r && r.gift_list) || [] };
+      loadAvatars(PROF_GIFT[n].l.map(function(x){ return x.from; }), renderProfile); renderProfile(); }).catch(function(){ PROF_STK[n] = []; renderProfile(); });
     renderProfile();
   }
   function renderProfile(){
@@ -629,6 +679,7 @@
       c2.appendChild(w);
     }
     c2.appendChild(info); box.appendChild(c2);
+    box.appendChild(giftCard(n, own));
     // Erfolge mit Seltenheit
     var all = Object.keys(PROF_STATS), c3 = el('div', 'card'), h3 = el('div', 'sq-h'); h3.appendChild(el('b', '', T.ach));
     var got = 0; ACH.forEach(function(a){ if (achTier(a, s, e).t) got++; });
@@ -733,7 +784,7 @@
     setupLinks();
     Funk.init({ data: function(){ return DATA; }, lang: function(){ return LANG; }, myName: function(){ return $('name').value; },
       avEl: avEl, loadAvatars: loadAvatars, openProfile: openProfile,
-      onAuth: function(){ renderAuth(); renderEv(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
+      onAuth: function(){ MER_FOR = null; loadMerits(); renderAuth(); renderEv(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
     var last = store('skws_name');
     if (last && DATA.members.indexOf(last) >= 0){ $('name').value = last; loadMember(); }
     renderAuth();

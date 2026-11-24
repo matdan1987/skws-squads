@@ -200,3 +200,24 @@
   .fk-step{display:block;margin-top:10px;color:#9cc7f0}
   .fk-modal input{width:100%;box-sizing:border-box;margin-top:8px}
   .fk-modal .ghost{width:100%}
+  /* ---------- Geschenke ---------- */
+  .gift-shelf{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 8px}
+  .gift-chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid rgba(245,197,24,.35);border-radius:99px;padding:5px 12px 5px 8px}
+  .gift-chip i{font-style:normal;font-size:24px} .gift-chip b{font-size:14px}
+  .gift-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)}
+  .gift-ic{font-style:normal;font-size:26px;width:32px;text-align:center;flex:none}
+  .gift-row .av{margin-right:0}
+  .gift-tx{flex:1;min-width:0;font-size:14px} .gift-tx span{color:var(--muted)}
+  .gift-note{font-size:13px;color:#f5d27a;margin-top:2px;overflow-wrap:anywhere}
+  .gift-t{font-size:11px;color:var(--muted);flex:none}
+  .gift-open{margin-top:12px}
+  .gift-form{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+  .gift-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+  .gift-opt{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:8px 4px;color:var(--text);font:inherit;font-size:11px;cursor:pointer}
+  .gift-opt i{font-style:normal;font-size:28px}
+  .gift-opt.on{border-color:#f5c518;box-shadow:0 0 12px rgba(245,197,24,.4);background:rgba(245,197,24,.12)}
+  .gift-form input{width:100%;box-sizing:border-box;margin-bottom:8px}
+  .gift-form .btn{width:auto;flex:1}
+  .fk-gift{text-align:center;padding:8px 0}
+  .fk-gift i{font-style:normal;font-size:64px;display:block;line-height:1.1;filter:drop-shadow(0 0 12px rgba(245,197,24,.4))}
+  .fk-gift b{display:block;font-size:18px;margin-top:4px}
