@@ -81,34 +81,36 @@
   }
 
   /* ---------- Wüstensturm-Einsatz ---------- */
-  function renderDs(){
-    var card = $('dsCard'), P = DATA && DATA.ds, n = $('name').value;
+  function renderDs(){ renderPlan('ds'); renderPlan('cs'); }
+  function renderPlan(kind){
+    var card = $(kind + 'Card'), P = DATA && DATA[kind], n = $('name').value;
     if (!P || !P.teams || !n) { card.classList.add('hide'); return; }
     var L = DS_I18N[LANG] || DS_I18N.en, hit = null;
+    if (kind === 'cs') { var C = CS_I18N[LANG] || CS_I18N.en, M = {}; Object.keys(L).forEach(function(k){ M[k] = L[k]; }); Object.keys(C).forEach(function(k){ M[k] = C[k]; }); M.ph = [C.pl.p0, C.pl.p7, C.pl.p14]; L = M; }
     Object.keys(P.teams).forEach(function(t){
       var T = P.teams[t];
       (T.m || []).forEach(function(x){ if (x[0] === n) hit = { t: t, T: T, g: x[1] }; });
       (T.s || []).forEach(function(x, i){ if (x === n) hit = { t: t, T: T, sub: i + 1 }; });
     });
     if (!hit) { card.classList.add('hide'); return; }
-    function act(s){ var a = L.a[s[0]] || s[0]; return a.split('{b}').join(L.b[s[1]] || ''); }
-    $('dsTitle').textContent = L.title;
-    $('dsTeam').textContent = L.team + ' ' + hit.t + ' · ' + (hit.sub ? L.ersatz : L.stamm);
-    $('dsMeta').textContent = [hit.T.time, hit.T.opp ? L.vs + ' ' + hit.T.opp : ''].filter(Boolean).join(' · ');
-    var ol = $('dsSteps'); ol.innerHTML = '';
+    function act(s){ var a = L.a[s[0]] || s[0]; return a.split('{b}').join(L.b[s[1]] || '').split('{t}').join((hit.T.open && hit.T.open[s[1]]) || ''); }
+    $(kind + 'Title').textContent = L.title;
+    $(kind + 'Team').textContent = L.team + ' ' + hit.t + ' · ' + (hit.sub ? L.ersatz : L.stamm);
+    $(kind + 'Meta').textContent = [hit.T.time, hit.T.opp ? L.vs + ' ' + hit.T.opp : ''].filter(Boolean).join(' · ');
+    var ol = $(kind + 'Steps'); ol.innerHTML = '';
     if (hit.sub) {
       var li = document.createElement('li'); li.textContent = L.sub.replace('{n}', hit.sub); ol.appendChild(li);
       var ssk = hit.T.ss && hit.T.ss[hit.sub - 1];
       if (ssk && L.b[ssk]) { var li2 = document.createElement('li'); li2.textContent = (L.suba || '{b}').replace('{b}', L.b[ssk]); ol.appendChild(li2); }
-      $('dsWith').textContent = '';
+      $(kind + 'With').textContent = '';
     } else {
-      var steps = (hit.T.g && hit.T.g[hit.g]) || DS_GROUPS[hit.g] || [];
+      var steps = (hit.T.g && hit.T.g[hit.g]) || (kind === 'ds' ? DS_GROUPS[hit.g] : null) || [];
       steps.forEach(function(s, i){
         var li = document.createElement('li'), b = document.createElement('b'); b.textContent = (hit.T.ph && L.pl[hit.T.ph[i]]) || L.ph[i];
         li.appendChild(b); li.appendChild(document.createTextNode(act(s))); ol.appendChild(li);
       });
       var mates = (hit.T.m || []).filter(function(x){ return x[1] === hit.g && x[0] !== n; }).map(function(x){ return x[0]; });
-      $('dsWith').textContent = mates.length ? L['with'] + ': ' + mates.join(', ') : '';
+      $(kind + 'With').textContent = mates.length ? L['with'] + ': ' + mates.join(', ') : '';
     }
     if (hit.T.note) {
       var nl = document.createElement('li'); nl.style.listStyle = 'none'; nl.style.marginLeft = '-20px';
@@ -185,7 +187,7 @@
     if (!n) { MER_FOR = null; MER_DATA = []; renderMerits(); return; }
     if (n === MER_FOR) { renderMerits(); return; }
     MER_FOR = n; MER_DATA = []; renderMerits();
-    rpc('my_merits', { p_name: n }).then(function(r){ if (MER_FOR !== n) return; MER_DATA = Array.isArray(r) ? r : []; renderMerits(); }).catch(function(){});
+    rpc('my_merits', { p_name: n }).then(function(r){ if (MER_FOR !== n) return; MER_DATA = Array.isArray(r) ? r : []; renderMerits(); renderWeek(); }).catch(function(){});
   }
   function renderMerits(){
     var card = $('merCard'); if (!MER_DATA.length) { card.classList.add('hide'); return; }
@@ -210,8 +212,56 @@
     card.classList.remove('hide');
   }
 
+  /* ---------- Diese Woche: was steht für mich an? ---------- */
+  function renderWeek(){
+    var card = $('weekCard'), n = $('name').value; if (!n || !DATA) { card.classList.add('hide'); return; }
+    var T = HOF_I18N[LANG] || HOF_I18N.en, E = EV_I18N[LANG] || EV_I18N.en, items = [];
+    function add(icon, txt, cls, target){ items.push({ i: icon, t: txt, c: cls || '', to: target }); }
+    ['ds','cs'].forEach(function(k){
+      var r = DATA.ev && DATA.ev[k]; if (r && r.open) { var mine = r.signups && r.signups[n];
+        add(mine ? '✅' : '📝', (mine ? T.answered : T.openSign).replace('{ev}', E[k]).replace('{l}', r.label), mine ? 'ok' : 'warn', 'evCards'); }
+      var P = DATA[k]; if (P && P.teams) Object.keys(P.teams).forEach(function(t){ var Tm = P.teams[t];
+        var inM = (Tm.m || []).some(function(x){ return x[0] === n; }), inS = (Tm.s || []).indexOf(n) >= 0;
+        if (inM || inS) add('⚔️', T.job.replace('{ev}', E[k]).replace('{t}', t).replace('{time}', Tm.time ? ' · ' + Tm.time : ''), '', k + 'Card'); });
+    });
+    var e = DATA.entries[n];
+    if (!e) add('⚠️', T.never, 'warn', 'squads');
+    else { var d = Math.floor((Date.now() - new Date(e.updated)) / 86400000); if (d > 7) add('⏰', T.stale.replace('{n}', d), 'warn', 'squads'); else add('✅', T.fresh, 'ok'); }
+    (MER_DATA || []).filter(function(m){ return m.kind === 'bonus' && (Date.now() - new Date(m.created_at)) < 7 * 86400000; }).forEach(function(m){ add('🐝', T.newBee.replace('{r}', m.reason), 'ok', 'merCard'); });
+    $('weekTitle').textContent = T.week; var l = $('weekList'); l.innerHTML = '';
+    items.forEach(function(x){ var d = document.createElement('div'); d.className = 'wk ' + x.c; var ic = document.createElement('span'); ic.className = 'i'; ic.textContent = x.i; d.appendChild(ic);
+      var tx = document.createElement('span'); tx.style.flex = '1'; tx.textContent = x.t; d.appendChild(tx);
+      if (x.to && $(x.to)) { d.style.cursor = 'pointer'; d.addEventListener('click', function(){ $(x.to).scrollIntoView({ behavior:'smooth', block:'start' }); }); }
+      l.appendChild(d); });
+    card.classList.toggle('hide', !items.length);
+  }
+
+  /* ---------- Ruhmeshalle (nur Positives) ---------- */
+  function renderHof(){
+    var card = $('hofCard'); if (!PROF_STATS) { if (!PROF_BUSY) { PROF_BUSY = true; rpc('profile_stats').then(function(r){ PROF_STATS = r || {}; }).catch(function(){ PROF_STATS = {}; }).then(function(){ PROF_BUSY = false; renderHof(); }); } return; }
+    var T = HOF_I18N[LANG] || HOF_I18N.en, S = PROF_STATS, names = Object.keys(S), box = $('hofBox'); box.innerHTML = '';
+    $('hofTitle').textContent = T.hof;
+    function top(f, min){ return names.map(function(n){ return { n: n, v: f(S[n] || {}) }; }).filter(function(x){ return x.v > (min || 0); }).sort(function(a, b){ return b.v - a.v || a.n.localeCompare(b.n); }).slice(0, 5); }
+    var pm = names.slice().filter(function(n){ return (S[n].b30 || 0) > 0 || (S[n].g30 || 0) > 0; }).sort(function(a, b){ return (S[b].b30 || 0) - (S[a].b30 || 0) || (S[b].g30 || 0) - (S[a].g30 || 0); })[0];
+    var lists = [[T.topBees, top(function(s){ return s.b || 0; }), function(v){ return '🐝 ' + v; }], [T.topGrowth, top(function(s){ return s.g30 || 0; }), function(v){ return '+' + String(v).replace('.', LANG === 'en' ? '.' : ',') + ' %'; }],
+                 [T.topEvents, top(function(s){ return (s.pds || 0) + (s.pcs || 0); }), function(v){ return T.evN.replace('{n}', v); }]];
+    if (!pm && !lists.some(function(l){ return l[1].length; })) { var no = document.createElement('div'); no.className = 'hint'; no.textContent = T.none; box.appendChild(no); card.classList.remove('hide'); return; }
+    loadAvatars(names, function(){ renderHof(); });
+    if (pm) { var p = document.createElement('div'); p.className = 'hof-potm'; p.appendChild(avEl(pm, 52)); var t = document.createElement('div');
+      var k = document.createElement('div'); k.className = 'hint'; k.style.marginTop = '0'; k.textContent = '👑 ' + T.potm; t.appendChild(k);
+      var b = document.createElement('b'); b.textContent = pm; t.appendChild(b);
+      var w = document.createElement('div'); w.className = 'hint'; w.style.marginTop = '0'; w.textContent = (S[pm].b30 ? T.whyB.replace('{n}', S[pm].b30) : T.whyG.replace('{g}', S[pm].g30)); t.appendChild(w);
+      p.appendChild(t); p.addEventListener('click', function(){ openProfile(pm); }); box.appendChild(p); }
+    var g = document.createElement('div'); g.className = 'hof-grid';
+    lists.forEach(function(l){ if (!l[1].length) return; var c = document.createElement('div'); var h = document.createElement('h4'); h.textContent = l[0]; c.appendChild(h);
+      l[1].forEach(function(x, i){ var r = document.createElement('div'); r.className = 'hof-row'; r.appendChild(avEl(x.n, 22)); var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = (i + 1) + '. ' + x.n; r.appendChild(nm);
+        var v = document.createElement('span'); v.className = 'v'; v.textContent = l[2](x.v); r.appendChild(v); r.addEventListener('click', function(){ openProfile(x.n); }); c.appendChild(r); });
+      g.appendChild(c); });
+    box.appendChild(g); card.classList.remove('hide');
+  }
+
   function showMeta(){
-    loadMerits();
+    loadMerits(); renderWeek();
     if (!$('profileView').classList.contains('hide')) loadProfile();
     renderEv();
     renderDs();
@@ -343,6 +393,7 @@
     var x = members.length - missing.length, y = members.length;
     $('statTxt').textContent = t('submitted', {x: x, y: y});
     $('ovHint').textContent = (AV_I18N[LANG] || AV_I18N.en).tapName;
+    if (!renderOverview.busy) renderHof();
     $('statBar').style.width = (y ? Math.round(x / y * 100) : 0) + '%';
 
     var tb = $('ovBody'); tb.innerHTML = '';
@@ -651,7 +702,7 @@
   }
   rpc('get_init')
     .then(function(res){
-      init({ alliance: ALLIANCE, members: res.members || [], leaders: res.leaders || [], entries: res.entries || {}, ds: res.ds || null, ev: res.ev || null, av: res.av || {},
+      init({ alliance: ALLIANCE, members: res.members || [], leaders: res.leaders || [], entries: res.entries || {}, ds: res.ds || null, cs: res.cs || null, ev: res.ev || null, av: res.av || {},
              troops: ['tank','missile','aircraft','mixed'], squads: 4, langs: LANG_NAMES, i18n: I18N });
     })
     .catch(function(){ $('loadingTxt').textContent = 'Error – please reload / Fehler – bitte neu laden'; });

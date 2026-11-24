@@ -104,14 +104,43 @@ function fillPlayerSelect(){
   }).join('');
   if (curPlayer) sel.value = curPlayer;
 }
+// Spieler-Akte: alles zu einem Spieler auf einen Blick
+var PSTATS = null;
+function psLoad(){ rpc('profile_stats').then(function(r){ PSTATS = r || {}; if ((store('skws_admin_tab') || 'ov') === 'pl') renderAkte(); }).catch(function(){ PSTATS = {}; }); }
+function renderAkte(){
+  var box = $('plAkte'), p = D.all.filter(function(x){ return x.name === curPlayer; })[0];
+  if (!p) { box.innerHTML = ''; return; }
+  var s = (PSTATS && PSTATS[p.name]) || {}, mg = mgOf(p.name), CH = { A:'Stamm A', B:'Stamm B', AB:'Stamm, beide', subA:'Ersatz A', subB:'Ersatz B', sub:'Ersatz, beide', no:'diesmal nicht' };
+  var h = '<div class="card"><div class="akte-h">' + av(p.name, 56) + '<div><b>' + esc(p.name) + '</b><div class="small muted">' + p.rank + (p.active ? '' : ' · ausgeschieden') +
+    (mg ? ' · Mentorengruppe ' + mg.g + (mg.role === 'mentor' ? ' (Mentor)' : mg.role === 'r4' ? ' (Leitung)' : '') : ' · keine Mentorengruppe') +
+    (p.entry ? ' · ' + (p.entry.hasEmail ? 'E-Mail hinterlegt' : 'keine E-Mail') : '') + '</div><div>' + mgBadge(p.name) + merBadge(p.name) + '</div></div></div>';
+  h += '<div class="akte-k"><div>Bienchen<b>🐝 ' + (s.b || 0) + '</b></div><div>Teufelchen<b>😈 ' + (s.d || 0) + '</b>' + (s.d90 ? s.d90 + ' in 90 Tagen' : '') + '</div>' +
+    '<div>Wüstensturm gespielt<b>' + (s.pds || 0) + '</b></div><div>Schluchtsturm gespielt<b>' + (s.pcs || 0) + '</b></div><div>Als Ersatz eingeplant<b>' + (s.sub || 0) + '</b></div>' +
+    '<div>Gefehlt<b' + (s.abs ? ' class="down"' : '') + '>' + (s.abs || 0) + '</b></div><div>Anmeldungen<b>' + (s.su || 0) + '</b></div><div>Meldetage<b>' + (s.hn || 0) + '</b></div></div>';
+  h += '<div class="btnrow"><button class="btn2" data-akte="merit">Bonus/Malus vergeben</button></div></div>';
+  // Bonus/Malus
+  var ml = MER.filter(function(m){ return m.name === p.name; });
+  h += '<div class="card"><h2>Bonus/Malus (' + ml.length + ')</h2>' + (ml.length ? ml.map(function(m){ var bad = m.kind === 'malus';
+    return '<div class="akte-ev"' + (m.active ? '' : ' style="opacity:.55"') + '><b class="' + (bad ? 'down' : 'up') + '">' + (bad ? '▼ Malus' : '▲ Bonus') + '</b><span>' + esc(m.reason) + '</span><span class="muted">' + MER_EFF[m.effect] + ' · ' + (m.revoked_at ? 'zurückgenommen' : m.active ? merDur(m) : 'abgelaufen') + ' · ' + fmtDate(new Date(m.created_at)) + (m.by ? ' · ' + esc(m.by) : '') + '</span>' +
+      (m.note ? '<span class="muted"><i>' + esc(m.note) + '</i></span>' : '') + (m.active && !m.revoked_at ? '<button class="mini danger" data-merrev="' + m.id + '">Zurücknehmen</button>' : '') + '</div>'; }).join('') : '<div class="small muted">Keine Einträge.</div>') + '</div>';
+  // Events
+  var evl = EV.filter(function(r){ return (r.signups || []).some(function(x){ return x.name === p.name; }) || (r.lineup && r.lineup[p.name]); });
+  h += '<div class="card"><h2>Events (letzte Runden)</h2>' + (evl.length ? evl.map(function(r){
+    var su = (r.signups || []).filter(function(x){ return x.name === p.name; })[0], l = r.lineup && r.lineup[p.name], gone = (r.absent || []).indexOf(p.name) >= 0;
+    return '<div class="akte-ev"><b>' + (r.kind === 'cs' ? 'Schluchtsturm' : 'Wüstensturm') + ' ' + esc(r.label) + '</b><span class="muted">Anmeldung: ' + (su ? CH[su.choice] || su.choice : '–') + '</span>' +
+      '<span>' + (l ? 'eingeteilt: Team ' + l[0] + (l[1] === 'S' ? ' Stamm' : ' Ersatz') : '<span class="muted">nicht eingeteilt</span>') + '</span>' + (gone ? '<span class="down">gefehlt</span>' : '') + '</div>';
+  }).join('') : '<div class="small muted">Noch keine Anmeldungen.</div>') + '</div>';
+  box.innerHTML = h;
+}
 function renderPlayer(){
+  renderAkte();
   var p = D.all.filter(function(x){ return x.name === curPlayer; })[0];
   if (!p) { $('plTiles').innerHTML = ''; $('chartPlayer').innerHTML = '<div class="empty">Spieler oben auswählen.</div>'; $('plTable').innerHTML = ''; return; }
   if (!p.entry) { $('plTiles').innerHTML = tile('Rang', p.rank, 'noch keine Meldung'); $('chartPlayer').innerHTML = '<div class="empty">Keine Daten.</div>'; $('plTable').innerHTML = ''; return; }
   $('plTiles').innerHTML =
     tile('Gesamt', fmtM(p.total), p.delta === null ? 'erste Meldung' : fmtDelta(p.delta) + ' M seit letzter Meldung') +
     tile('T1', fmtM(p.t1), TROOPS[sq(p.entry,0).type] || '') +
-    tile('Wachstum', p.growth === null ? '–' : (p.growth > 0 ? '+' : '') + fmt(p.growth) + ' M', 'seit erster Meldung (' + fmtDate(p.history[0].t) + ')') +
+    tile('Wachstum', p.growth === null ? '–' : (p.growth > 0 ? '+' : '') + fmt(p.growth) + ' M', (p.history.length ? 'seit erster Meldung (' + fmtDate(p.history[0].t) + ')' : '')) +
     tile('Meldungen', String(p.history.length), (p.stale ? '<span class="stale">⚠ ' : '') + 'zuletzt ' + ago(p.updated) + (p.stale ? '</span>' : '') + ' · Rang ' + p.rank + (mgOf(p.name) ? ' · ' + mgBadge(p.name) : ''));
   lineChart($('chartPlayer'), [0,1,2,3].map(function(i){
     return { name:'T' + (i+1), color:SLOT_COLORS[i], points: p.history.filter(function(h){ return (h.squads[i] || {}).power; }).map(function(h){ return { x:h.t, y:Number(h.squads[i].power) }; }) };

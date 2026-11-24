@@ -27,8 +27,9 @@ import java.time.OffsetDateTime;
 import java.util.Locale;
 
 /**
- * Prüft einmal täglich im Hintergrund, ob die Werte des gewählten Spielers älter als 7 Tage sind,
- * und meldet sich dann per Benachrichtigung (höchstens alle 2 Tage).
+ * Prüft zweimal täglich im Hintergrund, ob die Werte des gewählten Spielers älter als 7 Tage sind
+ * (Benachrichtigung höchstens alle 2 Tage), und ob eine Event-Anmeldung offen ist, auf die der Spieler
+ * noch nicht geantwortet hat und deren Anmeldeschluss in weniger als 36 Stunden ist (einmal pro Runde).
  */
 public class ReminderJob extends JobService {
 
@@ -77,9 +78,10 @@ public class ReminderJob extends JobService {
         String name = p.getString("name", "");
         if (!p.getBoolean("on", false) || name.isEmpty()) return;
         long now = System.currentTimeMillis();
+        JSONObject data = new JSONObject(post(API, "{}"));
+        checkEvents(c, p, data, name, now);
         if (now - p.getLong("lastNotified", 0) < SNOOZE) return;
 
-        JSONObject data = new JSONObject(post(API, "{}"));
         JSONObject entries = data.optJSONObject("entries");
         JSONObject e = entries == null ? null : entries.optJSONObject(name);
         boolean never = e == null;
@@ -89,6 +91,50 @@ public class ReminderJob extends JobService {
         int days = never ? -1 : (int) ((now - updated) / DAY);
         notify(c, name, days);
         p.edit().putLong("lastNotified", now).apply();
+    }
+
+    /** Offene Anmelderunde (Wüstensturm/Schluchtsturm) ohne Antwort des Spielers kurz vor Anmeldeschluss */
+    static void checkEvents(Context c, SharedPreferences p, JSONObject data, String name, long now) {
+        JSONObject ev = data.optJSONObject("ev");
+        if (ev == null) return;
+        for (String kind : new String[]{ "ds", "cs" }) {
+            JSONObject r = ev.optJSONObject(kind);
+            if (r == null || !r.optBoolean("open", false)) continue;
+            JSONObject su = r.optJSONObject("signups");
+            if (su != null && su.has(name)) continue;
+            String key = "evNotified_" + r.optInt("id");
+            if (p.getBoolean(key, false)) continue;
+            long dl = 0;
+            try { if (!r.isNull("deadline")) dl = OffsetDateTime.parse(r.getString("deadline")).toInstant().toEpochMilli(); } catch (Exception ignored) { }
+            if (dl == 0 || dl < now || dl - now > 36 * 3_600_000L) continue;
+            notifyEvent(c, name, kind, r.optString("label", ""), dl);
+            p.edit().putBoolean(key, true).apply();
+        }
+    }
+
+    static void notifyEvent(Context c, String name, String kind, String label, long deadline) {
+        if (!canNotify(c)) return;
+        boolean de = Locale.getDefault().getLanguage().equals("de");
+        String ev = kind.equals("cs") ? (de ? "Schluchtsturm" : "Canyon Storm") : (de ? "Wüstensturm" : "Desert Storm");
+        String when = new java.text.SimpleDateFormat(de ? "EEE HH:mm" : "EEE h:mm a", Locale.getDefault()).format(new java.util.Date(deadline));
+        NotificationManager nm = c.getSystemService(NotificationManager.class);
+        nm.createNotificationChannel(new NotificationChannel(CHANNEL,
+                de ? "Squad-Erinnerung" : "Squad reminder", NotificationManager.IMPORTANCE_DEFAULT));
+        String title = de ? "SKWS – Anmeldung " + ev : "SKWS – " + ev + " sign-up";
+        String text = de ? name + ", du hast dich für " + ev + " " + label + " noch nicht gemeldet. Anmeldeschluss: " + when + "."
+                         : name + ", you haven't answered the " + ev + " " + label + " sign-up yet. Deadline: " + when + ".";
+        Intent open = new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pi = PendingIntent.getActivity(c, 1, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification n = new Notification.Builder(c, CHANNEL)
+                .setSmallIcon(R.drawable.ic_notify)
+                .setColor(0xFF5CC8FF)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setStyle(new Notification.BigTextStyle().bigText(text))
+                .setContentIntent(pi)
+                .setAutoCancel(true)
+                .build();
+        nm.notify(kind.equals("cs") ? 3 : 2, n);
     }
 
     static String post(String url, String body) throws Exception {

@@ -16,6 +16,7 @@ function evStats(kind){
     Object.keys(su).concat(Object.keys(r.lineup)).forEach(function(n){ out[n] = out[n] || { played: 0, benched: 0 }; });
     Object.keys(out).forEach(function(n){
       var l = r.lineup[n], c = su[n];
+      if ((r.absent || []).indexOf(n) >= 0) return;   // gefehlt: zählt weder als gespielt noch als pausiert
       if (l === 'AS' || l === 'BS') out[n].played++;
       else if (c && c !== 'no') out[n].benched++;
     });
@@ -75,6 +76,18 @@ function evRender(kind){
     '<div><label>Team B – Uhrzeit</label><input id="evTb_' + K + '" type="text" maxlength="30" value="' + esc(st.time.B || '') + '" placeholder="z. B. Fr 21:00"></div></div>' +
     '<p class="small muted" style="margin:0 0 6px">Eine neue Runde schließt die bisherige. Die Uhrzeiten sehen die Spieler bei der Auswahl.</p>' +
     '<div class="btnrow"><button class="btn" data-ev="create" data-kind="' + K + '">Anmelderunde starten</button></div></details>';
+  // Nach dem Event: nur die Fehlenden markieren (letzte Runde mit gemerkter Aufstellung)
+  var lr = EV.filter(function(x){ return x.kind === kind && x.lineup && Object.keys(x.lineup).length; })[0];
+  if (lr) {
+    var abs = lr.absent || [], planned = Object.keys(lr.lineup).filter(function(nm){ return /S$/.test(lr.lineup[nm]); }).sort(function(a, b){ return a.localeCompare(b, 'de', {sensitivity:'base'}); });
+    var subs = Object.keys(lr.lineup).filter(function(nm){ return /E$/.test(lr.lineup[nm]); }).sort(function(a, b){ return a.localeCompare(b, 'de', {sensitivity:'base'}); });
+    function chk(nm){ return '<label class="chip" style="display:inline-flex;align-items:center;gap:6px;margin:2px;cursor:pointer"><input type="checkbox" data-evabs="' + esc(nm) + '"' + (abs.indexOf(nm) >= 0 ? ' checked' : '') + ' style="width:16px;height:16px;padding:0;accent-color:var(--err)">' + av(nm, 18) + esc(nm) + ' <span class="muted">' + lr.lineup[nm][0] + '</span></label>'; }
+    h += '<details style="margin-top:10px"' + (abs.length ? '' : '') + '><summary class="small">Nach dem Event: Wer hat gefehlt? – ' + esc(lr.label) + (abs.length ? ' (' + abs.length + ' markiert)' : '') + '</summary>' +
+      '<p class="small muted" style="margin:6px 0">Nur ankreuzen, wer eingeteilt war, aber nicht da war. Alle anderen gelten als dabei. Das zählt für Rotation, Profil-Erfolge und auf Wunsch als Malus.</p>' +
+      '<div class="evgrp">Stamm (' + planned.length + ')</div><div>' + planned.map(chk).join('') + '</div>' +
+      (subs.length ? '<div class="evgrp">Ersatz (' + subs.length + ')</div><div>' + subs.map(chk).join('') + '</div>' : '') +
+      '<div class="btnrow"><button class="btn2" data-ev="absent" data-kind="' + K + '" data-round="' + lr.id + '">Fehlende speichern</button></div></details>';
+  }
   h += '<div class="note" id="evMsg_' + K + '"></div>';
   box.innerHTML = h;
 }
@@ -117,6 +130,20 @@ function evTake(kind){
   if (kind === 'ds') { dsSave(st); dsRender(); } else { csSave(st); csRender(); }
   evNote(kind, 'Übernommen: A ' + n.AS + ' + ' + n.AE + ' Ersatz, B ' + n.BS + ' + ' + n.BE + ' Ersatz.' + (blocked.length ? ' Gesperrt: ' + blocked.join(', ') + '.' : '') + (forced.length ? ' Nur Ersatz (Malus): ' + forced.join(', ') + '.' : '') + ' Jetzt im Spiel eintragen und unten den Plan erstellen.', true);
 }
+// Fehlende speichern und für neu Markierte auf Wunsch den Malus „nicht erschienen“ vergeben
+function evAbsent(kind, id){
+  var r = EV.filter(function(x){ return x.id === id; })[0]; if (!r) return;
+  var names = Array.prototype.slice.call($('ev_' + kind).querySelectorAll('[data-evabs]')).filter(function(c){ return c.checked; }).map(function(c){ return c.dataset.evabs; });
+  var neu = names.filter(function(n){ return (r.absent || []).indexOf(n) < 0; });
+  var reason = (merCat().reasons.filter(function(x){ return x.k === 'malus' && /nicht erschienen/i.test(x.r); })[0]) || { r:'Angemeldet, aber nicht erschienen', k:'malus', e:'sub', s:'both', n:2 };
+  var giveMalus = neu.length && confirm('Fehlende gespeichert: ' + (names.join(', ') || 'niemand') + '.\n\nFür die neu Markierten (' + neu.join(', ') + ') den Malus „' + reason.r + '“ vergeben (' + MER_EFF[reason.e] + ', ' + (reason.n || 'ohne') + ' Runde(n))?\nAbbrechen = nur als fehlend speichern.');
+  evNote(kind, '…', true);
+  rpc('admin_event', { p_pw: PW, p_action: 'absent', p_data: { id: id, names: names }, p_actor: ACTOR || null }).then(function(){
+    if (!giveMalus) return;
+    return neu.reduce(function(pr, n){ return pr.then(function(){ return rpc('admin_merit', { p_pw: PW, p_action: 'add', p_data: { name: n, kind: 'malus', effect: reason.e, scope: reason.s, reason: reason.r, note: (kind === 'cs' ? 'Schluchtsturm ' : 'Wüstensturm ') + r.label, rounds: reason.n === '' || reason.n === undefined ? '' : String(reason.n), until: '' }, p_actor: ACTOR || null }); }); }, Promise.resolve());
+  }).then(function(){ return load(PW, true).then(function(){ showTab(kind); evNote(kind, 'Gespeichert: ' + (names.length ? names.length + ' fehlend' : 'alle waren da') + (giveMalus ? ', Malus vergeben.' : '.'), true); }); })
+    .catch(function(){ evNote(kind, 'Fehler – ist die Datenbank-Erweiterung „ausbau“ eingespielt?', false); });
+}
 function evCall(kind){
   var r = evCur(kind), dl = evDl(r);
   var t = 'SKWS ' + EV_NAME[kind] + ' ' + r.label + ': Bitte bis ' + (dl ? fmtDateTime(dl) : 'bald') + ' auf der Squad-Seite anmelden – als Stamm oder nur als Ersatz, jeweils für Team A' + (r.time_a ? ' (' + r.time_a + ')' : '') + ', Team B' + (r.time_b ? ' (' + r.time_b + ')' : '') + ' oder beide Zeiten – oder diesmal nicht. Wir tragen euch dann im Spiel ein.\n' +
@@ -149,5 +176,6 @@ function evNudge(kind){
     else if (a === 'fix') { var fn = $('evFix_' + kind).value; if (!fn) return; var c = evCfg(kind); c.fixed.push(fn); evDo(kind, 'config', { kind: kind, cfg: c }, fn + ' ist gesetzt.'); }
     else if (a === 'call') evCall(kind);
     else if (a === 'nudge') evNudge(kind);
+    else if (a === 'absent') evAbsent(kind, +b.dataset.round);
   });
 });

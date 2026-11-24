@@ -1,10 +1,20 @@
 /* SKWS Squads – Admin: start (gemeinsamer globaler Bereich, Reihenfolge der Dateien beachten) */
 /* ---------- Steuerung ---------- */
+// Bereiche der Navigation: jeder Reiter gehört zu genau einem Bereich
+var NAV = { sp:['ov','mem','pl','dev','hist'], ev:['ds','cs'], al:['mg','mer'], sy:['exp','adm','log'] };
+function navGroupOf(t){ for (var g in NAV) if (NAV[g].indexOf(t) >= 0) return g; return 'sp'; }
+function navRender(name){
+  var g = navGroupOf(name);
+  Array.prototype.forEach.call(document.querySelectorAll('#navg button'), function(b){ b.classList.toggle('on', b.dataset.g === g); });
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function(b){ b.classList.toggle('hide', NAV[g].indexOf(b.dataset.tab) < 0); });
+  $('tabs').classList.toggle('hide', NAV[g].length < 2);
+}
 function showTab(name){
+  navRender(name);
   var bs = document.querySelectorAll('#tabs button');
   for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
   ['ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','adm','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
-  store('skws_admin_tab', name);
+  store('skws_admin_tab', name); store('skws_admin_tab_' + navGroupOf(name), name);
   if (name === 'hist') renderHistory();
   if (name === 'ov') renderOverview();
   if (name === 'pl') renderPlayer();
@@ -24,7 +34,7 @@ function renderAll(){
 function load(pw, silent){
   $('loginBtn').disabled = true; $('loginMsg').textContent = '';
   return rpc('admin_data', { p_pw: pw }).then(function(raw){
-    DS_PUB = raw.ds || null;
+    DS_PUB = raw.ds || null; CS_PUB = raw.cs || null;
     var first = !PW && !silent;
     PW = pw; store('skws_admin_pw', pw); if (!silent) { if ($('remember').checked) ls('skws_admin_pw_keep', pw); else ls('skws_admin_pw_keep', null); }
     D = prep(raw); mgInit(raw); EV = raw.ev || []; EVCFG = raw.evcfg || {}; MER = raw.merits || []; MERCFG = raw.meritcfg || null;
@@ -32,7 +42,7 @@ function load(pw, silent){
     if (first) rpc('admin_login', { p_pw: pw, p_actor: ACTOR || null }).catch(function(){});
     $('loginView').classList.add('hide'); $('app').classList.remove('hide');
     $('reload').classList.remove('hide'); $('logout').classList.remove('hide');
-    renderAll(); avLoad();
+    renderAll(); avLoad(); psLoad();
   }).catch(function(err){
     if (String(err && err.message).indexOf('ERR_AUTH') >= 0) forgetPw();
     if (!silent) $('loginMsg').textContent = String(err && err.message).indexOf('ERR_AUTH') >= 0 ? 'Kennwort falsch.' : 'Laden fehlgeschlagen – bitte erneut versuchen.';
@@ -47,6 +57,7 @@ $('loginForm').addEventListener('submit', function(e){
 });
 $('logout').addEventListener('click', function(){ forgetPw(); location.reload(); });
 $('reload').addEventListener('click', function(){ if (PW) load(PW, true); });
+$('navg').addEventListener('click', function(e){ var b = e.target.closest('button[data-g]'); if (!b) return; var g = b.dataset.g, last = store('skws_admin_tab_' + g); showTab(last && NAV[g].indexOf(last) >= 0 ? last : NAV[g][0]); window.scrollTo(0, 0); });
 $('tabs').addEventListener('click', function(e){ var b = e.target.closest('button'); if (b) showTab(b.dataset.tab); });
 ['memSearch','memSort','memFilter'].forEach(function(id){ $(id).addEventListener(id === 'memSearch' ? 'input' : 'change', renderMembers); });
 $('memTable').addEventListener('click', function(e){
@@ -54,6 +65,11 @@ $('memTable').addEventListener('click', function(e){
   curPlayer = tr.dataset.name; $('plSelect').value = curPlayer; showTab('pl');
 });
 $('plSelect').addEventListener('change', function(){ curPlayer = this.value; renderPlayer(); });
+$('plAkte').addEventListener('click', function(e){
+  var b = e.target.closest('[data-akte]'); if (b) { showTab('mer'); $('merName').value = curPlayer; merHint(false); window.scrollTo(0, 0); return; }
+  var rv = e.target.closest('[data-merrev]'); if (rv) { var m = MER.filter(function(x){ return x.id === +rv.dataset.merrev; })[0]; if (!m || !confirm('„' + m.reason + '“ von ' + m.name + ' zurücknehmen?')) return;
+    rpc('admin_merit', { p_pw: PW, p_action: 'revoke', p_data: { id: m.id }, p_actor: ACTOR || null }).then(function(){ return load(PW, true).then(function(){ showTab('pl'); }); }); }
+});
 $('admSearch').addEventListener('input', renderAdmin);
 $('selSearch').addEventListener('input', renderExport);
 ['logView','logFilter'].forEach(function(id){ $(id).addEventListener('change', renderLog); });
@@ -142,3 +158,14 @@ $('tab-adm').addEventListener('click', function(e){
 var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (!D) return; var t = store('skws_admin_tab') || 'ov'; showTab(t); }, 200); });
 var saved = savedPw();
 if (saved) load(saved, true);
+
+/* ---------- Datensicherung ---------- */
+$('bkDl').addEventListener('click', function(){
+  var n = $('bkMsg'); n.textContent = 'Erstelle Sicherung …'; n.className = 'note ok';
+  rpc('admin_backup', { p_pw: PW, p_actor: ACTOR || null }).then(function(d){
+    var txt = JSON.stringify(d), name = 'skws-sicherung-' + fileDate() + '.json', A = window.SKWSAndroid;
+    if (A && A.saveFile) A.saveFile(name, txt, 'application/json');
+    else { var blob = new Blob([txt], { type: 'application/json' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
+    n.textContent = 'Sicherung gespeichert: ' + name + ' (' + Math.round(txt.length / 1024) + ' KB).'; n.className = 'note ok';
+  }).catch(function(){ n.textContent = 'Fehler – ist die Datenbank-Erweiterung „ausbau“ eingespielt?'; n.className = 'note err'; });
+});

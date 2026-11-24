@@ -11,7 +11,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="logo">SKWS</div>
+    <img class="logo" src="img/skws-emblem.jpg" alt="SKWS">
     <div class="htxt"><div class="a">SKWS – Skywalkers</div><h1>Admin · <span id="who">R4/R5</span></h1></div>
     <button class="ghost hide" id="reload" title="Neu laden">↻</button>
     <button class="ghost hide" id="logout">Abmelden</button>
@@ -32,6 +32,12 @@
   </div>
 
   <div id="app" class="hide">
+    <div class="navg" id="navg">
+      <button data-g="sp"><span>👥</span>Spieler</button>
+      <button data-g="ev"><span>⚔️</span>Events</button>
+      <button data-g="al"><span>🛡️</span>Allianz</button>
+      <button data-g="sy"><span>⚙️</span>System</button>
+    </div>
     <div class="tabs" id="tabs">
       <button data-tab="ov" class="on">Übersicht</button>
       <button data-tab="mem">Mitglieder</button>
@@ -103,6 +109,7 @@
     <!-- Spieler -->
     <section id="tab-pl" class="hide">
       <div class="card"><select id="plSelect"></select></div>
+      <div id="plAkte"></div>
       <div class="tiles" id="plTiles"></div>
       <div class="card"><h2>Kampfkraft je Trupp</h2><div class="chart" id="chartPlayer"></div></div>
       <div class="card"><h2>Alle Meldungen</h2><div class="tw"><table id="plTable"></table></div></div>
@@ -299,8 +306,14 @@
             <button class="btn2" id="csCopyA">Chat-Text Team A kopieren</button>
             <button class="btn2" id="csCopyB">Chat-Text Team B kopieren</button>
           </div>
+          <div class="btnrow" style="margin-top:12px">
+            <button class="btn" id="csPublish">Für Spieler veröffentlichen</button>
+            <button class="btn2" id="csUnpublish">Veröffentlichung zurücknehmen</button>
+          </div>
+          <p class="small muted" style="margin:6px 0 0">Veröffentlicht: Jeder Spieler sieht auf der Seite und in der App seinen eigenen Schluchtsturm-Einsatz (Team, Uhrzeit, Aufgabe je Phase) in seiner Sprache.</p>
         </div>
         <div class="note" id="csMsg"></div>
+        <div class="small muted" id="csPubInfo"></div>
       </div>
     </section>
 
@@ -394,6 +407,12 @@
 
     <!-- Verwaltung -->
     <section id="tab-adm" class="hide">
+      <div class="card">
+        <h2>Datensicherung</h2>
+        <p class="small muted" style="margin:0 0 8px">Lädt alle Daten (Mitglieder, Meldungen, Verlauf, Anmeldungen, Bonus/Malus, Mentorengruppen, Avatare, Pläne, Logbuch) als eine JSON-Datei herunter. Zusätzlich läuft jede Woche automatisch eine Sicherung nach Google Drive.</p>
+        <div class="btnrow"><button class="btn2" id="bkDl">Datensicherung herunterladen</button></div>
+        <div class="note" id="bkMsg"></div>
+      </div>
       <div class="card">
         <h2>Neues Mitglied</h2>
         <form id="addForm" class="addrow">

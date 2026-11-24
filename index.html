@@ -11,7 +11,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="logo">SKWS</div>
+    <img class="logo" src="img/skws-emblem.jpg" alt="SKWS">
     <div class="htxt"><div class="a" id="allianceName">SKWS – Skywalkers</div><h1 data-t="title">Squads</h1></div>
     <select id="lang" aria-label="Language"></select>
   </header>
@@ -46,6 +46,7 @@
         <div class="meta hide" id="lastUpdate"></div>
       </div>
 
+      <div class="card hide" id="weekCard"><div class="sq-h"><b id="weekTitle"></b></div><div id="weekList"></div></div>
       <div id="evCards"></div>
       <div class="card hide" id="merCard"><div class="sq-h"><b id="merTitle"></b></div><div id="merList"></div><div class="hint" id="merHint"></div></div>
 
@@ -54,6 +55,13 @@
         <div class="hint" id="dsMeta" style="margin-top:0"></div>
         <ol id="dsSteps" class="dssteps"></ol>
         <div class="hint" id="dsWith"></div>
+      </div>
+
+      <div class="card hide" id="csCard">
+        <div class="sq-h"><b id="csTitle"></b><span class="tag req" id="csTeam"></span></div>
+        <div class="hint" id="csMeta" style="margin-top:0"></div>
+        <ol id="csSteps" class="dssteps"></ol>
+        <div class="hint" id="csWith"></div>
       </div>
 
       <div id="squads"></div>
@@ -103,6 +111,7 @@
     </section>
 
     <section id="overviewView" class="hide">
+      <div class="card hide" id="hofCard"><div class="sq-h"><b id="hofTitle"></b><span class="tag req">🏆</span></div><div id="hofBox"></div></div>
       <div class="card">
         <div class="stat"><b id="statTxt"></b><div class="bar"><i id="statBar" style="width:0"></i></div></div>
         <div class="hint" id="ovHint"></div>

@@ -139,7 +139,7 @@ function csRender(){
     $('csTac' + t).value = CS_TACTICS[st.tac[t]] ? st.tac[t] : 'lab'; csTacInfo(t);
   });
   $('csMetric').value = st.metric;
-  evRender('cs');
+  evRender('cs'); csPubInfo();
   csRenderList();
 }
 function csRenderList(){
@@ -169,7 +169,8 @@ function csBuild(st){
     TC.groups.forEach(function(g){ for (var k = 0; k < g.n && i < stamm.length; k++, i++) members.push([stamm[i].name, g.k]); });
     for (; i < stamm.length; i++) members.push([stamm[i].name, last]);
     if (stamm.length > 20) warn.push('Team ' + t + ': ' + stamm.length + ' Stammspieler – im Spiel sind nur 20 möglich.');
-    plan.teams[t] = { time: st.time[t] || '', opp: st.opp[t] || '', note: st.note[t] || '', tac: tk, ph: TC.ph, m: members, s: subs.map(function(p){ return p.name; }) };
+    var used = {}; TC.groups.forEach(function(g){ if (members.some(function(x){ return x[1] === g.k; })) used[g.k] = g.steps; });
+    plan.teams[t] = { time: st.time[t] || '', opp: st.opp[t] || '', note: st.note[t] || '', tac: tk, ph: TC.ph, g: used, open: CS_OPEN, top: !!TC.top, m: members, s: subs.map(function(p){ return p.name; }) };
   });
   return { plan: plan, warn: warn, by: by };
 }
@@ -177,6 +178,18 @@ function csGroupsOf(T){
   var TC = CS_TACTICS[T.tac], out = [];
   TC.groups.forEach(function(g){ var names = T.m.filter(function(x){ return x[1] === g.k; }).map(function(x){ return x[0]; }); if (names.length) out.push({ g: g, names: names }); });
   return out;
+}
+var CS_PUB = null;
+function csPubInfo(){
+  var p = CS_PUB;
+  $('csPubInfo').textContent = p && p.at ? 'Aktuell veröffentlicht: ' + fmtDateTime(new Date(p.at)) + ' (' + Object.keys(p.teams || {}).map(function(t){ return 'Team ' + t; }).join(' + ') + ')' : 'Aktuell ist kein Schluchtsturm-Einsatz veröffentlicht.';
+}
+function csPublish(plan){
+  $('csMsg').textContent = 'Speichere…'; $('csMsg').className = 'note';
+  rpc('admin_cs_publish', { p_pw: PW, p_plan: plan, p_actor: ACTOR || null }).then(function(){
+    CS_PUB = plan; csPubInfo();
+    $('csMsg').textContent = plan ? 'Veröffentlicht – die Spieler sehen ihren Schluchtsturm-Einsatz jetzt auf der Seite.' : 'Veröffentlichung zurückgenommen.'; $('csMsg').className = 'note ok';
+  }).catch(function(e){ $('csMsg').textContent = 'Fehler beim Speichern – ist die Datenbank-Erweiterung „ausbau“ eingespielt? ' + (e && e.message || ''); $('csMsg').className = 'note err'; });
 }
 function csRun(example){
   var st = null;
@@ -187,6 +200,7 @@ function csRun(example){
     st.time = { A: st.time.A || 'Do 15:00', B: st.time.B || 'Do 21:00' };
   }
   var r = csBuild(st); r.example = example === true; CS_LAST = r;
+  $('csPublish').disabled = !!r.example; $('csPublish').style.opacity = r.example ? .4 : '';
   if (example !== true) evSaveLineup('cs', csState().assign);
   var P = r.plan, h = '';
   ['A','B'].forEach(function(t){
@@ -333,5 +347,7 @@ function csRender_img(t, lang, IMG){
   $('csClear').addEventListener('click', function(){ if (!confirm('Alle Schluchtsturm-Zuordnungen löschen?')) return; upd(function(st){ st.assign = {}; }); csRenderList(); });
   $('csList').addEventListener('change', function(e){ var s = e.target.closest('select[data-cs]'); if (!s) return; var n = s.dataset.cs, v = s.value; upd(function(st){ if (v) st.assign[n] = v; else delete st.assign[n]; }); csRenderList(); });
   $('csRun').addEventListener('click', function(){ csRun(false); });
+  $('csPublish').addEventListener('click', function(){ if (!CS_LAST || CS_LAST.example) return; csRun(false); if (!Object.keys(CS_LAST.plan.teams).length || !confirm('Schluchtsturm-Einsatz für die Spieler veröffentlichen?')) return; var pl = JSON.parse(JSON.stringify(CS_LAST.plan)); pl.at = new Date().toISOString(); csPublish(pl); });
+  $('csUnpublish').addEventListener('click', function(){ if (confirm('Veröffentlichten Schluchtsturm-Einsatz zurücknehmen?')) csPublish(null); });
   $('csExample').addEventListener('click', function(){ csRun(true); });
 })();
