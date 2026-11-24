@@ -204,6 +204,7 @@
       <button data-tab="ds">Wüstensturm</button>
       <button data-tab="cs">Schluchtsturm</button>
       <button data-tab="mg">Mentoren</button>
+      <button data-tab="mer">Bonus/Malus</button>
       <button data-tab="adm">Verwaltung</button>
       <button data-tab="log">Logbuch</button>
     </div>
@@ -494,6 +495,41 @@
       </div>
     </section>
 
+    <section id="tab-mer" class="hide">
+      <div class="tiles" id="merTiles"></div>
+      <div class="card">
+        <h2>Eintrag vergeben</h2>
+        <div class="formrow">
+          <div><label for="merName">Spieler</label><select id="merName"></select></div>
+          <div><label for="merReason">Grund</label><select id="merReason"></select></div>
+          <div><label for="merKind">Art</label><select id="merKind"><option value="malus">Malus</option><option value="bonus">Bonus</option></select></div>
+          <div><label for="merEffect">Wirkung</label><select id="merEffect"><option value="sub">nur als Ersatz</option><option value="block">gesperrt (nimmt nicht teil)</option><option value="prio">Vorrang für den Stamm</option><option value="none">nur vermerken (keine Wirkung)</option></select></div>
+          <div><label for="merScope">Gilt für</label><select id="merScope"><option value="both">Wüstensturm und Schluchtsturm</option><option value="ds">nur Wüstensturm</option><option value="cs">nur Schluchtsturm</option></select></div>
+          <div><label for="merRounds">Dauer in Runden (leer = ohne Rundenlimit)</label><input id="merRounds" type="number" min="0" max="50" step="1"></div>
+          <div><label for="merUntil">Oder bis Datum (optional)</label><input id="merUntil" type="date"></div>
+          <div id="merOwnBox" class="hide"><label for="merOwn">Eigener Grund</label><input id="merOwn" type="text" maxlength="80"></div>
+        </div>
+        <div><label for="merNote" class="small muted">Interne Notiz (sehen nur R4/R5)</label><textarea id="merNote" rows="2" maxlength="300"></textarea></div>
+        <div class="note" id="merHint" style="margin-top:6px"></div>
+        <div class="btnrow"><button class="btn" id="merAdd">Eintrag speichern</button></div>
+        <p class="small muted" style="margin:8px 0 0">Runden zählen je Event ab der Anmelderunde, die gerade offen ist (sonst ab der nächsten), und sind verbraucht, sobald die Runde geschlossen wird. Ohne Runden und ohne Datum gilt eine Wirkung, bis du sie zurücknimmst. Der Spieler sieht seine aktiven Einträge mit Grund und Restdauer auf der Squad-Seite, aber nicht die interne Notiz.</p>
+      </div>
+      <div class="card">
+        <h2>Aktive Einträge (<span id="merActiveCount">0</span>)</h2>
+        <div class="toolbar"><input id="merSearch" type="search" placeholder="Spieler suchen…"></div>
+        <div class="tw"><table id="merActive"></table></div>
+        <details style="margin-top:10px"><summary>Verlauf – abgelaufene und zurückgenommene Einträge (<span id="merOldCount">0</span>)</summary><div class="tw" style="margin-top:8px"><table id="merOld"></table></div></details>
+        <div class="note" id="merMsg"></div>
+      </div>
+      <div class="card">
+        <h2>Gründe-Liste</h2>
+        <p class="small muted" style="margin:0 0 8px">Vorlagen für die Auswahl oben. Wählst du einen Grund, werden Art, Wirkung, Geltung und Dauer vorgeschlagen; ändern kannst du sie trotzdem. Wiederholt sich ein Malus mit demselben Grund innerhalb von 4 Wochen, wird die doppelte Dauer vorgeschlagen.</p>
+        <div class="tw"><table id="merCat"></table></div>
+        <div class="btnrow"><button class="btn2" id="merCatAdd">Grund hinzufügen</button><button class="btn" id="merCatSave">Gründe-Liste speichern</button></div>
+        <div class="note" id="merCatMsg"></div>
+      </div>
+    </section>
+
     <section id="tab-log" class="hide">
       <div class="card">
         <div class="formrow" style="margin:0">
@@ -781,8 +817,8 @@
       var n = D.players.filter(function(p){ return p.rank === r; });
       h += '<tr class="rankhead"><td class="sticky">' + r + '</td><td colspan="8">' + n.filter(function(p){ return p.entry; }).length + ' / ' + n.length + ' eingetragen</td></tr>';
       list.forEach(function(p){
-        if (!p.entry) { h += '<tr class="missing"><td class="sticky">' + esc(p.name) + mgBadge(p.name) + '</td><td colspan="8">— noch nie eingetragen</td></tr>'; return; }
-        h += '<tr class="click" data-name="' + esc(p.name) + '"><td class="sticky">' + esc(p.name) + mgBadge(p.name) + '<div class="tl' + (p.stale ? ' stale' : '') + '">' + (p.stale ? '⚠ ' : '') + fmtDate(p.updated) + ' · ' + ago(p.updated) + '</div></td>';
+        if (!p.entry) { h += '<tr class="missing"><td class="sticky">' + esc(p.name) + mgBadge(p.name) + merBadge(p.name) + '</td><td colspan="8">— noch nie eingetragen</td></tr>'; return; }
+        h += '<tr class="click" data-name="' + esc(p.name) + '"><td class="sticky">' + esc(p.name) + mgBadge(p.name) + merBadge(p.name) + '<div class="tl' + (p.stale ? ' stale' : '') + '">' + (p.stale ? '⚠ ' : '') + fmtDate(p.updated) + ' · ' + ago(p.updated) + '</div></td>';
         for (var i = 0; i < 4; i++) {
           var s = sq(p.entry, i);
           h += '<td class="n">' + squadCell(s) + '</td>';
@@ -1146,7 +1182,7 @@
       return !q || p.name.toLowerCase().indexOf(q) >= 0;
     }).map(function(p){
       var v = st.assign[p.name] || '';
-      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + mgBadge(p.name) + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
+      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'ds') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
         '<select data-ds="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
     }).join('') || '<div class="empty">Keine Treffer.</div>';
   }
@@ -1750,7 +1786,7 @@
     var opts = [['','–'],['AS','A Stamm'],['AE','A Ersatz'],['BS','B Stamm'],['BE','B Ersatz']];
     $('csList').innerHTML = list.filter(function(p){ if (CS_ONLYSEL && !st.assign[p.name]) return false; return !q || p.name.toLowerCase().indexOf(q) >= 0; }).map(function(p){
       var v = st.assign[p.name] || '';
-      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + mgBadge(p.name) + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
+      return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'cs') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
         '<select data-cs="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
     }).join('') || '<div class="empty">Keine Treffer.</div>';
   }
@@ -1962,6 +1998,9 @@
     }
     if (a === 'self_join') return { tag:'adm', label:'Beitritt', text: who(r.target) + (d.returned ? ' ist zurück und hat sich selbst wieder eingetragen' : ' hat sich selbst neu eingetragen'), sub: 'Rang ' + (d.rank || 'R1') + ' · bei Bedarf im Tab Mitglieder anpassen' };
     if (a === 'unsub') return { tag:'warn', label:'Abgemeldet', text: who(r.target) + ' hat sich von der Mail-Erinnerung abgemeldet', sub: '' };
+    if (a === 'merit') return { tag: d.what === 'add' && d.kind === 'malus' ? 'warn' : 'adm', label: d.what === 'config' ? 'Bonus/Malus' : (d.kind === 'bonus' ? 'Bonus' : 'Malus'),
+      text: d.what === 'config' ? who(r.actor) + ' hat die Gründe-Liste geändert' : d.what === 'revoke' ? who(r.actor) + ' hat ' + (d.kind === 'bonus' ? 'den Bonus' : 'den Malus') + ' „' + (d.reason || '') + '“ von ' + (r.target || '') + ' zurückgenommen'
+        : who(r.actor) + ': ' + (d.kind === 'bonus' ? 'Bonus' : 'Malus') + ' für ' + (r.target || '') + ' – ' + (d.reason || ''), sub: d.what === 'add' ? (MER_EFF[d.effect] || '') + ' · ' + (MER_SCOPE[d.scope] || '') + (d.rounds ? ' · ' + d.rounds + ' Runde(n)' : '') + (d.until ? ' · bis ' + fmtDate(new Date(d.until)) : '') : '' };
     if (a === 'ev_signup') return { tag:'', label:'Anmeldung', text: who(r.actor) + ' hat sich für ' + (d.kind === 'cs' ? 'Schluchtsturm' : 'Wüstensturm') + ' ' + (d.round || '') + ' gemeldet: ' + (EV_CH[d.choice] || d.choice), sub: '' };
     if (a === 'ev_round') return { tag:'adm', label:'Anmeldung', text: who(r.actor) + ': ' + (d.kind === 'cs' ? 'Schluchtsturm' : 'Wüstensturm') + ' ' + (d.label || '') + ' – ' + ({create:'neue Anmelderunde', update:'Runde geändert', close:'Anmeldung geschlossen', reopen:'Anmeldung wieder geöffnet', set:'Anmeldung von ' + (r.target || '') + ' gesetzt: ' + (EV_CH[d.choice] || 'gelöscht'), config:'Rotation/gesetzte Spieler geändert'}[d.what] || d.what), sub: '' };
     if (a === 'mg_save') return { tag:'adm', label:'Mentoren', text: who(r.actor) + ' hat die Mentorengruppen geändert', sub: (d.players || 0) + ' Spieler in ' + (d.groups || 0) + ' Gruppen' };
@@ -2105,11 +2144,11 @@
         if (!list.length) return;
         h += '<div class="evgrp">' + EV_CH[c] + ' (' + list.length + ')</div><div class="small">' + list.map(function(p){ var x = by[p.name], sx = ES.by[p.name];
           var rt = cfg.fixed.indexOf(p.name) >= 0 ? ' <span class="mgb r">gesetzt</span>' : (ES.n && sx ? (sx.benched ? ' <span class="mgb m">' + sx.benched + '× pausiert</span>' : '') + ' <span class="muted">· ' + sx.played + '/' + ES.n + ' gespielt</span>' : (ES.n ? ' <span class="muted">· 0/' + ES.n + ' gespielt</span>' : ''));
-          return '<span class="chip" style="cursor:default;display:inline-block;margin:2px">' + esc(p.name) + ' <span class="muted">' + dsMetricTxt(p, st.metric) + '</span>' + rt + (x.admin ? ' <span class="muted">(R4)</span>' : '') + (x.note ? ' · <i>' + esc(x.note) + '</i>' : '') + '</span>'; }).join('') + '</div>';
+          return '<span class="chip" style="cursor:default;display:inline-block;margin:2px">' + esc(p.name) + ' <span class="muted">' + dsMetricTxt(p, st.metric) + '</span>' + merBadge(p.name, kind) + rt + (x.admin ? ' <span class="muted">(R4)</span>' : '') + (x.note ? ' · <i>' + esc(x.note) + '</i>' : '') + '</span>'; }).join('') + '</div>';
       });
       if (none.length) h += '<details style="margin-top:6px"><summary class="small">Keine Antwort (' + none.length + ')</summary><div class="small" style="margin-top:4px">' + none.map(function(p){ return esc(p.name); }).join(', ') + '</div></details>';
       h += '<details style="margin-top:10px"><summary class="small">Rotation &amp; gesetzte Spieler (' + cfg.fixed.length + ' gesetzt, Rotation ' + (cfg.rot ? 'an' : 'aus') + ')</summary>' +
-        '<p class="small muted" style="margin:6px 0">Melden sich für ein Team mehr als 20 an, kommen zuerst die Gesetzten in den Stamm. Mit Rotation folgen dann die, die in den letzten 4 Runden am häufigsten pausieren mussten bzw. am seltensten gespielt haben – erst danach entscheidet die Stärke. Ohne Rotation entscheidet nur die Stärke. Ausgewertet wird die Aufstellung, mit der du den Plan erstellt hast.</p>' +
+        '<p class="small muted" style="margin:6px 0">Melden sich für ein Team mehr als 20 an, kommen zuerst die Gesetzten in den Stamm, danach Spieler mit Bonus „Vorrang“. Mit Rotation folgen dann die, die in den letzten 4 Runden am häufigsten pausieren mussten bzw. am seltensten gespielt haben – erst danach entscheidet die Stärke. Ohne Rotation entscheidet nur die Stärke. Ausgewertet wird die Aufstellung, mit der du den Plan erstellt hast.</p>' +
         '<label class="small" style="display:flex;align-items:center;gap:8px;margin:0 0 8px"><input type="checkbox" data-evcfg="rot" data-kind="' + K + '"' + (cfg.rot ? ' checked' : '') + ' style="width:18px;height:18px;padding:0;accent-color:var(--accent)"> Rotation verwenden</label>' +
         '<div class="small">' + (cfg.fixed.map(function(n){ return '<span class="chip" style="display:inline-block;margin:2px">' + esc(n) + ' <a href="#" data-evunfix="' + esc(n) + '" data-kind="' + K + '" style="color:var(--err);text-decoration:none">✕</a></span>'; }).join('') || '<span class="muted">Noch niemand gesetzt.</span>') + '</div>' +
         '<div class="formrow" style="margin-top:6px;grid-template-columns:1fr auto"><select id="evFix_' + K + '"><option value="">– Spieler setzen –</option>' +
@@ -2147,8 +2186,13 @@
     var r = evCur(kind); if (!r) return;
     var st = kind === 'ds' ? dsState() : csState(), m = st.metric, by = {}; (r.signups || []).forEach(function(x){ by[x.name] = x.choice; });
     var cfg = evCfg(kind), ES = evStats(kind);
-    function prio(p){ var f = cfg.fixed.indexOf(p.name) >= 0 ? 1 : 0, sx = ES.by[p.name] || { played: 0, benched: 0 }; return cfg.rot ? [f, sx.benched, -sx.played] : [f]; }
-    var act = D.players.filter(function(p){ return p.active && by[p.name] && by[p.name] !== 'no'; }).sort(function(a, b){
+    function prio(p){ var f = cfg.fixed.indexOf(p.name) >= 0 ? 1 : 0, sx = ES.by[p.name] || { played: 0, benched: 0 }, pr = merEff(p.name, kind).prio ? 1 : 0; return cfg.rot ? [f, pr, sx.benched, -sx.played] : [f, pr]; }
+    var blocked = [], forced = [];
+    var act = D.players.filter(function(p){
+      if (!p.active || !by[p.name] || by[p.name] === 'no') return false;
+      var me = merEff(p.name, kind); if (me.block) { blocked.push(p.name); return false; }
+      if (me.sub && by[p.name].indexOf('sub') !== 0) { forced.push(p.name); by[p.name] = by[p.name] === 'A' ? 'subA' : by[p.name] === 'B' ? 'subB' : 'sub'; }
+      return true; }).sort(function(a, b){
       var pa = prio(a), pb = prio(b); for (var i = 0; i < pa.length; i++) if (pa[i] !== pb[i]) return pb[i] - pa[i];
       return dsMetricVal(b, m) - dsMetricVal(a, m) || a.name.localeCompare(b.name); });
     var asg = {}, n = { AS:0, BS:0, AE:0, BE:0 }, pw = { A:0, B:0 };
@@ -2162,11 +2206,12 @@
     act.filter(function(p){ return by[p.name] === 'subA'; }).forEach(function(p){ put(p, 'A', 'E'); });
     act.filter(function(p){ return by[p.name] === 'subB'; }).forEach(function(p){ put(p, 'B', 'E'); });
     act.filter(function(p){ return by[p.name] === 'sub'; }).forEach(function(p){ put(p, n.AE <= n.BE ? 'A' : 'B', 'E'); });
-    var msg = 'Zuordnung aus den Anmeldungen übernehmen?\n\nTeam A: ' + n.AS + ' Stamm, ' + n.AE + ' Ersatz\nTeam B: ' + n.BS + ' Stamm, ' + n.BE + ' Ersatz\n\nDie bisherige Zuordnung wird ersetzt.';
+    var msg = 'Zuordnung aus den Anmeldungen übernehmen?\n\nTeam A: ' + n.AS + ' Stamm, ' + n.AE + ' Ersatz\nTeam B: ' + n.BS + ' Stamm, ' + n.BE + ' Ersatz' +
+      (blocked.length ? '\n\nGesperrt (nicht eingeteilt): ' + blocked.join(', ') : '') + (forced.length ? '\nMalus „nur Ersatz“: ' + forced.join(', ') : '') + '\n\nDie bisherige Zuordnung wird ersetzt.';
     if (!confirm(msg)) return;
     st.assign = asg; if (r.time_a) st.time.A = r.time_a; if (r.time_b) st.time.B = r.time_b;
     if (kind === 'ds') { dsSave(st); dsRender(); } else { csSave(st); csRender(); }
-    evNote(kind, 'Übernommen: A ' + n.AS + ' + ' + n.AE + ' Ersatz, B ' + n.BS + ' + ' + n.BE + ' Ersatz. Jetzt im Spiel eintragen und unten den Plan erstellen.', true);
+    evNote(kind, 'Übernommen: A ' + n.AS + ' + ' + n.AE + ' Ersatz, B ' + n.BS + ' + ' + n.BE + ' Ersatz.' + (blocked.length ? ' Gesperrt: ' + blocked.join(', ') + '.' : '') + (forced.length ? ' Nur Ersatz (Malus): ' + forced.join(', ') + '.' : '') + ' Jetzt im Spiel eintragen und unten den Plan erstellen.', true);
   }
   function evCall(kind){
     var r = evCur(kind), dl = evDl(r);
@@ -2202,6 +2247,150 @@
       else if (a === 'nudge') evNudge(kind);
     });
   });
+
+
+  /* ---------- Bonus/Malus ---------- */
+  var MER = [], MERCFG = null;
+  var MER_EFF = { block:'gesperrt', sub:'nur Ersatz', prio:'Vorrang', none:'nur vermerkt' };
+  var MER_SCOPE = { both:'Wüstensturm + Schluchtsturm', ds:'Wüstensturm', cs:'Schluchtsturm' };
+  var MER_DEF = { reasons: [
+    { r:'Angemeldet, aber nicht erschienen', k:'malus', e:'sub', s:'both', n:2 },
+    { r:'Anweisungen im Event ignoriert / Gebäude verlassen', k:'malus', e:'sub', s:'both', n:1 },
+    { r:'Zu viele Punkte in der VS-Sparwoche', k:'malus', e:'sub', s:'both', n:2 },
+    { r:'Keine Zug-Tickets gespendet', k:'malus', e:'sub', s:'both', n:1 },
+    { r:'Allianz-Aufgabe nicht erledigt', k:'malus', e:'sub', s:'both', n:1 },
+    { r:'Unsoziales Verhalten', k:'malus', e:'block', s:'both', n:2 },
+    { r:'Verwarnung (ohne Folgen)', k:'malus', e:'none', s:'both', n:'' },
+    { r:'Kurzfristig als Ersatz eingesprungen', k:'bonus', e:'prio', s:'both', n:1 },
+    { r:'Besonders gut gespielt (MVP)', k:'bonus', e:'prio', s:'both', n:2 },
+    { r:'Besonders hilfsbereit / sozial', k:'bonus', e:'prio', s:'both', n:1 },
+    { r:'Lob (ohne Folgen)', k:'bonus', e:'none', s:'both', n:'' }
+  ] };
+  function merCat(){ return (MERCFG && MERCFG.reasons) ? MERCFG : JSON.parse(JSON.stringify(MER_DEF)); }
+  function merActive(name){ return MER.filter(function(m){ return m.active && (!name || m.name === name); }); }
+  function merLeft(m, kind){ return kind === 'ds' ? m.left_ds : kind === 'cs' ? m.left_cs : null; }
+  // Wirkung für ein Event: gilt der Eintrag dort (Rest-Runden > 0 bzw. ohne Rundenlimit)?
+  function merApplies(m, kind){
+    if (!m.active || m.effect === 'none') return false;
+    if (m.scope !== 'both' && m.scope !== kind) return false;
+    var l = merLeft(m, kind); return l === null || l === undefined || l > 0;
+  }
+  function merEff(name, kind){ var o = { block:false, sub:false, prio:false, list:[] }; merActive(name).forEach(function(m){ if (merApplies(m, kind)) { o[m.effect] = true; o.list.push(m); } }); if (o.block) o.prio = false; return o; }
+  function merDur(m){
+    var p = [];
+    if (m.rounds !== null && m.rounds !== undefined) {
+      if (m.scope === 'both') p.push('WS noch ' + (m.left_ds || 0) + ', SS noch ' + (m.left_cs || 0) + ' von ' + m.rounds + ' Runde(n)');
+      else p.push('noch ' + (merLeft(m, m.scope) || 0) + ' von ' + m.rounds + ' Runde(n)');
+    }
+    if (m.until) p.push('bis ' + fmtDate(new Date(m.until)));
+    if (!p.length) p.push(m.effect === 'none' ? '–' : 'bis zur Rücknahme');
+    return p.join(' · ');
+  }
+  function merBadge(name, kind){
+    var list = merActive(name).filter(function(m){ return m.effect !== 'none' && (!kind || merApplies(m, kind)); });
+    return list.map(function(m){ var bad = m.kind === 'malus';
+      return '<span class="mgb' + (bad ? '' : ' r') + '" style="' + (bad ? 'border-color:rgba(255,107,107,.5);color:var(--err)' : 'border-color:rgba(61,220,151,.5);color:var(--ok)') + '" title="' + esc(m.reason + ' · ' + merDur(m)) + '">' + (bad ? '▼ ' : '▲ ') + MER_EFF[m.effect] + '</span>'; }).join('');
+  }
+  function merFillForm(){
+    var cat = merCat(), sel = $('merReason'), cur = sel.value;
+    sel.innerHTML = '<optgroup label="Malus">' + cat.reasons.map(function(x, i){ return x.k === 'malus' ? '<option value="' + i + '">' + esc(x.r) + '</option>' : ''; }).join('') + '</optgroup>' +
+      '<optgroup label="Bonus">' + cat.reasons.map(function(x, i){ return x.k === 'bonus' ? '<option value="' + i + '">' + esc(x.r) + '</option>' : ''; }).join('') + '</optgroup>' +
+      '<option value="own">Eigener Grund …</option>';
+    if (cur && sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
+    var ns = $('merName'), nc = ns.value;
+    ns.innerHTML = '<option value="">– Spieler –</option>' + D.players.filter(function(p){ return p.active; }).sort(function(a, b){ return a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); }).map(function(p){ return '<option>' + esc(p.name) + '</option>'; }).join('');
+    if (nc) ns.value = nc;
+  }
+  function merApplyReason(){
+    var v = $('merReason').value; $('merOwnBox').classList.toggle('hide', v !== 'own');
+    if (v === 'own' || v === '') { merHint(); return; }
+    var x = merCat().reasons[+v]; if (!x) return;
+    $('merKind').value = x.k; $('merEffect').value = x.e; $('merScope').value = x.s; $('merRounds').value = x.n === '' || x.n === null || x.n === undefined ? '' : x.n; $('merUntil').value = '';
+    merHint(true);
+  }
+  // Wiederholung: gleicher Malus-Grund innerhalb von 28 Tagen -> doppelte Dauer vorschlagen
+  function merHint(setDouble){
+    var nm = $('merName').value, v = $('merReason').value, reason = v === 'own' ? $('merOwn').value.trim() : (merCat().reasons[+v] || {}).r, h = $('merHint');
+    h.textContent = ''; h.className = 'note';
+    if (!nm || !reason) return;
+    var prev = MER.filter(function(m){ return m.name === nm && m.kind === 'malus' && m.reason === reason && !m.revoked_at && (Date.now() - new Date(m.created_at)) < 28 * DAY; });
+    if (prev.length && $('merKind').value === 'malus') {
+      h.textContent = nm + ' hat diesen Malus schon am ' + fmtDate(new Date(prev[0].created_at)) + ' bekommen – Wiederholung, doppelte Dauer vorgeschlagen.'; h.className = 'note err';
+      if (setDouble && $('merRounds').value) $('merRounds').value = Math.min(50, (+$('merRounds').value || 1) * 2);
+    }
+    var act = merActive(nm).filter(function(m){ return m.effect !== 'none'; });
+    if (act.length) { h.textContent += (h.textContent ? ' ' : '') + 'Aktiv: ' + act.map(function(m){ return (m.kind === 'malus' ? 'Malus ' : 'Bonus ') + MER_EFF[m.effect] + ' (' + m.reason + ')'; }).join('; '); if (!prev.length) h.className = 'note ok'; }
+  }
+  function merRow(m, old){
+    var bad = m.kind === 'malus';
+    return '<tr><td class="sticky"><b>' + esc(m.name) + '</b><div class="tl">' + fmtDate(new Date(m.created_at)) + (m.by ? ' · ' + esc(m.by) : '') + '</div></td>' +
+      '<td><span class="' + (bad ? 'down' : 'up') + '">' + (bad ? '▼ Malus' : '▲ Bonus') + '</span><div class="tl">' + MER_EFF[m.effect] + ' · ' + MER_SCOPE[m.scope] + '</div></td>' +
+      '<td style="white-space:normal">' + esc(m.reason) + (m.note ? '<div class="tl" style="white-space:normal">' + esc(m.note) + '</div>' : '') + '</td>' +
+      '<td style="white-space:normal">' + (m.revoked_at ? '<span class="muted">zurückgenommen ' + fmtDate(new Date(m.revoked_at)) + (m.revoked_by ? ' von ' + esc(m.revoked_by) : '') + '</span>' : esc(old ? 'abgelaufen' : merDur(m))) + '</td>' +
+      '<td style="text-align:right">' + (!old && !m.revoked_at ? '<button class="mini danger" data-merrev="' + m.id + '">Zurücknehmen</button>' : '') + '</td></tr>';
+  }
+  function merRender(){
+    if (!D) return;
+    merFillForm(); if (!$('merReason').value) $('merReason').selectedIndex = 0;
+    var q = $('merSearch').value.trim().toLowerCase(), f = function(m){ return !q || m.name.toLowerCase().indexOf(q) >= 0; };
+    var act = MER.filter(function(m){ return m.active; }), old = MER.filter(function(m){ return !m.active; });
+    var head = '<tr><th class="sticky">Spieler</th><th>Art</th><th>Grund</th><th>Dauer</th><th></th></tr>';
+    $('merActiveCount').textContent = act.length; $('merOldCount').textContent = old.length;
+    $('merActive').innerHTML = act.filter(f).length ? head + act.filter(f).map(function(m){ return merRow(m, false); }).join('') : '<tr><td class="muted">Keine aktiven Einträge.</td></tr>';
+    $('merOld').innerHTML = old.filter(f).length ? head + old.filter(f).map(function(m){ return merRow(m, true); }).join('') : '<tr><td class="muted">Noch nichts.</td></tr>';
+    var c = function(k, e){ return act.filter(function(m){ return m.kind === k && (!e || m.effect === e); }).length; };
+    $('merTiles').innerHTML = tile('Aktive Malus', String(c('malus')), c('malus', 'block') + ' gesperrt · ' + c('malus', 'sub') + ' nur Ersatz') + tile('Aktive Bonus', String(c('bonus')), c('bonus', 'prio') + ' mit Vorrang') +
+      tile('Einträge gesamt', String(MER.length), 'seit Start');
+    merRenderCat(); merHint(false);
+  }
+  function merRenderCat(){
+    var cat = merCat();
+    $('merCat').innerHTML = '<tr><th>Grund</th><th>Art</th><th>Wirkung</th><th>Gilt für</th><th>Runden</th><th></th></tr>' + cat.reasons.map(function(x, i){
+      function sel(field, opts, v){ return '<select data-mc="' + field + '" data-i="' + i + '">' + Object.keys(opts).map(function(k){ return '<option value="' + k + '"' + (k === v ? ' selected' : '') + '>' + opts[k] + '</option>'; }).join('') + '</select>'; }
+      return '<tr><td><input data-mc="r" data-i="' + i + '" type="text" maxlength="80" value="' + esc(x.r) + '"></td><td>' + sel('k', { malus:'Malus', bonus:'Bonus' }, x.k) + '</td><td>' + sel('e', MER_EFF, x.e) + '</td><td>' + sel('s', { both:'beide', ds:'Wüstensturm', cs:'Schluchtsturm' }, x.s) + '</td>' +
+        '<td><input data-mc="n" data-i="' + i + '" type="number" min="0" max="50" style="width:70px" value="' + (x.n === '' || x.n === null || x.n === undefined ? '' : x.n) + '"></td><td><button class="mini danger" data-mcdel="' + i + '">✕</button></td></tr>';
+    }).join('');
+  }
+  var MER_EDIT = null;
+  function merCatEdit(){ if (!MER_EDIT) MER_EDIT = merCat(); return MER_EDIT; }
+  (function(){
+    $('merReason').addEventListener('change', merApplyReason);
+    $('merName').addEventListener('change', function(){ merHint(false); });
+    $('merKind').addEventListener('change', function(){ merHint(false); });
+    $('merOwn').addEventListener('input', function(){ merHint(false); });
+    $('merSearch').addEventListener('input', merRender);
+    $('merAdd').addEventListener('click', function(){
+      var nm = $('merName').value, v = $('merReason').value, reason = v === 'own' ? $('merOwn').value.trim() : (merCat().reasons[+v] || {}).r, n = $('merMsg'), hint = $('merHint');
+      if (!nm || !reason) { hint.textContent = 'Bitte Spieler und Grund wählen.'; hint.className = 'note err'; return; }
+      var data = { name: nm, kind: $('merKind').value, effect: $('merEffect').value, scope: $('merScope').value, reason: reason, note: $('merNote').value.trim(),
+        rounds: $('merRounds').value === '' ? '' : String(Math.max(0, Math.min(50, parseInt($('merRounds').value, 10) || 0))), until: $('merUntil').value ? new Date($('merUntil').value + 'T23:59:00').toISOString() : '' };
+      if (data.effect !== 'none' && data.rounds === '' && !data.until && !confirm('Ohne Runden und ohne Datum gilt der Eintrag, bis du ihn zurücknimmst. Trotzdem speichern?')) return;
+      hint.textContent = '…'; hint.className = 'note ok';
+      rpc('admin_merit', { p_pw: PW, p_action: 'add', p_data: data, p_actor: ACTOR || null }).then(function(){
+        return load(PW, true).then(function(){ showTab('mer'); $('merNote').value = ''; $('merOwn').value = ''; $('merHint').textContent = 'Gespeichert: ' + (data.kind === 'bonus' ? 'Bonus' : 'Malus') + ' für ' + nm + '.'; $('merHint').className = 'note ok'; });
+      }).catch(function(err){ var m = String(err && err.message); hint.textContent = m.indexOf('ERR_AUTH') >= 0 ? 'Nicht angemeldet – bitte neu anmelden.' : 'Fehler – ist die Datenbank-Erweiterung „bonus-malus“ schon eingespielt?'; hint.className = 'note err'; });
+    });
+    $('tab-mer').addEventListener('click', function(e){
+      var b = e.target.closest('[data-merrev]'); if (b) {
+        var m = MER.filter(function(x){ return x.id === +b.dataset.merrev; })[0]; if (!m || !confirm((m.kind === 'bonus' ? 'Bonus' : 'Malus') + ' „' + m.reason + '“ von ' + m.name + ' zurücknehmen?')) return;
+        rpc('admin_merit', { p_pw: PW, p_action: 'revoke', p_data: { id: m.id }, p_actor: ACTOR || null }).then(function(){ return load(PW, true).then(function(){ showTab('mer'); $('merMsg').textContent = 'Zurückgenommen.'; $('merMsg').className = 'note ok'; }); })
+          .catch(function(){ $('merMsg').textContent = 'Fehler beim Zurücknehmen.'; $('merMsg').className = 'note err'; });
+        return;
+      }
+      var d = e.target.closest('[data-mcdel]'); if (d) { var c = merCatEdit(); c.reasons.splice(+d.dataset.mcdel, 1); MERCFG = c; merRenderCat(); merFillForm(); $('merCatMsg').textContent = 'Noch nicht gespeichert.'; $('merCatMsg').className = 'note err'; }
+    });
+    $('merCat').addEventListener('change', function(e){
+      var el = e.target.closest('[data-mc]'); if (!el) return; var c = merCatEdit(), x = c.reasons[+el.dataset.i], f = el.dataset.mc;
+      x[f] = f === 'n' ? (el.value === '' ? '' : Math.max(0, Math.min(50, parseInt(el.value, 10) || 0))) : el.value; MERCFG = c; merFillForm();
+      $('merCatMsg').textContent = 'Noch nicht gespeichert.'; $('merCatMsg').className = 'note err';
+    });
+    $('merCatAdd').addEventListener('click', function(){ var c = merCatEdit(); c.reasons.push({ r:'Neuer Grund', k:'malus', e:'sub', s:'both', n:1 }); MERCFG = c; merRenderCat(); merFillForm(); });
+    $('merCatSave').addEventListener('click', function(){
+      var c = merCatEdit(); c.reasons = c.reasons.filter(function(x){ return x.r && x.r.trim(); });
+      rpc('admin_merit', { p_pw: PW, p_action: 'config', p_data: { cfg: c }, p_actor: ACTOR || null }).then(function(){ MER_EDIT = null; return load(PW, true).then(function(){ showTab('mer'); $('merCatMsg').textContent = 'Gründe-Liste gespeichert.'; $('merCatMsg').className = 'note ok'; }); })
+        .catch(function(){ $('merCatMsg').textContent = 'Fehler beim Speichern.'; $('merCatMsg').className = 'note err'; });
+    });
+  })();
 
   /* ---------- Mentorengruppen ---------- */
   var MG_KEY = 'skws_mg';
@@ -2425,7 +2614,7 @@
   function showTab(name){
     var bs = document.querySelectorAll('#tabs button');
     for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-    ['ov','mem','hist','pl','dev','exp','ds','cs','mg','adm','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+    ['ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','adm','log'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
     store('skws_admin_tab', name);
     if (name === 'hist') renderHistory();
     if (name === 'ov') renderOverview();
@@ -2435,6 +2624,7 @@
     if (name === 'ds') dsRender();
     if (name === 'cs') csRender();
     if (name === 'mg') mgRender();
+    if (name === 'mer') merRender();
     if (name === 'dev') renderDev();
     if (name === 'log') loadLog(false);
   }
@@ -2448,7 +2638,7 @@
       DS_PUB = raw.ds || null;
       var first = !PW && !silent;
       PW = pw; store('skws_admin_pw', pw); if (!silent) { if ($('remember').checked) ls('skws_admin_pw_keep', pw); else ls('skws_admin_pw_keep', null); }
-      D = prep(raw); mgInit(raw); EV = raw.ev || []; EVCFG = raw.evcfg || {};
+      D = prep(raw); mgInit(raw); EV = raw.ev || []; EVCFG = raw.evcfg || {}; MER = raw.merits || []; MERCFG = raw.meritcfg || null;
       $('who').textContent = ACTOR ? ACTOR : 'R4/R5';
       if (first) rpc('admin_login', { p_pw: pw, p_actor: ACTOR || null }).catch(function(){});
       $('loginView').classList.add('hide'); $('app').classList.remove('hide');
