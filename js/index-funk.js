@@ -100,7 +100,7 @@ var Funk = (function(){
     var go, p1, p2, em;
     if (mode === 'reset') {
       box.appendChild(el('div', 'hint fk-first', L.resetHint));
-      em = input('email', L.email); box.appendChild(el('div', 'hint', L.mailHint)); p1 = input('password', L.pinNew); p2 = input('password', L.pinAgain);
+      em = input('email', L.email); p1 = input('password', L.pinNew); p2 = input('password', L.pinAgain);
       go = btn('btn', L.resetBtn, function(){
         if (p1.value !== p2.value) { msg.textContent = L.pinMismatch; msg.className = 'msg err'; return; }
         go.disabled = true; rpc('auth_reset_pin', { p_name: name, p_email: em.value, p_pin: p1.value }).then(function(r){ go.disabled = false; if (r && r.ok) ST[name] = null; done(r); }, function(){ go.disabled = false; fail(null); });
