@@ -221,3 +221,15 @@
   .fk-gift{text-align:center;padding:8px 0}
   .fk-gift i{font-style:normal;font-size:64px;display:block;line-height:1.1;filter:drop-shadow(0 0 12px rgba(245,197,24,.4))}
   .fk-gift b{display:block;font-size:18px;margin-top:4px}
+  /* ---------- Teilnehmermarken ---------- */
+  .badge-chip{border-color:rgba(92,200,255,.4)}
+  .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:6px}
+  .badge-m{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:10px 6px;border-radius:14px;background:var(--bg2);border:1px solid var(--line)}
+  .badge-m i{font-style:normal;font-size:30px;width:52px;height:52px;display:grid;place-items:center;border-radius:50%;margin-bottom:4px}
+  .badge-m.bds i{background:radial-gradient(circle,#f5c26b,#b9772f);box-shadow:0 0 12px rgba(245,180,90,.45)}
+  .badge-m.bcs i{background:radial-gradient(circle,#7df0c0,#2f9e7a);box-shadow:0 0 12px rgba(61,220,151,.45)}
+  .badge-m.bx i{background:radial-gradient(circle,#9cc7f0,#5a6fd8);box-shadow:0 0 12px rgba(92,200,255,.45)}
+  .badge-m b{font-size:12px;line-height:1.2} .badge-m span{font-size:12px;color:#9cc7f0} .badge-m small{font-size:10px;color:var(--muted)}
+  .fk-gtog{width:100%;margin-top:8px}
+  .fk-gwrap{margin-top:6px}
+.gift-btns .btn,.gift-btns .ghost{flex:1;margin-top:12px}

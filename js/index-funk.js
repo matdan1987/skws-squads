@@ -213,15 +213,28 @@ var Funk = (function(){
       to.value = S.compose.to || ''; f.appendChild(to);
       var su = el('input'); su.placeholder = L.subject; su.maxLength = 80; su.value = S.compose.subject || ''; f.appendChild(su);
       var tx = el('textarea'); tx.placeholder = L.text; tx.maxLength = 2000; tx.rows = 4; f.appendChild(tx);
+      // Geschenk beilegen: wird als Geschenk verschickt (Notiz max. 80 Zeichen, im Profil sichtbar)
+      var X = (window.XTRA_I18N && (XTRA_I18N[A.lang()] || XTRA_I18N.en)) || {}, G = giftT(), gift = S.compose.gift || null;
+      var gt = btn('ghost fk-gtog', X.giftAdd || '🎁', function(){ gw.classList.toggle('hide'); });
+      f.appendChild(gt);
+      var gw = el('div', 'fk-gwrap' + (gift ? '' : ' hide')); gw.appendChild(el('div', 'hint', X.giftNote || ''));
+      var gg = el('div', 'gift-grid');
+      Object.keys(window.GIFT_ICON || {}).forEach(function(k){ var o = btn('gift-opt' + (gift === k ? ' on' : ''), '', function(){
+          gift = gift === k ? null : k; S.compose.gift = gift; Array.prototype.forEach.call(gg.children, function(x){ x.classList.remove('on'); }); if (gift) o.classList.add('on');
+          su.style.display = gift ? 'none' : ''; tx.maxLength = gift ? 80 : 2000; if (gift && tx.value.length > 80) tx.value = tx.value.slice(0, 80); });
+        o.appendChild(el('i', '', GIFT_ICON[k])); o.appendChild(el('span', '', G.g[k] || k)); gg.appendChild(o); });
+      gw.appendChild(gg); f.appendChild(gw);
+      if (gift) { su.style.display = 'none'; tx.maxLength = 80; }
       var m = el('div', 'msg');
       var row = el('div', 'btnrow');
       var sb = btn('btn', L.send, function(){
         if (!to.value) { m.textContent = L.err.ERR_NAME; m.className = 'msg err'; return; }
         sb.disabled = true;
-        call('msg_send', { p_to: to.value, p_subject: su.value, p_body: tx.value }).then(function(r){
+        var req = gift ? call('gift_send', { p_to: to.value, p_kind: gift, p_note: tx.value }) : call('msg_send', { p_to: to.value, p_subject: su.value, p_body: tx.value });
+        req.then(function(r){
           sb.disabled = false;
-          if (!r.ok) { m.textContent = errText(r); m.className = 'msg err'; return; }
-          S.compose = null; S.msg = L.sent; loadInbox();
+          if (!r.ok) { m.textContent = gift ? ((G.err && (G.err[r.err] || G.err.ERR)) || errText(r)) : errText(r); m.className = 'msg err'; return; }
+          S.compose = null; S.msg = gift ? G.sent + (r.left !== undefined ? ' ' + G.left.replace('{n}', r.left) : '') : L.sent; loadInbox();
         });
       });
       row.appendChild(sb); row.appendChild(btn('ghost', L.cancel, function(){ S.compose = null; render(); }));
@@ -338,6 +351,7 @@ var Funk = (function(){
       document.addEventListener('visibilitychange', function(){ if (!document.hidden && S.tok) { status(); if (visible()) loadShouts(); } });
     },
     ready: function(){ return !!A; },
+    compose: function(n, gift){ S.compose = { to: n, gift: gift || null }; render(); window.scrollTo(0, 0); },
     session: function(){ return S.tok ? { tok: S.tok, name: S.name } : null; },
     authBox: authBox, adopt: adopt,
     logout: function(){ call('auth_logout').then(drop); },
