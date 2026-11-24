@@ -235,3 +235,11 @@
 .vis-hidden{border-color:rgba(245,185,66,.5);color:var(--warn)} .vis-player{border-color:rgba(92,200,255,.45);color:var(--accent)}
 .visel{margin-top:4px;font-size:12px;padding:3px 6px;max-width:170px}
 #merBil td.n,#merBil th.n{text-align:right}
+.langsel{margin-left:auto;width:auto;padding:8px 26px 8px 10px;font-size:13px;border-radius:10px}
+header .langsel + .ghost{margin-left:0}
+header .htxt{flex:1;min-width:0}
+header .htxt .a{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.langsel{margin-left:0;flex:none;width:64px;padding:8px 22px 8px 8px;background-position:calc(100% - 12px) 50%,calc(100% - 7px) 50%}
+.langsel{-webkit-appearance:none;appearance:none;background-image:none!important;width:auto;padding:8px 10px;text-align:center;font-weight:700;color:var(--accent)}
+@media(max-width:520px){ header{gap:8px} header .ghost{padding:8px 10px;font-size:13px} header img.logo{width:40px;height:40px} }

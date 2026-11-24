@@ -1,0 +1,357 @@
+/* SKWS Squads – Admin: Sprache. Der Admin-Bereich ist auf Deutsch geschrieben; diese Datei übersetzt die Oberfläche beim Anzeigen.
+   Wörterliste: deutscher Text -> Übersetzung. „#“ steht für eine Zahl/ein Datum, das übernommen wird.
+   Weitere Sprachen: einfach ADMIN_I18N.<code> = { ... } ergänzen und in ADMIN_LANGS eintragen. */
+var ADMIN_LANGS = { de: 'Deutsch', en: 'English' };
+var ADMIN_I18N = {};
+ADMIN_I18N.en = {
+  // Kopf, Anmeldung, Navigation
+  'Abmelden':'Sign out', 'Admin-Zugang':'Admin access', 'Angemeldet bleiben (auf diesem Gerät)':'Stay signed in (on this device)', 'Anmelden':'Sign in',
+  '← zur Eintragsseite':'← to the squad page', 'Spieler':'Players', 'Events':'Events', 'Allianz':'Alliance', 'System':'System', 'Übersicht':'Overview',
+  'Mitglieder':'Members', 'Verlauf':'History', 'Entwicklung':'Progress', 'Export':'Export', 'Wüstensturm':'Desert Storm', 'Schluchtsturm':'Canyon Storm',
+  'Mentoren':'Mentors', 'Bonus/Malus':'Bonus/Penalty', 'Nachrichten':'Messages', 'Verwaltung':'Management', 'Zugänge':'Logins', 'Logbuch':'Log',
+  'Dein Name im Spiel (fürs Logbuch)':'Your in-game name (for the log)', 'Kennwort':'Password', 'Kennwort falsch.':'Wrong password.',
+  'Laden fehlgeschlagen – bitte erneut versuchen.':'Loading failed – please try again.', 'Neu laden':'Reload', 'Sprache':'Language',
+  // Übersicht
+  'Truppentyp der T1-Trupps':'Troop type of T1 squads', 'Nach Rang':'By rank', '⚠ Überfällig – seit über 7 Tagen nicht aktualisiert (':'⚠ Overdue – not updated for over 7 days (',
+  'Noch nie eingetragen (':'Never entered (', 'Erinnerung für den Chat kopieren':'Copy reminder for the chat', 'Allianz-Kampfkraft gesamt (alle Trupps)':'Total alliance power (all squads)',
+  'Sortiert: Gesamt':'Sorted: total', 'Sortiert: T1':'Sorted: T1', 'Sortiert: Name':'Sorted: name', 'Sortiert: Aktualität':'Sorted: last update', 'älter als 7 Tage':'older than 7 days',
+  'Allianz-Kampfkraft gesamt':'Total alliance power', 'Summe je Trupp-Platz (T1–T4)':'Sum per squad slot (T1–T4)', 'Eingetragene Spieler':'Players entered',
+  'Als Tabelle anzeigen':'Show as table', 'Kampfkraft je Trupp':'Power per squad', 'Alle Meldungen':'All reports', 'Noch keine Daten – sobald Meldungen eingehen, erscheint hier der Verlauf.':'No data yet – the history appears here once reports come in.',
+  'Diagramm':'Chart', 'Eingetragen':'Entered', 'Allianz gesamt':'Alliance total', 'M seit 7 Tagen':'M in 7 days', 'alle Trupps aller Eingetragenen':'all squads of all entered players',
+  'stärkster T1:':'strongest T1:', 'Überfällig':'Overdue', '⚠ über':'⚠ over', 'Tage nicht aktualisiert':'days not updated', 'Noch keine Meldungen.':'No reports yet.', 'Rang':'Rank',
+  'Eingetr.':'Entered', '⚠ seit':'⚠ since', 'Alle Eingetragenen sind aktuell.':'Everyone entered is up to date.', 'Alle haben sich eingetragen.':'Everyone has entered.',
+  'Allianz-Kampfkraft':'Alliance power', 'Held':'Hero', 'Gorilla':'Gorilla', '— noch nie eingetragen':'— never entered', 'Summe je Trupp':'Sum per squad', 'Tag':'Day',
+  'Noch keine Daten.':'No data yet.', 'Niemand zu erinnern.':'Nobody to remind.', 'In die Zwischenablage kopiert.':'Copied to clipboard.',
+  'Kopieren nicht möglich – bitte Text markieren und kopieren.':'Copy not possible – please select the text and copy it.',
+  'heute':'today', 'gestern':'yesterday', 'vor # Tagen':'# days ago', 'nie':'never', 'Heute':'Today', 'Gestern':'Yesterday',
+  // Mitglieder / Verwaltung
+  'Neues Mitglied':'New member', 'Hinzufügen':'Add', 'Aktive Mitglieder (':'Active members (', 'Spielername (wie im Spiel)':'Player name (as in game)',
+  'Rang direkt ändern · „Umbenennen“, wenn jemand im Spiel seinen Namen ändert (Verlauf bleibt erhalten) · „Ausgeschieden“ entfernt den Spieler von der Eintragsseite und stoppt seine Erinnerungen.':'Change rank directly · “Rename” when someone changes their in-game name (history is kept) · “Left” removes the player from the squad page and stops their reminders.',
+  'Ausgeschiedene (':'Former members (', 'Avatar entfernen':'Remove avatar', 'Umbenennen':'Rename', 'Ausgeschieden':'Left', 'Wieder aufnehmen':'Re-add', 'Niemand.':'Nobody.',
+  'Diesen Namen gibt es schon.':'This name already exists.', 'Nicht angemeldet – bitte neu anmelden.':'Not signed in – please sign in again.', 'Ungültiger Name.':'Invalid name.',
+  'Fehler – bitte erneut versuchen.':'Error – please try again.', 'Bitte einen Namen eingeben.':'Please enter a name.', 'hinzugefügt.':'added.',
+  'als ausgeschieden markieren?\nDer Spieler verschwindet von der Eintragsseite und bekommt keine Erinnerungen mehr. Sein Verlauf bleibt erhalten.':'mark as left?\nThe player disappears from the squad page and gets no more reminders. Their history is kept.',
+  'Avatar von':'Avatar of', 'entfernen?':'remove?', 'Neuer Name für':'New name for', 'heißt jetzt':'is now called', 'In der Liste suchen…':'Search the list…', 'Spieler suchen…':'Search player…',
+  'Suchen…':'Search…', 'Nach Name suchen…':'Search by name…',
+  'Datensicherung':'Backup', 'Datensicherung herunterladen':'Download backup', 'Erstelle Sicherung …':'Creating backup …', 'Sicherung gespeichert:':'Backup saved:',
+  'Lädt alle Daten (Mitglieder, Meldungen, Verlauf, Anmeldungen, Bonus/Malus, Mentorengruppen, Avatare, Pläne, Logbuch) als eine JSON-Datei herunter. Zusätzlich legt die Datenbank jeden Montag automatisch eine Sicherung an (die letzten 12 bleiben).':'Downloads all data (members, reports, history, sign-ups, bonus/penalty, mentor groups, avatars, plans, log) as one JSON file. In addition, the database creates a backup automatically every Monday (the last 12 are kept).',
+  // Spieler / Akte
+  '– Spieler wählen –':'– Choose player –', '– ausgeschieden':'– left', '– fehlt':'– missing', 'Stamm A':'Starter A', 'Stamm B':'Starter B', 'Stamm, beide':'Starter, both',
+  'Ersatz A':'Substitute A', 'Ersatz B':'Substitute B', 'Ersatz, beide':'Substitute, both', 'diesmal nicht':'not this time', '· ausgeschieden':'· left', '· Mentorengruppe':'· mentor group',
+  '(Mentor)':'(mentor)', '(Leitung)':'(lead)', '· keine Mentorengruppe':'· no mentor group', 'E-Mail hinterlegt':'e-mail on file', 'keine E-Mail':'no e-mail',
+  'Bonus / Bienchen':'Bonus / bees', 'Malus / Teufelchen':'Penalty / devils', 'in 90 Tagen':'in 90 days', 'nicht öffentlich':'not public', 'Wüstensturm gespielt':'Desert Storm played',
+  'Schluchtsturm gespielt':'Canyon Storm played', 'Als Ersatz eingeplant':'Planned as substitute', 'Gefehlt':'Absent', 'Anmeldungen':'Sign-ups', 'Meldetage':'Report days',
+  'Bonus/Malus vergeben':'Give bonus/penalty', '✉️ Nachricht senden':'✉️ Send message', '🔑 PIN zurücksetzen':'🔑 Reset PIN', '🛡️ Start-PIN / Anmeldungen':'🛡️ Starter PIN / logins',
+  'Bonus/Malus (':'Bonus/penalty (', '▼ Malus':'▼ Penalty', '▲ Bonus':'▲ Bonus', 'zurückgenommen':'revoked', 'Zurücknehmen':'Revoke', 'Keine Einträge.':'No entries.',
+  'Events (letzte Runden)':'Events (recent rounds)', 'Anmeldung:':'Sign-up:', 'eingeteilt: Team':'assigned: team', 'Stamm':'Starter', 'Ersatz':'Substitute', 'nicht eingeteilt':'not assigned',
+  'gefehlt':'absent', 'Noch keine Anmeldungen.':'No sign-ups yet.', '🎁 Geschenke':'🎁 Gifts', 'Lädt …':'Loading …', 'Löschen':'Delete', 'von':'from',
+  'Noch keine Geschenke bekommen.':'No gifts received yet.', 'Konnte nicht geladen werden.':'Could not be loaded.', 'Spieler oben auswählen.':'Choose a player above.',
+  'noch keine Meldung':'no report yet', 'Keine Daten.':'No data.', 'erste Meldung':'first report', 'M seit letzter Meldung':'M since last report', 'Wachstum':'Growth',
+  'seit erster Meldung (':'since first report (', '· Rang':'· rank', 'Datum':'Date', 'Gesamt':'Total', 'Meldungen':'Reports', 'zuletzt':'last', 'Kampfkraft je Trupp ':'Power per squad ',
+  'zuletzt angemeldet':'last signed in', '🔑 PIN eingerichtet':'🔑 PIN set', '🔑 keine PIN':'🔑 no PIN', '· Start-PIN':'· starter PIN', '· gesperrt':'· locked',
+  'Geschenk löschen? Es verschwindet aus dem Profil.':'Delete gift? It disappears from the profile.',
+  // Entwicklung
+  'Zeitraum':'Period', 'letzte 7 Tage':'last 7 days', 'letzte 14 Tage':'last 14 days', 'letzte 30 Tage':'last 30 days', 'seit erster Meldung':'since first report', 'Grundlage':'Basis',
+  'nur T1':'T1 only', 'Rangfolge nach':'Rank by', 'Zuwachs in % (fair für Schwächere)':'Growth in % (fair for weaker players)', 'Zuwachs in Mio.':'Growth in M',
+  '▲ Highlights – beste Entwicklung':'▲ Highlights – best progress', '▼ Lowlights – schwächste Entwicklung':'▼ Lowlights – weakest progress',
+  '⏸ Stillstand – aktualisiert, aber keine Veränderung':'⏸ Standstill – updated, but no change', '⚠ Nicht aktualisiert im Zeitraum':'⚠ Not updated in this period',
+  'Diese Spieler haben im gewählten Zeitraum nichts gemeldet – ob sie gewachsen sind, ist unbekannt. Sie zählen deshalb weder als Stillstand noch als Lowlight.':'These players reported nothing in the chosen period – it is unknown whether they grew. So they count neither as standstill nor as lowlight.',
+  'M · aktualisiert':'M · updated', 'seit der ersten Meldung':'since the first report', 'Ø Entwicklung':'Ø progress', 'Zuwachs':'Growth', 'Spieler gewachsen':'players grew',
+  'Rückgang':'Decline', 'Werte gesunken':'values dropped', 'Stillstand':'Standstill', '⏸ aktualisiert, aber unverändert':'⏸ updated, but unchanged', 'Nicht aktualisiert':'Not updated',
+  '⚠ keine Meldung':'⚠ no report', 'Noch kein Zuwachs':'No growth yet', 'Top':'Top', 'Keine Daten':'No data', 'schwächste':'weakest', 'gleicher Wert gemeldet':'same value reported',
+  'Niemand ohne Veränderung':'Nobody without change', 'längster Stillstand zuerst':'longest standstill first', '· zuletzt am':'· last on', 'Wert unbekannt':'value unknown', 'Alle haben':'Everyone has',
+  'Spieler sind für diesen Zeitraum zu neu (erste Meldung innerhalb des Zeitraums) und fehlen in der Wertung.':'players are too new for this period (first report within the period) and are not ranked.',
+  'Spieler antippen für den Einzelverlauf.':'Tap a player for their own history.',
+  // Export
+  '1 · Spieler auswählen (':'1 · Choose players (', 'Alle':'All', 'Keine':'None', 'Nur eingetragene':'Only entered', '+Panzer':'+Tank', '+Rakete':'+Missile', '+Flugzeug':'+Aircraft',
+  '+Gemischt':'+Mixed', '2 · Exportieren':'2 · Export', 'Sortierung':'Sort', 'T1 (stärkste zuerst)':'T1 (strongest first)', 'Gesamt (stärkste zuerst)':'Total (strongest first)',
+  'Rang, dann T1':'Rank, then T1', 'Name':'Name', 'Inhalt':'Content', 'T1–T4 + Gesamt':'T1–T4 + total', 'CSV für Excel herunterladen':'Download CSV for Excel', 'Als Text kopieren':'Copy as text',
+  'Server-Liste (FR) kopieren':'Copy server list (FR)', 'Server-Liste (FR) als CSV':'Server list (FR) as CSV',
+  'Server-Liste: genau die Spalten der Liste des Serverpräsidenten (Username, Hero Power, Type T1 … T4, Niv Gorilla, TOTAL), stärkste zuerst. „Kopieren“ lässt sich direkt in die Tabelle einfügen.':'Server list: exactly the columns of the server president’s list (Username, Hero Power, Type T1 … T4, Niv Gorilla, TOTAL), strongest first. “Copy” can be pasted straight into the sheet.',
+  'Panzer':'Tank', 'Raketenwerfer':'Missile launcher', 'Flugzeug':'Aircraft', 'Gemischt':'Mixed', 'Rakete':'Missile', 'keine Meldung':'no report', 'Keine Treffer.':'No matches.',
+  'Bitte zuerst Spieler auswählen.':'Please choose players first.', 'Bitte zuerst Spieler mit Meldung auswählen.':'Please choose players with a report first.', 'CSV mit':'CSV with',
+  'Spielern erstellt.':'players created.', 'Server-Liste mit':'Server list with', 'Heldenkraft':'Hero power', 'Gorilla-Stufe':'Gorilla stage', 'Gorilla-Level':'Gorilla level', 'Gorilla-Kraft':'Gorilla power',
+  // Wüstensturm / Schluchtsturm
+  '1 · Runden':'1 · Rounds', 'Team A – Uhrzeit':'Team A – time', 'Team B – Uhrzeit':'Team B – time', 'Team A – Gegner (optional)':'Team A – opponent (optional)', 'Team B – Gegner (optional)':'Team B – opponent (optional)',
+  'Team A – Taktik':'Team A – tactic', 'Team B – Taktik':'Team B – tactic', 'Team A – Sonderanweisung (optional)':'Team A – special instruction (optional)', 'Team B – Sonderanweisung (optional)':'Team B – special instruction (optional)',
+  'Team A – Tag/Uhrzeit':'Team A – day/time', 'Team B – Tag/Uhrzeit':'Team B – day/time',
+  'Die Spieler melden sich über die Squad-Seite an (Karte oben), du übernimmst die Anmeldungen in die Zuordnung, prüfst sie hier und trägst die Spieler dann im Spiel ein. Die Stärke entscheidet, wer innerhalb eines Teams welches Gebäude bekommt.':'Players sign up on the squad page (card above), you take the sign-ups into the assignment, check them here and then enter the players in the game. Strength decides who gets which building within a team.',
+  'Schluchtsturm (2 gegen 1): Die Spieler melden sich über die Squad-Seite an (Karte oben), du übernimmst die Anmeldungen in die Zuordnung und trägst die Spieler dann im Spiel ein. Die Stärke entscheidet, wer innerhalb eines Teams welches Gebäude bekommt. Max. 5 Spieler pro Gebäude.':'Canyon Storm (2 vs 1): players sign up on the squad page (card above), you take the sign-ups into the assignment and then enter the players in the game. Strength decides who gets which building within a team. Max. 5 players per building.',
+  'Stärke bewerten nach':'Rate strength by', 'T1-Kampfkraft (empfohlen)':'T1 power (recommended)', 'Gesamt T1–T4':'Total T1–T4', '2 · Gemeldete Spieler':'2 · Reported players',
+  'nur Zugeordnete zeigen':'show assigned only', 'alle Zuordnungen löschen':'clear all assignments', '3 · Taktik & Einsatzplan':'3 · Tactic & battle plan', 'Taktik erstellen':'Create plan',
+  'Beispiel zeigen':'Show example', 'Chat-Text Team A kopieren':'Copy chat text team A', 'Chat-Text Team B kopieren':'Copy chat text team B',
+  'Plan-Bild Team A (EN)':'Plan image team A (EN)', 'Plan-Bild Team A (DE)':'Plan image team A (DE)', 'Plan-Bild Team B (EN)':'Plan image team B (EN)', 'Plan-Bild Team B (DE)':'Plan image team B (DE)',
+  'Karte einrichten (Kartenbild & Gebäude-Positionen)':'Set up map (map image & building positions)', 'Kartenbild wählen':'Choose map image', 'Allianz-Vorlage verwenden':'Use alliance template',
+  'Positionen zurücksetzen':'Reset positions', 'Bild-KI-Prompt Team A':'Image AI prompt team A', 'Bild-KI-Prompt Team B':'Image AI prompt team B',
+  'Für Spieler veröffentlichen':'Publish for players', 'Veröffentlichung zurücknehmen':'Withdraw publication',
+  'Beispiel: verteilt eure aktiven Spieler gemischt auf Team A und B (je 20 Stamm, 10 Ersatz), so wie sie sich auch im Spiel anmelden könnten, und zeigt die gewählten Taktiken. Echte Pläne entstehen immer aus deiner Zuordnung oben – es wird nie automatisch auf Teams verteilt. Deine Zuordnung bleibt unverändert, veröffentlicht wird nichts.':'Example: spreads your active players mixed across team A and B (20 starters, 10 substitutes each), as they might sign up in the game, and shows the chosen tactics. Real plans always come from your assignment above – nothing is ever assigned to teams automatically. Your assignment stays unchanged, nothing is published.',
+  'Standard ist eure Allianz-Vorlage („Desert Storm – Briefing“) – dafür musst du hier nichts einstellen. Nur wenn du eine andere Karte willst: Bild wählen und die Schilder auf die Gebäude ziehen (wird auf diesem Gerät gespeichert).':'The default is your alliance template (“Desert Storm – Briefing”) – nothing to set up here. Only if you want another map: choose an image and drag the labels onto the buildings (saved on this device).',
+  '„Plan-Bild“ zeichnet den Plan direkt hier – zuverlässig und mit korrekt geschriebenen Namen. Der Bild-KI-Prompt ist nur noch eine Alternative (Bild-KIs lehnen solche Anfragen manchmal ab oder verschreiben Namen).':'“Plan image” draws the plan right here – reliably and with correctly spelled names. The image AI prompt is only an alternative (image AIs sometimes refuse such requests or misspell names).',
+  'Veröffentlicht: Jeder Spieler sieht auf der Seite und in der App seinen eigenen Einsatz (Team, Uhrzeit, Aufgabe je Phase) in seiner Sprache.':'Published: every player sees their own assignment (team, time, task per phase) on the page and in the app in their language.',
+  'Veröffentlicht: Jeder Spieler sieht auf der Seite und in der App seinen eigenen Schluchtsturm-Einsatz (Team, Uhrzeit, Aufgabe je Phase) in seiner Sprache.':'Published: every player sees their own Canyon Storm assignment (team, time, task per phase) on the page and in the app in their language.',
+  'z. B. Bedra, Harald und Meister: bis Minute 20 beobachten, wo es brennt, und dort helfen.':'e.g. Bedra, Harald and Meister: until minute 20 watch where it burns and help there.',
+  'Wann:':'When:', 'Team':'Team', '/20 Stamm':'/20 starters', '/10 Ersatz':'/10 substitutes', 'alle Spieler zeigen':'show all players', 'A Stamm':'A starter', 'A Ersatz':'A substitute',
+  'B Stamm':'B starter', 'B Ersatz':'B substitute', 'Stammspieler – im Spiel sind nur 20 gleichzeitig möglich.':'Starters – only 20 at a time are possible in the game.',
+  'Ersatzspieler – im Spiel sind nur 10 möglich.':'Substitutes – only 10 are possible in the game.', 'Stammspieler – im Spiel sind nur 20 möglich.':'Starters – only 20 are possible in the game.',
+  'ohne Meldung (als Schwächste eingeplant):':'without report (planned as weakest):', '· gegen':'· vs', 'Stamm ·':'Starters ·', 'Hinweis:':'Note:', 'Gruppe':'Group',
+  'Bitte zuerst oben Spieler Team A oder B zuordnen.':'Please assign players to team A or B above first.', 'Grundregeln, die im Chat-Text mitgeschickt werden':'Basic rules sent along with the chat text',
+  'Aktuell veröffentlicht:':'Currently published:', 'Aktuell ist kein Einsatzplan veröffentlicht.':'No battle plan is published right now.', 'Aktuell ist kein Schluchtsturm-Einsatz veröffentlicht.':'No Canyon Storm plan is published right now.',
+  'Speichere…':'Saving…', 'Speichere …':'Saving …', 'Veröffentlicht – die Spieler sehen ihren Einsatz jetzt auf der Seite.':'Published – players now see their assignment on the page.',
+  'Veröffentlicht – die Spieler sehen ihren Schluchtsturm-Einsatz jetzt auf der Seite.':'Published – players now see their Canyon Storm assignment on the page.',
+  'Veröffentlichung zurückgenommen.':'Publication withdrawn.', 'Fehler beim Speichern:':'Error while saving:', 'Alle Zuordnungen für Team A und B löschen?':'Clear all assignments for team A and B?',
+  'Einsatzplan für die Spieler veröffentlichen?':'Publish the battle plan for the players?', 'Veröffentlichten Einsatzplan zurücknehmen?':'Withdraw the published battle plan?',
+  'Schluchtsturm-Einsatz für die Spieler veröffentlichen?':'Publish the Canyon Storm plan for the players?', 'Veröffentlichten Schluchtsturm-Einsatz zurücknehmen?':'Withdraw the published Canyon Storm plan?',
+  'Alle Schluchtsturm-Zuordnungen löschen?':'Clear all Canyon Storm assignments?', 'BEISPIEL – gemischt verteilt, nur zum Ausprobieren.':'EXAMPLE – mixed, just to try out.',
+  'Fehler beim Speichern – ist die Datenbank-Erweiterung „ausbau“ eingespielt?':'Error while saving – is the database extension “ausbau” installed?',
+  'Bild zu groß zum Speichern.':'Image too large to save.', 'Kartenbild gespeichert. Zieh jetzt die Schilder auf die passenden Gebäude.':'Map image saved. Now drag the labels onto the matching buildings.',
+  'Bild in der Galerie speichern':'Save image to gallery', 'Bild herunterladen':'Download image', 'Vorlage konnte nicht geladen werden.':'Template could not be loaded.',
+  'Zum Speichern in der App bitte die neue App-Version 1.2 installieren (im Handy-Browser öffnen: matdan1987.github.io/skws-squads/SKWS-Squads.apk) – oder die Admin-Seite im Browser öffnen.':'To save in the app, please install the new app version 1.2 (open in the phone browser: matdan1987.github.io/skws-squads/SKWS-Squads.apk) – or open the admin page in the browser.',
+  'Zum Speichern in der App bitte App-Version 1.2 installieren – oder die Admin-Seite im Browser öffnen.':'To save in the app, please install app version 1.2 – or open the admin page in the browser.',
+  'Ohne Kartenposition:':'Not on the map:', 'Min.':'min', 'Unterstützer':'Supporters', 'Später:':'Later:', 'Ersatz:':'Substitutes:', 'Grüne Pfeile:':'Green arrows:', '· Orange:':'· Orange:',
+  // Taktiken Wüstensturm
+  'Ausgewogen – Silo-Sturm um 10:00':'Balanced – silo rush at 10:00',
+  'Die 5 Stärksten nehmen zuerst Ölraffinerie I und stürmen um 10:00 gemeinsam das Atomsilo. Der Rest hält Raffinerien, Infozentrum/Waffenlager, drei Lazarette und das Tech-Zentrum.':'The 5 strongest take Oil Refinery I first and storm the Nuclear Silo together at 10:00. The rest hold the refineries, Info Center/Arsenal, three hospitals and the Science Hub.',
+  'Gegner ungefähr gleich stark. Guter Standard, wenn ihr den Gegner nicht kennt.':'Opponent about equally strong. Good default if you don’t know the opponent.',
+  'Holt das Silo (meiste Punkte) früh, ohne die Außengebäude aufzugeben.':'Takes the silo (most points) early without giving up the outer buildings.',
+  'Wenn der Gegner das Silo härter verteidigt, binden sich eure Stärksten dort.':'If the opponent defends the silo hard, your strongest are tied up there.',
+  'Silo-Trupp':'Silo squad', 'Raffinerie-II-Trupp':'Refinery II squad', 'Raffinerie-I-Trupp':'Refinery I squad', 'Info-/Waffenlager-Trupp':'Info/Arsenal squad', 'Lazarett I':'Hospital I',
+  'Lazarett II':'Hospital II', 'Tech-Zentrum':'Science Hub', 'Lazarett III':'Hospital III', 'Lazarett IV':'Hospital IV', 'Unterstützung':'Support', 'Breit verteilt + Eingreiftruppe':'Spread out + reaction team',
+  'Alle 8 Außengebäude werden ab Start mit 1–3 Spielern besetzt. Die 3 Stärksten sind eine Eingreiftruppe: Sie beobachten, wo wir unter Druck sind, und verstärken dort. Ab 10 Min. übernehmen Info- und Tech-Trupp Waffenlager und Söldnerfabrik, ab 20 Min. geht die Eingreiftruppe aufs Atomsilo.':'All 8 outer buildings are taken with 1–3 players from the start. The 3 strongest are a reaction team: they watch where we are under pressure and reinforce there. From min 10 the Info and Science squads take the Arsenal and Mercenary Factory, from min 20 the reaction team goes to the Nuclear Silo.',
+  'Wenn ihr viele Gebäude sicher halten wollt und der Gegner unberechenbar ist. Entspricht eurem letzten Plan.':'If you want to hold many buildings safely and the opponent is unpredictable. Matches your last plan.',
+  'Wenig Leute pro Gebäude – ein konzentrierter Angriff kann einzelne Gebäude kippen.':'Few people per building – a focused attack can flip single buildings.',
+  'Eingreiftruppe':'Reaction team', 'Raffinerie I':'Refinery I', 'Raffinerie II':'Refinery II', 'Tech/Söldner':'Science/Mercenary', 'Zentrum & Buffs – gegen schwächere Gegner':'Center & buffs – against weaker opponents',
+  '6 Starke nehmen Ölraffinerie I und stürmen um 10:00 das Atomsilo. Je 3 Spieler holen sich parallel Waffenlager (+15 % eigene Werte) und Söldnerfabrik (−15 % Gegner). Zusammen mit dem Silo ergibt das das „Buff-Dreieck“.':'6 strong players take Oil Refinery I and storm the Nuclear Silo at 10:00. In parallel, 3 players each take the Arsenal (+15 % own stats) and Mercenary Factory (−15 % enemy). Together with the silo this is the “buff triangle”.',
+  'Wenn ihr klar stärker seid oder unbedingt das Silo dominieren wollt.':'If you are clearly stronger or really want to dominate the silo.',
+  'Lazarette und Tech-Zentrum werden kaum besetzt – gegen starke Gegner riskant.':'Hospitals and Science Hub are barely held – risky against strong opponents.',
+  'Waffenlager-Trupp':'Arsenal squad', 'Söldner-Trupp':'Mercenary squad', 'Raffinerie I halten':'Hold Refinery I', 'Bollwerk + Schlussangriff – gegen stärkere Gegner':'Bulwark + final assault – against stronger opponents',
+  'Alle 4 Lazarette (Heilung!) und beide Raffinerien werden gehalten, ins Zentrum geht zunächst niemand, die Truppen werden geschont. Ab 28:00 sammeln sich die 5 Stärksten und greifen um 28:30 gemeinsam das Atomsilo an, danach werden die Punkte-Kisten eingesammelt.':'All 4 hospitals (healing!) and both refineries are held, nobody goes to the center at first, troops are spared. From 28:00 the 5 strongest gather and attack the Nuclear Silo together at 28:30, then the point crates are collected.',
+  'Wenn der Gegner deutlich stärker ist. Riskant: Der Schlussangriff muss gut abgestimmt sein.':'If the opponent is clearly stronger. Risky: the final assault has to be well coordinated.',
+  'Schlussangriff':'Final assault', 'Infozentrum':'Info Center', 'Farbbereiche + Gelb – Taktik von Moon':'Color areas + yellow – Moon’s tactic',
+  'Taktik von Moon: Vier Farbbereiche mit je 2 Gebäudehaltern (schwächere Spieler: Gebäude halten, Angriffe melden, keine unnötigen Kämpfe) und 2 Unterstützern (Bereich verteidigen, verlorene Gebäude zurückerobern). Die 4 Stärksten sind das gelbe Team: immer geschlossen, nur auf Ruf des Einsatzleiters, ab 10:00 gemeinsam aufs Atomsilo. Höchstens 2 abgestimmte Silo-Versuche, sonst geschlossen auf eine gegnerische Raffinerie. Waffenlager und Söldnerfabrik erst, wenn das Silo sicher ist.':'Moon’s plan: four color areas, each with 2 building holders (weaker players: hold the building, report attacks, no needless fights) and 2 supporters (defend the area, retake lost buildings). The 4 strongest are the yellow team: always together, only on the leader’s call, Nuclear Silo together at 10:00. At most 2 coordinated silo attempts, otherwise move as a group to an enemy refinery. Arsenal and Mercenary Factory only once the silo is secure.',
+  'Wenn eine Person im Kampfchat die Einsatzleitung übernimmt und die Bereiche selbstständig verteidigen sollen. Gut bei gemischt starken Teams.':'If one person leads in the battle chat and the areas should defend on their own. Good for teams of mixed strength.',
+  'Alle 8 Außengebäude sofort besetzt, klare Zuständigkeiten, die Stärksten bleiben zusammen und sparen Truppen fürs Silo.':'All 8 outer buildings taken right away, clear responsibilities, the strongest stay together and save troops for the silo.',
+  'Nur 4 am Silo – gegen sehr starke Gegner knapp. Schwache Halter auf den Raffinerien brauchen schnelle Hilfe von Unterstützern bzw. Gelb.':'Only 4 at the silo – tight against very strong opponents. Weak holders on the refineries need quick help from supporters or yellow.',
+  'Gelbes Team':'Yellow team', 'Unterstützer Schwarz (links)':'Supporters black (left)', 'Unterstützer Rot (rechts)':'Supporters red (right)', 'Unterstützer Grün (oben)':'Supporters green (top)',
+  'Unterstützer Blau (unten)':'Supporters blue (bottom)', 'Halter Schwarz':'Holders black', 'Halter Rot':'Holders red', 'Halter Grün':'Holders green', 'Halter Blau':'Holders blue',
+  'Bereich Schwarz (links)':'Black area (left)', 'Bereich Rot (rechts)':'Red area (right)', 'Bereich Grün (oben)':'Green area (top)', 'Bereich Blau (unten)':'Blue area (bottom)',
+  'Ölraffinerie I':'Oil Refinery I', 'Ölraffinerie II':'Oil Refinery II', 'Feldlazarett I':'Field Hospital I', 'Feldlazarett II':'Field Hospital II', 'Feldlazarett III':'Field Hospital III',
+  'Feldlazarett IV':'Field Hospital IV', 'Waffenlager':'Arsenal', 'Söldnerfabrik':'Mercenary Factory', 'Atomsilo':'Nuclear Silo', 'Ölquellen':'Oil Wells',
+  'Basis verteidigen, Punkte-Kisten einsammeln':'Defend the base, collect point crates', 'Kisten einsammeln, angegriffene Gebäude verstärken':'Collect crates, reinforce attacked buildings',
+  'Eingreiftruppe: beobachten, wo wir unter Druck sind, und dort verstärken':'Reaction team: watch where we are under pressure and reinforce there',
+  'Gelbes Team: immer geschlossen bleiben, nur auf Ruf des Einsatzleiters eingreifen (Raffinerien retten, starke Gegner stoppen)':'Yellow team: always stay together, only act on the leader’s call (save refineries, stop strong enemies)',
+  'Start (0–10 Min.)':'Start (min 0–10)', 'Ab 10 Min.':'From min 10', 'Ab 13 Min.':'From min 13', 'Ab 20 Min.':'From min 20', 'Ab 28 Min.':'From min 28',
+  'Gebäude bringen auch ohne Besatzung Punkte – nach dem Erobern nicht wild abziehen.':'Buildings score points even without a garrison – don’t pull out wildly after capturing.',
+  'Nach 60 Sekunden werden 40 % der Punkte plünderbar: Gebäude halten, bei einem Wechsel die Punkte-Kisten mit dem Aufklärer einsammeln.':'After 60 seconds 40 % of the points become lootable: hold buildings, collect point crates with the scout when switching.',
+  'Geheilte Truppen regelmäßig im Lazarett abholen (Symbol unten links).':'Collect healed troops regularly at the hospital (icon bottom left).',
+  'Teleport für Notfälle aufheben (Verteidigung, Silo).':'Save the teleport for emergencies (defense, silo).',
+  'Wer früher gehen muss: über die Punktetafel „Schlachtfeld verlassen“, damit ein Ersatzspieler nachrücken kann.':'If you have to leave early: use “Leave battlefield” on the scoreboard so a substitute can move in.',
+  'Ges.':'Tot.', 'Raff. I':'Ref. I', 'Raff. II':'Ref. II', 'Laz. I':'Hosp. I', 'Laz. II':'Hosp. II', 'Laz. III':'Hosp. III', 'Laz. IV':'Hosp. IV', 'Wiss.':'Sci.', 'Waffenl.':'Arsenal',
+  'Söldner':'Merc.', 'Basis':'Base', 'Eingreif.':'React.', 'Schwarz':'Black', 'Rot':'Red', 'Grün':'Green', 'Blau':'Blue',
+  // Taktiken Schluchtsturm
+  'Viruslabor':'Virus Lab', 'Energieturm':'Power Tower', 'Sicherheitszone Ordnungshüter':'Rulebringer Safe Zone', 'Morgenbringer-Start':'Dawnbreaker Spawn', 'Rechenzentrum I':'Data Center I',
+  'Rechenzentrum II':'Data Center II', 'Serumfabrik I':'Serum Factory I', 'Serumfabrik II':'Serum Factory II', 'Abwehrsystem I':'Defense System I', 'Abwehrsystem II':'Defense System II',
+  'Probenlager I':'Sample Warehouse I', 'Probenlager II':'Sample Warehouse II', 'Probenlager III':'Sample Warehouse III', 'Probenlager IV':'Sample Warehouse IV',
+  'Basis verteidigen, Punkte-Kisten und Energie sammeln':'Defend the base, collect point crates and energy', 'Start (0–7 Min.)':'Start (min 0–7)', 'Ab 7 Min.':'From min 7', 'Ab 14 Min.':'From min 14',
+  'Morgenbringer – wir greifen das Viruslabor an':'Dawnbreaker – we attack the Virus Lab',
+  'Absprache mit der Partner-Allianz: Wir nehmen das Viruslabor, die Partner halten die Gebäude dazwischen. Die 5 Stärksten sichern ab 0:30 den Energieturm und greifen um 14:00 gemeinsam das Viruslabor an. Der Rest hält Rechenzentren und Probenlager und holt sich Abwehrsysteme (ab 7 Min.) und Serumfabriken (ab 10 Min.), sobald sie öffnen.':'Agreed with our partner alliance: we take the Virus Lab, they hold the buildings in between. The 5 strongest secure the Power Tower from 0:30 and attack the Virus Lab together at 14:00. The rest hold the Data Centers and Sample Warehouses and take the Defense Systems (from min 7) and Serum Factories (from min 10) as soon as they open.',
+  'Wenn eure Allianz die stärkere der beiden Morgenbringer ist.':'If your alliance is the stronger of the two Dawnbreakers.', 'Das Viruslabor bringt mit 120 Punkten/Sek. am meisten.':'The Virus Lab gives the most with 120 points/sec.',
+  'Klappt nur mit Absprache – sonst greifen beide Allianzen dasselbe an und die Außengebäude bleiben leer.':'Only works with coordination – otherwise both alliances attack the same and the outer buildings stay empty.',
+  'Sturm-Trupp':'Assault squad', 'Morgenbringer – Partner greift an, wir halten die Mitte':'Dawnbreaker – partner attacks, we hold the middle',
+  'Absprache mit der Partner-Allianz: Die Partner nehmen das Viruslabor, wir halten Energieturm, Rechenzentren und Probenlager und besetzen ab 7 Minuten beide Abwehrsysteme, die die Wege zur Mitte bewachen.':'Agreed with our partner alliance: they take the Virus Lab, we hold the Power Tower, Data Centers and Sample Warehouses and occupy both Defense Systems from minute 7, which guard the paths to the center.',
+  'Wenn die Partner-Allianz stärker ist oder das Labor angreifen will.':'If the partner alliance is stronger or wants to attack the lab.', 'Sichere Punkte von vielen Gebäuden, die Wege zur Mitte sind geschützt.':'Safe points from many buildings, the paths to the center are protected.',
+  'Energieturm-Trupp':'Power Tower squad', 'Ordnungshüter (wir allein) – konzentrieren':'Rulebringer (us alone) – concentrate',
+  'Als einzelne Allianz nicht alles verteidigen: Die 5 Stärksten nehmen den Energieturm (Schild über die Schutzzone) und halten ab 14 Minuten das Viruslabor bis zum Schluss. Judicator für das Labor-Fenster aufheben. Der Rest hält Rechenzentren, Serumfabriken und Abwehrsysteme.':'As a single alliance, do not defend everything: the 5 strongest take the Power Tower (shield over the safe zone) and hold the Virus Lab from minute 14 to the end. Save the Judicator for the Virus Lab window. The rest hold the Data Centers, Serum Factories and Defense Systems.',
+  'Wenn eure Allianz in dieser Runde die Ordnungshüter-Seite spielt.':'If your alliance plays the Rulebringer side this round.', 'Kräfte gebündelt, Labor und Schild in eurer Hand.':'Forces combined, lab and shield in your hands.',
+  'Probenlager bleiben dem Gegner – das Labor muss bis zum Ende gehalten werden.':'Sample Warehouses go to the enemy – the lab has to be held to the end.', 'Energie & Kisten':'Energy & crates',
+  'Einfach – Taktik von Moon':'Simple – Moon’s tactic',
+  'Taktik von Moon: Die 5 Stärksten gehen zuerst auf den Energieturm und um 14:00 gemeinsam aufs Viruslabor. Die Schwächeren nehmen zuerst Probenlager und Rechenzentren und verteilen sich dann auf die Gebäude, sobald sie öffnen: Abwehrsysteme ab 7, Serumfabriken ab 10 Minuten. Je ein Spieler bleibt auf jedem Probenlager.':'Moon’s plan: the 5 strongest take the Power Tower first and attack the Virus Lab together at 14:00. The weaker players start on the Sample Warehouses and Data Centers and then spread to the buildings as they open: Defense Systems from minute 7, Serum Factories from minute 10. One player stays on each Sample Warehouse.',
+  'Wenn nur wenige mitspielen oder keine Absprache mit der Partner-Allianz möglich ist.':'If only a few play or no agreement with the partner alliance is possible.',
+  'Lager → Abwehrsystem I':'Warehouse → Defense System I', 'Lager → Abwehrsystem II':'Warehouse → Defense System II', 'Lager → Serumfabrik I':'Warehouse → Serum Factory I', 'Lager → Serumfabrik II':'Warehouse → Serum Factory II',
+  // Anmeldung zu Events
+  'Stamm nur Team A':'Starter team A only', 'Stamm nur Team B':'Starter team B only', 'Stamm, beide Zeiten':'Starter, both times', 'Ersatz nur Team A':'Substitute team A only',
+  'Ersatz nur Team B':'Substitute team B only', 'Ersatz, beide Zeiten':'Substitute, both times', 'Anmeldung der Spieler –':'Player sign-up –', '· Anmeldeschluss':'· deadline',
+  'Stamm nur A':'Starter A only', 'Stamm nur B':'Starter B only', 'Ersatz nur A':'Substitute A only', 'Ersatz nur B':'Substitute B only', 'keine Antwort':'no answer', '× pausiert':'× benched',
+  'Keine Antwort (':'No answer (', 'Rotation & gesetzte Spieler (':'Rotation & fixed players (', 'gesetzt, Rotation':'fixed, rotation',
+  'Melden sich für ein Team mehr als 20 an, kommen zuerst die Gesetzten in den Stamm, danach Spieler mit Bonus „Vorrang“. Mit Rotation folgen dann die, die in den letzten 4 Runden am häufigsten pausieren mussten bzw. am seltensten gespielt haben – erst danach entscheidet die Stärke. Ohne Rotation entscheidet nur die Stärke. Ausgewertet wird die Aufstellung, mit der du den Plan erstellt hast.':'If more than 20 sign up for a team, fixed players go into the starters first, then players with the “priority” bonus. With rotation, those who had to sit out most often or played least in the last 4 rounds follow – only then does strength decide. Without rotation only strength decides. The line-up you created the plan with is evaluated.',
+  'Noch niemand gesetzt.':'Nobody fixed yet.', '– Spieler setzen –':'– Fix a player –', 'Setzen':'Fix', 'Spieler nachtragen / ändern':'Add / change a player', '– Spieler –':'– Player –', 'Antwort':'Answer',
+  'Anmeldung löschen':'Delete sign-up', 'Eintragen':'Enter', 'In die Zuordnung übernehmen':'Take into assignment', 'Anmeldung schließen':'Close sign-up', 'Wieder öffnen':'Reopen',
+  'Aufruf für den Chat kopieren':'Copy call for the chat', 'Erinnerung an Fehlende kopieren':'Copy reminder for those missing',
+  'Noch keine Anmelderunde. Lege unten eine an – danach sehen alle Spieler auf der Squad-Seite eine Karte, auf der sie als Stammspieler oder nur als Ersatz jeweils Team A, Team B oder beide Zeiten wählen – oder „diesmal nicht“.':'No sign-up round yet. Create one below – then all players see a card on the squad page where they choose team A, team B or both times as starter or only as substitute – or “not this time”.',
+  'Neue Anmelderunde starten':'Start new sign-up round', 'Bezeichnung':'Label', 'Anmeldeschluss':'Deadline', 'Eine neue Runde schließt die bisherige. Die Uhrzeiten sehen die Spieler bei der Auswahl.':'A new round closes the previous one. Players see the times when choosing.',
+  'Anmelderunde starten':'Start sign-up round', 'Nach dem Event: Wer hat gefehlt? –':'After the event: who was absent? –',
+  'Nur ankreuzen, wer eingeteilt war, aber nicht da war. Alle anderen gelten als dabei. Das zählt für Rotation, Profil-Erfolge und auf Wunsch als Malus.':'Only tick who was assigned but not there. Everyone else counts as present. This counts for rotation, profile achievements and, if you like, as a penalty.',
+  'Stamm (':'Starters (', 'Ersatz (':'Substitutes (', 'Fehlende speichern':'Save absentees', 'Fehler – ist die Datenbank-Erweiterung „event-anmeldung“ schon eingespielt?':'Error – is the database extension “event-anmeldung” installed?',
+  'Übernommen: A':'Taken over: A', 'Gesperrt:':'Blocked:', 'Nur Ersatz (Malus):':'Substitute only (penalty):', 'Jetzt im Spiel eintragen und unten den Plan erstellen.':'Now enter them in the game and create the plan below.',
+  'Angemeldet, aber nicht erschienen':'Signed up but did not show up', 'Fehlende gespeichert:':'Absentees saved:', 'Gespeichert:':'Saved:', ', Malus vergeben.':', penalty given.',
+  'Fehler – ist die Datenbank-Erweiterung „ausbau“ eingespielt?':'Error – is the database extension “ausbau” installed?', 'Rotation':'Rotation',
+  'Anmelderunde gestartet – jetzt den Aufruf in den Chat kopieren.':'Sign-up round started – now copy the call into the chat.', 'Anmeldung geschlossen.':'Sign-up closed.',
+  'Anmeldung wieder geöffnet.':'Sign-up reopened.', 'Bitte einen Spieler wählen.':'Please choose a player.', 'offen':'open', 'geschlossen':'closed', 'angemeldet':'signed up',
+  // Bonus/Malus
+  'Eintrag vergeben':'Give entry', 'Grund':'Reason', 'Art':'Type', 'Malus':'Penalty', 'Bonus':'Bonus', 'Wirkung':'Effect', 'nur als Ersatz':'substitute only', 'gesperrt (nimmt nicht teil)':'blocked (does not take part)',
+  'Vorrang für den Stamm':'Priority for starters', 'nur vermerken (keine Wirkung)':'note only (no effect)', 'Gilt für':'Applies to', 'Wüstensturm und Schluchtsturm':'Desert Storm and Canyon Storm',
+  'nur Wüstensturm':'Desert Storm only', 'nur Schluchtsturm':'Canyon Storm only', 'Dauer in Runden (leer = ohne Rundenlimit)':'Duration in rounds (empty = no round limit)',
+  'Oder bis Datum (optional)':'Or until date (optional)', 'Sichtbar für':'Visible to', '👁 alle (öffentlich im Profil)':'👁 everyone (public in profile)', '👤 nur den Spieler selbst':'👤 only the player',
+  '🔒 nur R4/R5 (geheim)':'🔒 only R4/R5 (secret)', 'Eigener Grund':'Own reason', 'Interne Notiz (sehen nur R4/R5)':'Internal note (only R4/R5 see it)', 'Eintrag speichern':'Save entry',
+  'Sichtbarkeit: „alle“ = Sticker im öffentlichen Profil und beim Spieler; „nur den Spieler“ = nur er sieht den Eintrag nach dem Anmelden; „nur R4/R5“ = geheim, auch der Spieler sieht ihn nicht. Die Wirkung im Event (gesperrt, nur Ersatz …) gilt unabhängig davon. Die interne Notiz sieht nie ein Spieler.':'Visibility: “everyone” = sticker in the public profile and for the player; “only the player” = only they see the entry after signing in; “only R4/R5” = secret, not even the player sees it. The effect in the event (blocked, substitute only …) applies regardless. No player ever sees the internal note.',
+  'Runden zählen je Event ab der Anmelderunde, die gerade offen ist (sonst ab der nächsten), und sind verbraucht, sobald die Runde geschlossen wird. Ohne Runden und ohne Datum gilt eine Wirkung, bis du sie zurücknimmst.':'Rounds count per event from the sign-up round that is open now (otherwise from the next one) and are used up once the round is closed. Without rounds and without a date an effect applies until you revoke it.',
+  'Aktive Einträge (':'Active entries (', 'Verlauf – abgelaufene und zurückgenommene Einträge (':'History – expired and revoked entries (', 'Bilanz je Spieler':'Balance per player',
+  'Alle Bonus- und Malus-Einträge je Spieler, auch geheime und abgelaufene (zurückgenommene zählen nicht) – auch von ausgeschiedenen Mitgliedern, z. B. wenn sich jemand erneut bewirbt. Antippen öffnet die Spieler-Akte.':'All bonus and penalty entries per player, including secret and expired ones (revoked ones don’t count) – also of former members, e.g. when someone applies again. Tap to open the player file.',
+  'meiste Malus zuerst':'most penalties first', 'meiste Bonus zuerst':'most bonuses first', 'beste Bilanz zuerst':'best balance first', 'nach Name':'by name', 'Gründe-Liste':'Reason list',
+  'Vorlagen für die Auswahl oben. Wählst du einen Grund, werden Art, Wirkung, Geltung und Dauer vorgeschlagen; ändern kannst du sie trotzdem. Wiederholt sich ein Malus mit demselben Grund innerhalb von 4 Wochen, wird die doppelte Dauer vorgeschlagen.':'Templates for the selection above. Choosing a reason suggests type, effect, scope and duration; you can still change them. If a penalty with the same reason repeats within 4 weeks, double the duration is suggested.',
+  'Grund hinzufügen':'Add reason', 'Gründe-Liste speichern':'Save reason list', 'nur Ersatz':'substitute only', 'gesperrt':'blocked', 'Vorrang':'priority', 'nur vermerkt':'noted only',
+  'Wüstensturm + Schluchtsturm':'Desert Storm + Canyon Storm', '👁 öffentlich':'👁 public', '👤 nur der Spieler':'👤 only the player', '🔒 nur R4/R5':'🔒 only R4/R5',
+  'Anweisungen im Event ignoriert / Gebäude verlassen':'Ignored instructions in the event / left building', 'Zu viele Punkte in der VS-Sparwoche':'Too many points in the VS saving week',
+  'Keine Zug-Tickets gespendet':'No train tickets donated', 'Allianz-Aufgabe nicht erledigt':'Alliance task not done', 'Unsoziales Verhalten':'Antisocial behavior', 'Verwarnung (ohne Folgen)':'Warning (no consequences)',
+  'Kurzfristig als Ersatz eingesprungen':'Stepped in as substitute at short notice', 'Besonders gut gespielt (MVP)':'Played especially well (MVP)', 'Besonders hilfsbereit / sozial':'Especially helpful / social',
+  'Lob (ohne Folgen)':'Praise (no consequences)', 'WS noch':'DS left', ', SS noch':', CS left', 'Runde(n)':'round(s)', 'bis zur Rücknahme':'until revoked', 'Eigener Grund …':'Own reason …',
+  'hat diesen Malus schon am':'already got this penalty on', 'bekommen – Wiederholung, doppelte Dauer vorgeschlagen.':'– repeat, double duration suggested.', 'Aktiv:':'Active:', 'Dauer':'Duration',
+  'Keine aktiven Einträge.':'No active entries.', 'Noch nichts.':'Nothing yet.', 'Aktive Malus':'Active penalties', 'gesperrt ·':'blocked ·', 'Aktive Bonus':'Active bonuses', 'mit Vorrang':'with priority',
+  'Einträge gesamt':'Entries total', 'seit Start':'since start', 'Bilanz':'Balance', 'davon nicht öffentlich':'of which not public', 'letzter Eintrag':'last entry', 'beide Events':'both events',
+  'Sichtbar':'Visible', 'Runden':'Rounds', 'Bitte Spieler und Grund wählen.':'Please choose player and reason.',
+  'Ohne Runden und ohne Datum gilt der Eintrag, bis du ihn zurücknimmst. Trotzdem speichern?':'Without rounds and without a date the entry applies until you revoke it. Save anyway?',
+  'Fehler – ist die Datenbank-Erweiterung „bonus-malus“ schon eingespielt?':'Error – is the database extension “bonus-malus” installed?', 'zurücknehmen?':'revoke?', 'Zurückgenommen.':'Revoked.',
+  'Fehler beim Zurücknehmen.':'Error while revoking.', 'Noch nicht gespeichert.':'Not saved yet.', 'Sichtbarkeit geändert.':'Visibility changed.',
+  'Fehler – ist die Datenbank-Erweiterung „geschenke“ eingespielt?':'Error – is the database extension “geschenke” installed?', 'Neuer Grund':'New reason', 'Gründe-Liste gespeichert.':'Reason list saved.',
+  'Fehler beim Speichern.':'Error while saving.', 'Gespeichert: Bonus für':'Saved: bonus for', 'Gespeichert: Malus für':'Saved: penalty for', 'abgelaufen':'expired', '(ausgeschieden)':'(left)',
+  // Mentoren
+  'Mentorengruppen':'Mentor groups', 'Rolle oder Gruppe über das Auswahlfeld neben dem Namen ändern. Jede Änderung wird sofort zentral gespeichert und ist für alle R4/R5 sichtbar. Ø T1 zählt nur Spieler mit Meldung.':'Change role or group with the selector next to the name. Every change is saved centrally right away and visible to all R4/R5. Ø T1 only counts players with a report.',
+  'Für alle speichern':'Save for everyone', 'Übersicht für den Chat kopieren':'Copy overview for the chat', 'Auf Ausgangsliste zurücksetzen':'Reset to initial list', 'Ohne Gruppe – Empfehlung (':'Without group – recommendation (',
+  'Intensivgruppe, wenn T1 unter (Mio.)':'Intensive group if T1 below (M)',
+  'Schwache Spieler (T1 unter der Grenze) kommen in die Intensivgruppe. Alle anderen werden auf die übrigen Gruppen verteilt: immer in die kleinste Gruppe, bei Gleichstand in die mit dem niedrigeren Ø T1. R4/R5 werden nicht verteilt.':'Weak players (T1 below the limit) go to the intensive group. Everyone else is spread across the other groups: always into the smallest group, on a tie into the one with the lower Ø T1. R4/R5 are not assigned.',
+  'Alle Empfehlungen übernehmen':'Apply all recommendations', 'Mentor-Vorschläge':'Mentor suggestions', 'Starke Spieler, die noch keine Mentoren sind: T1 mindestens so hoch wie der Ø T1 der jetzigen Mentoren (':'Strong players who are not mentors yet: T1 at least as high as the Ø T1 of the current mentors (',
+  '). Vorgeschlagen wird die eigene Gruppe – bei Spielern ohne Gruppe die Gruppe mit den meisten Spielern je Mentor.':'). Their own group is suggested – for players without a group, the group with the most players per mentor.',
+  'auch R1 vorschlagen (meist neu in der Allianz)':'also suggest R1 (usually new in the alliance)', 'Gespeichert – für alle R4/R5 sichtbar.':'Saved – visible to all R4/R5.',
+  'Speichern fehlgeschlagen – Änderung ist nur auf diesem Gerät.':'Saving failed – the change is only on this device.', 'Noch nicht zentral gespeichert – „Für alle speichern“ drücken, damit alle R4/R5 diesen Stand sehen.':'Not saved centrally yet – press “Save for everyone” so all R4/R5 see this state.',
+  'Zuletzt gespeichert am':'Last saved on', '· Mentor':'· mentor', '→ Intensivgruppe':'→ intensive group', 'kleinste Gruppe':'smallest group', 'noch keine Werte – vorläufig in die kleinste Gruppe':'no values yet – provisionally into the smallest group',
+  'Mitglied':'Member', 'Mentor':'Mentor', 'aus Gruppe nehmen':'remove from group', 'nicht in der Mitgliederliste':'not in the member list', 'Intensiv':'Intensive', 'Spieler + 1 R4 · Ø T1':'players + 1 R4 · Ø T1',
+  'mit Meldung)':'with report)', 'R4 – Kontrolle':'R4 – control', 'ist kein R4 mehr':'is no longer R4', 'In Gruppen':'In groups', 'Mentoren ·':'mentors ·', 'Ohne Gruppe':'Without group', 'Empfehlung unten':'recommendation below',
+  'Größte / kleinste':'Largest / smallest', 'Spieler je Gruppe':'players per group', '→ Gruppe':'→ group', 'Alle aktiven Spieler sind einer Gruppe zugeordnet.':'All active players are in a group.',
+  'R4/R5 ohne eigene Gruppe (werden nicht verteilt):':'R4/R5 without own group (not assigned):', 'In einer Gruppe, aber nicht (mehr) als aktives Mitglied geführt:':'In a group but not (any longer) listed as active member:',
+  'jetzt Mitglied in Gruppe':'now member of group', 'noch ohne Gruppe':'no group yet', '· Gruppe':'· group', '→ Mentor G':'→ mentor G', 'Keine weiteren Kandidaten über dem Mentoren-Schnitt.':'No further candidates above the mentor average.',
+  '(Intensiv)':'(intensive)', 'wechseln?':'change?', 'Spieler wie empfohlen auf die Gruppen verteilen?':'Assign players to the groups as recommended?', 'Gruppen für alle auf die Ausgangsliste zurücksetzen?':'Reset the groups for everyone to the initial list?',
+  // Nachrichten
+  'Rundnachricht senden':'Send announcement', 'Die Spieler sehen die Nachricht, sobald sie sich auf der Seite unter „💬 Funk“ mit ihrer PIN anmelden, und müssen sie bestätigen. Unten siehst du, wer schon bestätigt hat.':'Players see the message as soon as they sign in on the page under “💬 Radio” with their PIN, and have to confirm it. Below you see who has confirmed already.',
+  '📨 Senden':'📨 Send', 'Gesendete Rundnachrichten':'Sent announcements', 'PINs der Spieler':'Player PINs',
+  'Jeder Spieler legt beim ersten Anmelden unter „💬 Funk“ selbst eine PIN fest (mit E-Mail-Bestätigung, falls eine hinterlegt ist). Zurücksetzen geht in der Spieler-Akte oder hier bei gesperrten Spielern.':'Every player sets their own PIN on first sign-in (with e-mail confirmation if one is on file). Resetting works in the player file or here for locked players.',
+  'Betreff (optional)':'Subject (optional)', 'Nachricht':'Message', 'Noch keine Empfänger gewählt.':'No recipients chosen yet.', 'Empfänger':'recipients', '+ einzelnen Spieler hinzufügen':'+ add single player',
+  'Lädt … (oder die Datenbank-Erweiterung „funk“ fehlt noch)':'Loading … (or the database extension “funk” is missing)', '(ohne Betreff)':'(no subject)', 'bestätigt':'confirmed', 'Lesestatus anzeigen':'Show read status',
+  'Noch offen (':'Still open (', '(ohne PIN)':'(no PIN)', 'Bestätigt (':'Confirmed (', 'Noch keine Rundnachrichten.':'No announcements yet.', 'Spielern haben eine PIN':'players have a PIN', 'von':'of',
+  'Gesperrt nach Fehlversuchen:':'Locked after failed attempts:', 'Zurücksetzen':'Reset', 'Noch ohne PIN (':'Still without PIN (', 'Bitte Empfänger wählen.':'Please choose recipients.',
+  'Bitte eine Nachricht schreiben.':'Please write a message.', 'Nachricht an # Spieler senden?':'Send message to # players?', 'Gesendet an # Spieler. Sie sehen die Nachricht, sobald sie sich unter „Funk“ anmelden, und müssen sie bestätigen.':'Sent to # players. They see the message as soon as they sign in under “Radio”, and have to confirm it.',
+  'Keine aktiven Empfänger gefunden.':'No active recipients found.', 'Fehler:':'Error:', 'An:':'To:', 'Mentoren':'Mentors',
+  'Rundnachricht löschen? Sie verschwindet auch bei den Spielern.':'Delete announcement? It also disappears for the players.', 'wird abgemeldet und legt beim nächsten Anmelden eine neue PIN fest.':'will be signed out and sets a new PIN on next sign-in.',
+  // Zugänge
+  'Start-PIN vergeben':'Give starter PIN', 'Für Spieler, die keine eigene PIN hinbekommen oder sie nicht über „PIN vergessen“ zurücksetzen können. Eine bisherige PIN wird ersetzt. Beim ersten Anmelden wird der Spieler gebeten, eine eigene PIN festzulegen.':'For players who can’t set their own PIN or can’t reset it via “Forgot PIN”. A previous PIN is replaced. On first sign-in the player is asked to set their own PIN.',
+  'Start-PIN':'Starter PIN', '🔑 Start-PIN setzen':'🔑 Set starter PIN', 'Anmelde-Protokoll':'Login log', 'nur Fehlversuche':'failed attempts only', 'Neue Zufalls-PIN':'New random PIN',
+  '✔ Angemeldet':'✔ Signed in', '✔ Neu eingetragen, PIN festgelegt':'✔ Newly entered, PIN set', '🔑 Eigene PIN festgelegt':'🔑 Own PIN set', '🔑 PIN geändert':'🔑 PIN changed',
+  '🔑 Neue PIN über „PIN vergessen“':'🔑 New PIN via “Forgot PIN”', '✖ Falsche PIN':'✖ Wrong PIN', '✖ E-Mail passt nicht':'✖ E-mail does not match', '⛔ Versuch trotz Sperre':'⛔ Attempt while locked',
+  '✖ PIN vergessen – keine E-Mail hinterlegt':'✖ Forgot PIN – no e-mail on file', '🛡️ PIN zurückgesetzt':'🛡️ PIN reset', '🛡️ Start-PIN vergeben':'🛡️ Starter PIN given',
+  'Konnte nicht geladen werden (fehlt die Datenbank-Erweiterung „zugaenge“?).':'Could not be loaded (is the database extension “zugaenge” missing?).', 'alle Spieler':'all players',
+  'Anmeldungen 24 h':'Sign-ins 24 h', 'Fehlversuche 24 h':'Failed attempts 24 h', 'erfolgreich':'successful', 'bitte prüfen':'please check', 'alles ruhig':'all quiet', 'Gesperrt':'Locked', 'niemand':'nobody',
+  'Mit PIN':'With PIN', 'noch mit Start-PIN':'still with starter PIN', 'Bitte Spieler wählen.':'Please choose a player.', 'Die PIN muss mindestens 4 Zeichen haben.':'The PIN must have at least 4 characters.',
+  'Start-PIN für':'Starter PIN for', 'Gib die PIN im Spiel-Chat weiter. Beim ersten Anmelden wird':'Pass the PIN on in the game chat. On first sign-in,', 'gebeten, eine eigene PIN festzulegen.':'will be asked to set their own PIN.',
+  '📋 Text kopieren':'📋 Copy text', '✔ Kopiert':'✔ Copied', 'Start-PIN „':'Starter PIN “', 'setzen? Eine bisherige PIN wird ersetzt und':'? A previous PIN is replaced and', 'auf allen Geräten abgemeldet.':'is signed out on all devices.',
+  'PIN von':'PIN of', 'zurücksetzen?':'reset?',
+  // Logbuch
+  'Ansicht':'View', 'Chronik':'Timeline', 'Letzte Aktion je Person':'Last action per person', 'Filter':'Filter', 'alles':'everything', 'nur Meldungen mit Änderung':'only reports with changes',
+  'Verwaltung (R4/R5)':'Management (R4/R5)', 'Admin-Anmeldungen':'Admin sign-ins', 'Neue Spieler (selbst eingetragen)':'New players (self-entered)', 'Abmeldungen Mail':'Mail unsubscribes',
+  'Erinnerungs-Mails':'Reminder mails', 'Ältere Einträge laden':'Load older entries', 'Lade…':'Loading…', 'Logbuch konnte nicht geladen werden.':'The log could not be loaded.', 'Neu':'New', '· nachgetragen':'· backfilled',
+  'Update':'Update', '· E-Mail geändert':'· e-mail changed', 'Gespeichert':'Saved', 'hat gespeichert – ohne Änderung':'saved – no change', 'E-Mail geändert ·':'e-mail changed ·', 'Beitritt':'Joined',
+  'hat eingetragen':'entered', 'hat aktualisiert':'updated', 'hat sich eingetragen':'has entered', 'ist zurück und hat sich selbst wieder eingetragen':'is back and re-entered themselves', 'hat sich selbst neu eingetragen':'entered themselves as new',
+  '· bei Bedarf im Tab Mitglieder anpassen':'· adjust in the members tab if needed', 'Abgemeldet':'Unsubscribed', 'hat sich von der Mail-Erinnerung abgemeldet':'unsubscribed from the mail reminder',
+  'Falsche E-Mail beim Avatar-Ändern für':'Wrong e-mail when changing the avatar for', 'nach 5 Fehlversuchen pro Stunde gesperrt':'locked after 5 failed attempts per hour', 'hat den Avatar von':'removed the avatar of',
+  'entfernt':'', 'hat seinen Avatar entfernt':'removed their avatar', 'hat einen neuen Avatar hochgeladen':'uploaded a new avatar', 'hat die Gründe-Liste geändert':'changed the reason list',
+  'hat die Sichtbarkeit von „':'changed the visibility of “', '“ bei':'” for', 'geändert:':'to:', 'öffentlich':'public', 'nur der Spieler':'only the player', 'nur R4/R5':'only R4/R5',
+  'den Bonus':'the bonus', 'den Malus':'the penalty', '“ von':'” of', 'für':'for', '· bis':'· until', 'Anmeldung':'Sign-up', 'hat sich für':'signed up for', 'gemeldet:':':',
+  'neue Anmelderunde':'new sign-up round', 'Runde geändert':'round changed', 'Anmeldung von':'sign-up of', 'gesetzt:':'set:', 'gelöscht':'deleted', 'Rotation/gesetzte Spieler geändert':'rotation/fixed players changed',
+  'Fehlende markiert:':'absentees marked:', 'hat die Mentorengruppen geändert':'changed the mentor groups', 'Spieler in':'players in', 'Gruppen':'groups', 'hat eine Rundnachricht gelöscht':'deleted an announcement',
+  'hat eine Rundnachricht gesendet':'sent an announcement', 'hat eine PIN für Funk eingerichtet':'set a PIN', 'nach Fehlversuchen gesperrt':'locked after failed attempts',
+  'falsche PIN oder E-Mail · zurücksetzen unter Nachrichten oder in der Spieler-Akte':'wrong PIN or e-mail · reset under Logins or in the player file', 'Geschenk':'Gift', 'hat ein Geschenk von':'deleted a gift from',
+  'hat eine Start-PIN für':'gave a starter PIN to', 'vergeben':'', 'Spieler wird beim ersten Anmelden gebeten, eine eigene PIN festzulegen':'the player is asked to set their own PIN on first sign-in',
+  'hat eine neue PIN über „PIN vergessen“ festgelegt':'set a new PIN via “Forgot PIN”', 'mit der hinterlegten E-Mail bestätigt':'confirmed with the e-mail on file', 'hat die PIN von':'reset the PIN of', 'zurückgesetzt':'',
+  'Shoutbox':'Shoutbox', 'hat einen Beitrag von':'deleted a post by', 'Erinnerung':'Reminder', 'Erinnerungs-Mails zur Anmeldung':'Reminder mails for sign-up', 'Fehler':'errors', 'verschickt':'sent', 'läuft …':'running …',
+  'Sicherung':'Backup', 'Automatische Datensicherung angelegt':'Automatic backup created', 'hat den Schluchtsturm-Einsatz zurückgenommen':'withdrew the Canyon Storm plan',
+  'hat den Schluchtsturm-Einsatz veröffentlicht':'published the Canyon Storm plan', 'Team A:':'Team A:', '· Team B:':'· Team B:', 'hat den Einsatzplan zurückgenommen':'withdrew the battle plan',
+  'hat den Wüstensturm-Einsatzplan veröffentlicht':'published the Desert Storm plan', 'Admin':'Admin', 'hat sich im Admin-Bereich angemeldet':'signed in to the admin area', 'hinzugefügt':'added', 'hat den Rang von':'changed the rank of',
+  'geändert':'changed', 'Wöchentliche Erinnerungs-Mail verschickt':'Weekly reminder mail sent', 'Noch keine Aktion (':'No action yet (', 'Ersatz:':'Substitutes:', 'Spieler':'Players'
+,
+// Nachträge
+  'alle':'all', 'nur eingetragen':'entered only', 'nur fehlende':'missing only', 'T1 = Panzer':'T1 = tank', 'T1 = Raketenwerfer':'T1 = missile launcher', 'T1 = Flugzeug':'T1 = aircraft', 'T1 = Gemischt':'T1 = mixed',
+  'Unter dem Namen: letzte Aktualisierung (⚠ = über 7 Tage) · Kampfkraft in Mio., darunter der Truppentyp · Δ = Änderung der Gesamt-Kampfkraft seit der vorherigen Meldung · Zeile antippen für Details':'Below the name: last update (⚠ = over 7 days) · power in M, below it the troop type · Δ = change of total power since the previous report · tap a row for details',
+  'nicht bewertbar':'not ratable', '„+“ fügt eine Gruppe zur Auswahl hinzu (Typ = Truppentyp des T1). Einzelne Spieler per Häkchen an- oder abwählen.':'“+” adds a group to the selection (type = troop type of T1). Tick single players on or off.',
+  'Kein Labor-Punktestrom für euch selbst; hängt vom Partner ab.':'No lab point stream for yourselves; depends on the partner.',
+  'z. B. Fr 14:00':'e.g. Fri 14:00', 'z. B. Fr 21:00':'e.g. Fri 21:00', 'z. B. Do 15:00':'e.g. Thu 15:00', 'z. B. Do 21:00':'e.g. Thu 21:00', 'alle aktuell':'all up to date', 'zuletzt am':'last on',
+  'in den letzten':'in the last', 'niemand gesunken':'nobody dropped', 'alle haben gemeldet':'everyone reported', 'wieder aufgenommen':'re-added', 'als ausgeschieden markiert':'marked as left',
+  'umbenannt in':'renamed to', 'alle waren da':'everyone was there', 'wechseln zu':'switch to', 'alle verteilt':'all assigned', 'wurde als':'was', 'ist jetzt':'is now',
+  'Runden zählen je Event ab der Anmelderunde, die gerade offen ist (sonst ab der nächsten), und sind verbraucht, sobald die Runde geschlossen wird. Ohne Runden und ohne Datum gilt eine Wirkung, bis du sie zurücknimmst. Sichtbarkeit: „alle“ = Sticker im öffentlichen Profil und beim Spieler; „nur den Spieler“ = nur er sieht den Eintrag nach dem Anmelden; „nur R4/R5“ = geheim, auch der Spieler sieht ihn nicht. Die Wirkung im Event (gesperrt, nur Ersatz …) gilt unabhängig davon. Die interne Notiz sieht nie ein Spieler.':'Rounds count per event from the sign-up round that is open now (otherwise from the next one) and are used up once the round is closed. Without rounds and without a date an effect applies until you revoke it. Visibility: “everyone” = sticker in the public profile and for the player; “only the player” = only they see the entry after signing in; “only R4/R5” = secret, not even the player sees it. The effect in the event (blocked, substitute only …) applies regardless. No player ever sees the internal note.',
+  '3 · Taktik & Einsatzplan':'3 · Tactic & battle plan', 'Karte einrichten (Kartenbild & Gebäude-Positionen)':'Set up map (map image & building positions)',
+  'Penalty für':'Penalty for', 'von # Runde(n)':'of # round(s)', 'seit # Tagen':'for # days', 'von # Spielern haben eine PIN':'of # players have a PIN', 'von # bestätigt':'of # confirmed', 'noch # von # Runde(n)':'# of # round(s) left', 'Bonus für':'Bonus for', 'Malus für':'Penalty for'
+};
+// Satzteile mit Zahlen (# = Zahl), die als ganzer Text vorkommen
+ADMIN_I18N.en.__tpl = {
+  'vor # Tagen':'# days ago', '# Empfänger':'# recipients', '# Spieler':'# players', '# in 90 Tagen':'# in 90 days', '# nicht öffentlich':'# not public',
+  'Nachricht an # Spieler senden?':'Send message to # players?', '# von # bestätigt':'# of # confirmed', '# von # Spielern haben eine PIN':'# of # players have a PIN', '# noch mit Start-PIN':'# still with starter PIN',
+  'Heute noch # von 5 Geschenken frei':'# of 5 gifts left today', '# gesperrt · # nur Ersatz':'# blocked · # substitute only', '# mit Vorrang':'# with priority', 'Runde #':'Round #'
+};
+
+/* ---------- Übersetzer ---------- */
+var ADMIN_LANG = (function(){ try { return localStorage.getItem('skws_admin_lang') || 'de'; } catch(e){ return 'de'; } })();
+var I18N_A = (function(){
+  var D = ADMIN_LANG !== 'de' ? ADMIN_I18N[ADMIN_LANG] : null;
+  if (!D) return { tr: function(s){ return s; }, on: false };
+  var NUM = '([0-9][0-9.,:/]*)';
+  function esc(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function rx(k){ return esc(k).split('#').join(NUM); }
+  // ganze Texte: exakt; Vorlagen mit Zahlen
+  var tpl = Object.keys(D.__tpl || {}).map(function(k){ return { re: new RegExp('^' + rx(k) + '$'), to: D.__tpl[k] }; });
+  // Satzteile für zusammengesetzte Texte: längste zuerst, nur an Wortgrenzen, ab 4 Zeichen
+  var frag = Object.keys(D).filter(function(k){ return k !== '__tpl' && k.length >= 4 && k.indexOf('\n') < 0; }).sort(function(a, b){ return b.length - a.length; })
+    .map(function(k){ var lit = k.split('#').map(function(x){ return x.trim(); }).sort(function(a, b){ return b.length - a.length; })[0]; return { k: k, lit: lit, re: new RegExp('(^|[^\\p{L}])' + rx(k) + '(?![\\p{L}])', 'gu'), to: D[k] }; });
+  function fill(to, args){ var i = 0; return to.replace(/#/g, function(){ return args[i++] || ''; }); }
+  function tr(s){
+    if (!s) return s;
+    var t = s.trim(); if (!t || !/[A-Za-zÄÖÜäöüß]/.test(t)) return s;
+    var pre = s.slice(0, s.indexOf(t.charAt(0))), post = s.slice(s.lastIndexOf(t.charAt(t.length - 1)) + 1);
+    if (Object.prototype.hasOwnProperty.call(D, t) && t !== '__tpl') return pre + D[t] + post;
+    for (var i = 0; i < tpl.length; i++) { var m = t.match(tpl[i].re); if (m) return pre + fill(tpl[i].to, m.slice(1)) + post; }
+    var out = t, hit = false;
+    for (var j = 0; j < frag.length; j++) {
+      var f = frag[j]; if (out.indexOf(f.lit) < 0) continue;
+      out = out.replace(f.re, function(){ var a = Array.prototype.slice.call(arguments); var lead = a[1]; var nums = a.slice(2, a.length - 2); hit = true; return lead + fill(f.to, nums); });
+    }
+    return hit ? pre + out.replace(/\s{2,}/g, ' ') + post : s;
+  }
+  return { tr: tr, on: true };
+})();
+function adminTr(s){ return I18N_A.tr(s); }
+(function(){
+  if (!I18N_A.on) return;
+  document.documentElement.lang = ADMIN_LANG;
+  var SKIP = { SCRIPT:1, STYLE:1, TEXTAREA:1, INPUT:1, CANVAS:1, PRE:1 };
+  function walk(n){
+    if (n.nodeType === 3) { var p = n.parentNode; if (p && !SKIP[p.nodeName] && !(p.closest && p.closest('[data-noi18n]'))) { var v = n.nodeValue, t = I18N_A.tr(v); if (t !== v) n.nodeValue = t; } return; }
+    if (n.nodeType !== 1 || SKIP[n.nodeName] && n.nodeName !== 'INPUT' && n.nodeName !== 'TEXTAREA') return;
+    if (n.getAttribute) ['placeholder', 'title', 'aria-label'].forEach(function(a){ var v = n.getAttribute(a); if (v) { var t = I18N_A.tr(v); if (t !== v) n.setAttribute(a, t); } });
+    if (n.nodeName === 'INPUT' || n.nodeName === 'TEXTAREA') return;
+    for (var c = n.firstChild; c; c = c.nextSibling) walk(c);
+  }
+  function start(){
+    walk(document.body); document.title = I18N_A.tr(document.title);
+    new MutationObserver(function(list){
+      list.forEach(function(m){
+        if (m.type === 'characterData') walk(m.target);
+        else if (m.type === 'attributes') walk(m.target);
+        else for (var i = 0; i < m.addedNodes.length; i++) walk(m.addedNodes[i]);
+      });
+    }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['placeholder', 'title'] });
+  }
+  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+  // Dialoge
+  ['alert', 'confirm', 'prompt'].forEach(function(f){ var o = window[f]; window[f] = function(msg){ var a = Array.prototype.slice.call(arguments); a[0] = String(msg).split('\n').map(I18N_A.tr).join('\n'); return o.apply(window, a); }; });
+})();
+// Sprachwahl im Kopf (Seite wird neu geladen, damit alles in der neuen Sprache erscheint)
+function adminLangPicker(){
+  var s = document.getElementById('admLang'); if (!s) return;
+  s.innerHTML = Object.keys(ADMIN_LANGS).map(function(k){ return '<option value="' + k + '"' + (k === ADMIN_LANG ? ' selected' : '') + ' title="' + ADMIN_LANGS[k] + '">' + k.toUpperCase() + '</option>'; }).join('');
+  s.addEventListener('change', function(){ try { localStorage.setItem('skws_admin_lang', s.value); } catch(e){} location.reload(); });
+}

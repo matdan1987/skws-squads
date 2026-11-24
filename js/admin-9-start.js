@@ -185,3 +185,4 @@ document.addEventListener('click', function(e){
   o.innerHTML = '<img src="' + AVA[a.dataset.avbig] + '" alt=""><div>' + esc(a.dataset.avbig) + '</div>';
   o.addEventListener('click', function(){ o.remove(); }); document.body.appendChild(o);
 });
+adminLangPicker();
