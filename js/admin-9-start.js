@@ -173,3 +173,11 @@ $('bkDl').addEventListener('click', function(){
     n.textContent = 'Sicherung gespeichert: ' + name + ' (' + Math.round(txt.length / 1024) + ' KB).'; n.className = 'note ok';
   }).catch(function(){ n.textContent = 'Fehler – ist die Datenbank-Erweiterung „ausbau“ eingespielt?'; n.className = 'note err'; });
 });
+
+// Profilbild groß anzeigen
+document.addEventListener('click', function(e){
+  var a = e.target.closest('[data-avbig]'); if (!a || !AVA[a.dataset.avbig]) return;
+  var o = document.createElement('div'); o.className = 'av-big';
+  o.innerHTML = '<img src="' + AVA[a.dataset.avbig] + '" alt=""><div>' + esc(a.dataset.avbig) + '</div>';
+  o.addEventListener('click', function(){ o.remove(); }); document.body.appendChild(o);
+});

@@ -175,7 +175,7 @@ function dsRenderList(){
     return !q || p.name.toLowerCase().indexOf(q) >= 0;
   }).map(function(p){
     var v = st.assign[p.name] || '';
-    return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + av(p.name, 20) + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'ds') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
+    return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + av(p.name, 30) + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'ds') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
       '<select data-ds="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
   }).join('') || '<div class="empty">Keine Treffer.</div>';
 }

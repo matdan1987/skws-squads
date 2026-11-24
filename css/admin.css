@@ -212,3 +212,10 @@
 #fkChips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 #fkChips a{cursor:pointer;color:var(--muted);margin-left:4px}
 #tab-msg textarea{width:100%;min-height:110px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--text);font:inherit;font-size:14px;resize:vertical;box-sizing:border-box}
+/* ---------- Größere Profilbilder ---------- */
+.akte-h{flex-direction:column;text-align:center}
+.akte-av .av{margin:0;border:3px solid rgba(92,200,255,.5);box-shadow:0 0 24px rgba(92,200,255,.3);cursor:zoom-in}
+.akte-h b{font-size:20px}
+.av-big{position:fixed;inset:0;z-index:200;background:rgba(3,6,12,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;cursor:zoom-out;padding:16px}
+.av-big img{width:min(88vw,420px);height:min(88vw,420px);object-fit:cover;border-radius:24px;border:3px solid rgba(92,200,255,.6);box-shadow:0 0 40px rgba(92,200,255,.35)}
+.av-big div{font-size:20px;font-weight:700;color:#9cc7f0}

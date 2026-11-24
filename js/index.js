@@ -151,6 +151,7 @@
     var box = $('authBox'); if (!box || !window.Funk || !Funk.ready()) return;
     var n = $('name').value, F = F_(); box.innerHTML = '';
     if (!n) return;
+    if (DATA.av && DATA.av[n]) { var big = avEl(n, 96); big.classList.add('zoom'); big.addEventListener('click', function(){ avBig(n); }); var wr = document.createElement('div'); wr.className = 'auth-av'; wr.appendChild(big); box.appendChild(wr); loadAvatars([n], renderAuth); }
     if (authed(n)) {
       var d = document.createElement('div'); d.className = 'fk-authok'; d.textContent = F.loggedIn.replace('{n}', n) + ' · ';
       var a = document.createElement('a'); a.href = '#'; a.className = 'fk-link'; a.textContent = F.notYou;
@@ -271,14 +272,14 @@
                  [T.topEvents, top(function(s){ return (s.pds || 0) + (s.pcs || 0); }), function(v){ return T.evN.replace('{n}', v); }]];
     if (!pm && !lists.some(function(l){ return l[1].length; })) { var no = document.createElement('div'); no.className = 'hint'; no.textContent = T.none; box.appendChild(no); card.classList.remove('hide'); return; }
     loadAvatars(names, function(){ renderHof(); });
-    if (pm) { var p = document.createElement('div'); p.className = 'hof-potm'; p.appendChild(avEl(pm, 52)); var t = document.createElement('div');
+    if (pm) { var p = document.createElement('div'); p.className = 'hof-potm'; p.appendChild(avEl(pm, 76)); var t = document.createElement('div');
       var k = document.createElement('div'); k.className = 'hint'; k.style.marginTop = '0'; k.textContent = '👑 ' + T.potm; t.appendChild(k);
       var b = document.createElement('b'); b.textContent = pm; t.appendChild(b);
       var w = document.createElement('div'); w.className = 'hint'; w.style.marginTop = '0'; w.textContent = (S[pm].b30 ? T.whyB.replace('{n}', S[pm].b30) : T.whyG.replace('{g}', S[pm].g30)); t.appendChild(w);
       p.appendChild(t); p.addEventListener('click', function(){ openProfile(pm); }); box.appendChild(p); }
     var g = document.createElement('div'); g.className = 'hof-grid';
     lists.forEach(function(l){ if (!l[1].length) return; var c = document.createElement('div'); var h = document.createElement('h4'); h.textContent = l[0]; c.appendChild(h);
-      l[1].forEach(function(x, i){ var r = document.createElement('div'); r.className = 'hof-row'; r.appendChild(avEl(x.n, 22)); var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = (i + 1) + '. ' + x.n; r.appendChild(nm);
+      l[1].forEach(function(x, i){ var r = document.createElement('div'); r.className = 'hof-row'; r.appendChild(avEl(x.n, 34)); var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = (i + 1) + '. ' + x.n; r.appendChild(nm);
         var v = document.createElement('span'); v.className = 'v'; v.textContent = l[2](x.v); r.appendChild(v); r.addEventListener('click', function(){ openProfile(x.n); }); c.appendChild(r); });
       g.appendChild(c); });
     box.appendChild(g); card.classList.remove('hide');
@@ -433,7 +434,7 @@
     rows.forEach(function(r, i){
       var tr = document.createElement('tr');
       var td0 = document.createElement('td'); td0.textContent = i + 1; td0.className = 'typ';
-      var td1 = document.createElement('td'), nm = document.createElement('div'); nm.className = 'ovname'; nm.appendChild(avEl(r.name, 26));
+      var td1 = document.createElement('td'), nm = document.createElement('div'); nm.className = 'ovname'; nm.appendChild(avEl(r.name, 40));
       var ns = document.createElement('span'); ns.textContent = r.name; nm.appendChild(ns); td1.appendChild(nm);
       nm.addEventListener('click', (function(x){ return function(){ openProfile(x); }; })(r.name));
       if (r.hero || r.gorilla) {
@@ -498,13 +499,22 @@
   function avShrink(file, cb){
     var rd = new FileReader();
     rd.onload = function(){ var im = new Image(); im.onload = function(){
-      var c = document.createElement('canvas'), S = 160; c.width = c.height = S; var g = c.getContext('2d');
+      var c = document.createElement('canvas'), S = 320; c.width = c.height = S; var g = c.getContext('2d');
       var m = Math.min(im.width, im.height), sx = (im.width - m) / 2, sy = (im.height - m) / 2;
       g.fillStyle = '#0b1220'; g.fillRect(0, 0, S, S); g.drawImage(im, sx, sy, m, m, 0, 0, S, S);
-      var q = .85, url = c.toDataURL('image/jpeg', q); while (url.length > 70000 && q > .4) { q -= .1; url = c.toDataURL('image/jpeg', q); }
+      var q = .85, url = c.toDataURL('image/jpeg', q); while (url.length > 76000 && q > .3) { q -= .1; url = c.toDataURL('image/jpeg', q); }
       cb(url);
     }; im.onerror = function(){ cb(null); }; im.src = rd.result; };
     rd.onerror = function(){ cb(null); }; rd.readAsDataURL(file);
+  }
+  // Profilbild groß anzeigen (Antippen schließt)
+  function avBig(n){
+    if (!(AV[n] && DATA.av && DATA.av[n])) return;
+    var o = document.createElement('div'); o.className = 'av-big';
+    var im = document.createElement('img'); im.src = AV[n].d; im.alt = n; o.appendChild(im);
+    var cap = document.createElement('div'); cap.textContent = n; o.appendChild(cap);
+    o.addEventListener('click', function(){ o.remove(); });
+    document.body.appendChild(o);
   }
   var PROF_VIEW = null;
   function openProfile(n){ PROF_VIEW = n === $('name').value ? null : n; showTab('profile'); window.scrollTo(0, 0); }
@@ -583,7 +593,7 @@
     var c = el('div', 'card'), h = el('div', 'prof-h'), lvlB = 0; BEE_T.forEach(function(x, i){ if ((s.b || 0) >= x) lvlB = i; });
     var lvlD = 0; DEV_T.forEach(function(x, i){ if ((s.d90 || 0) >= x) lvlD = i; });
     var pav = el('div', 'prof-av', (AV[n] && DATA.av && DATA.av[n]) ? '' : (lvlD >= 2 ? '😈' : lvlB >= 1 ? '🐝' : '🙂'));
-    if (AV[n] && DATA.av && DATA.av[n]) { var pim = el('img'); pim.src = AV[n].d; pim.alt = ''; pav.appendChild(pim); }
+    if (AV[n] && DATA.av && DATA.av[n]) { var pim = el('img'); pim.src = AV[n].d; pim.alt = ''; pav.appendChild(pim); pav.classList.add('zoom'); pav.addEventListener('click', function(){ avBig(n); }); }
     h.appendChild(pav);
     var hn = el('div'); hn.appendChild(el('b', '', n));
     var sub = []; if (s.jd || s.fe) sub.push(T.since.replace('{d}', fmtD(s.jd || s.fe))); if (s.role) sub.push(T.role[s.role]);

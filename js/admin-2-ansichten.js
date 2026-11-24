@@ -111,7 +111,7 @@ function renderAkte(){
   var box = $('plAkte'), p = D.all.filter(function(x){ return x.name === curPlayer; })[0];
   if (!p) { box.innerHTML = ''; return; }
   var s = (PSTATS && PSTATS[p.name]) || {}, mg = mgOf(p.name), CH = { A:'Stamm A', B:'Stamm B', AB:'Stamm, beide', subA:'Ersatz A', subB:'Ersatz B', sub:'Ersatz, beide', no:'diesmal nicht' };
-  var h = '<div class="card"><div class="akte-h">' + av(p.name, 56) + '<div><b>' + esc(p.name) + '</b><div class="small muted">' + p.rank + (p.active ? '' : ' · ausgeschieden') +
+  var h = '<div class="card"><div class="akte-h"><span class="akte-av" data-avbig="' + esc(p.name) + '">' + av(p.name, 160) + '</span><div><b>' + esc(p.name) + '</b><div class="small muted">' + p.rank + (p.active ? '' : ' · ausgeschieden') +
     (mg ? ' · Mentorengruppe ' + mg.g + (mg.role === 'mentor' ? ' (Mentor)' : mg.role === 'r4' ? ' (Leitung)' : '') : ' · keine Mentorengruppe') +
     (p.entry ? ' · ' + (p.entry.hasEmail ? 'E-Mail hinterlegt' : 'keine E-Mail') : '') + '</div><div>' + mgBadge(p.name) + merBadge(p.name) + (typeof fkAkte === 'function' ? fkAkte(p.name) : '') + '</div></div></div>';
   h += '<div class="akte-k"><div>Bienchen<b>🐝 ' + (s.b || 0) + '</b></div><div>Teufelchen<b>😈 ' + (s.d || 0) + '</b>' + (s.d90 ? s.d90 + ' in 90 Tagen' : '') + '</div>' +
