@@ -6,7 +6,7 @@
 <title>SKWS – Skywalkers · Squads</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/index.css?v=2">
+<link rel="stylesheet" href="css/index.css?v=3">
 </head>
 <body>
 <div class="wrap">
@@ -35,12 +35,16 @@
           <input id="search" type="search" data-tp="search" autocomplete="off" style="margin-bottom:8px">
           <select id="name"></select>
           <div class="hint hide" id="nameSaved" style="color:var(--ok)">✓ <span data-t="nameSaved"></span></div>
+          <div id="authBox" class="authbox"></div>
           <div class="hint" data-t="notListed"></div>
           <button type="button" id="newBtn" class="linkbtn" data-t="newBtn"></button>
         </div>
         <div id="newBox" class="hide">
           <input id="newName" type="text" maxlength="40" autocomplete="off" data-tp="newName">
           <div class="hint" data-t="newNameHint"></div>
+          <div class="hint fk-first" id="newPinHint"></div>
+          <input id="newPin" type="password" autocomplete="new-password" maxlength="32">
+          <input id="newPin2" type="password" autocomplete="new-password" maxlength="32" style="margin-top:8px">
           <button type="button" id="backBtn" class="linkbtn" data-t="backToList"></button>
         </div>
         <a href="admin.html" id="adminBtn" class="hide" style="display:block;margin-top:10px;text-align:center;border:1px solid rgba(92,200,255,.45);color:var(--accent);border-radius:10px;padding:10px;text-decoration:none;font-weight:600;font-size:14px">🔒 <span data-t="adminBtn"></span></a>
@@ -137,9 +141,9 @@
 </div>
 
 <div id="fkModal" class="fk-overlay hide"></div>
-<script src="js/index-texte.js?v=2"></script>
-<script src="js/index-funk-texte.js?v=2"></script>
-<script src="js/index-funk.js?v=2"></script>
-<script src="js/index.js?v=2"></script>
+<script src="js/index-texte.js?v=3"></script>
+<script src="js/index-funk-texte.js?v=3"></script>
+<script src="js/index-funk.js?v=3"></script>
+<script src="js/index.js?v=3"></script>
 </body>
 </html>
