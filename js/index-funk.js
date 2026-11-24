@@ -27,6 +27,7 @@ var Funk = (function(){
     return call('funk_status').then(function(r){
       if (!r.ok) return;
       var before = S.unacked; S.name = r.name; S.level = r.level; S.unacked = r.unacked || 0; S.rooms = r.rooms || {};
+      if (r.must_change) mustChange(null);
       if (!(S.room in S.rooms)) S.room = 'all';
       badge();
       if (S.unacked && (S.unacked !== before || !S.inbox)) loadInbox();
@@ -136,8 +137,11 @@ var Funk = (function(){
     box.querySelectorAll('input').forEach(function(i){ i.addEventListener('keydown', function(e){ if (e.key === 'Enter') go.click(); }); });
   }
   // Nach Anmeldung mit Start-PIN von R4/R5: eigene PIN festlegen
+  var MUST_OPEN = false;
   function mustChange(old){
+    if (MUST_OPEN) return; MUST_OPEN = true;
     var L = T(), o = el('div', 'fk-overlay'), c = el('div', 'card fk-modal');
+    function done(){ MUST_OPEN = false; o.remove(); document.body.classList.remove('fk-lock'); }
     c.appendChild(el('div', 'fk-mtitle', '🔑 ' + L.newPinTitle));
     c.appendChild(el('div', 'hint', L.mustChange));
     var p1 = el('input'); p1.type = 'password'; p1.placeholder = L.pinNew; c.appendChild(p1);
@@ -146,10 +150,14 @@ var Funk = (function(){
     var b = btn('btn', L.save, function(){
       if (p1.value !== p2.value) { m.textContent = L.pinMismatch; m.className = 'msg err'; return; }
       b.disabled = true;
-      call('auth_change_pin', { p_old: old || '', p_new: p1.value }).then(function(r){ b.disabled = false; if (r.ok) { o.remove(); document.body.classList.remove('fk-lock'); } else { m.textContent = errText(r); m.className = 'msg err'; } });
+      // Pflicht: eigene PIN festlegen, solange die Start-PIN gilt (ältere Datenbank: über die bisherige PIN)
+      call('auth_force_pin', { p_new: p1.value }).then(function(r){
+        if (r.ok || r.err === 'ERR_NOTNEEDED') return r.ok ? r : { ok: true };
+        if (r.err === 'ERR' && old) return call('auth_change_pin', { p_old: old, p_new: p1.value });
+        return r;
+      }).then(function(r){ b.disabled = false; if (r.ok) done(); else { m.textContent = errText(r); m.className = 'msg err'; } });
     });
     c.appendChild(b); c.appendChild(m);
-    c.appendChild(btn('ghost', L.later, function(){ o.remove(); document.body.classList.remove('fk-lock'); }));
     o.appendChild(c); document.body.appendChild(o); document.body.classList.add('fk-lock');
   }
   // Anmeldung übernehmen (auch von der Neu-Eintragung)
