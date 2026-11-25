@@ -200,7 +200,10 @@ function csRun(example){
     st.assign = {}; list.forEach(function(p, i){ var v = i < 40 ? (i % 2 ? 'BS' : 'AS') : i < 50 ? (i % 2 ? 'BE' : 'AE') : ''; if (v) st.assign[p.name] = v; });
     st.time = { A: st.time.A || 'Do 15:00', B: st.time.B || 'Do 21:00' };
   }
-  var r = csBuild(st); r.example = example === true; CS_LAST = r;
+  var moved = [];
+  if (example !== true) { var st0 = csState(); moved = evFill('cs', st0.assign, st0.metric); if (moved.length) { csSave(st0); csRenderList(); } }
+  var r = csBuild(st); if (moved.length) r.warn.unshift('Ersatz rückt in den Stamm nach, weil das Team sonst nicht voll ist: ' + moved.join(', ') + '.');
+  r.example = example === true; CS_LAST = r;
   $('csPublish').disabled = !!r.example; $('csPublish').style.opacity = r.example ? .4 : '';
   if (example !== true) evSaveLineup('cs', csState().assign);
   var P = r.plan, h = '';

@@ -238,7 +238,11 @@ function dsExampleState(){
   return st;
 }
 function dsRun(example){
-  var r = dsBuild(example === true ? dsExampleState() : null); r.example = example === true; DS_LAST = r;
+  // Team im Stamm nicht voll? Dann rücken Ersatzspieler nach, bevor der Plan entsteht
+  var moved = [];
+  if (example !== true) { var st0 = dsState(); moved = evFill('ds', st0.assign, st0.metric); if (moved.length) { dsSave(st0); dsRenderList(); } }
+  var r = dsBuild(example === true ? dsExampleState() : null);
+  if (moved.length) r.warn.unshift('Ersatz rückt in den Stamm nach, weil das Team sonst nicht voll ist: ' + moved.join(', ') + '.'); r.example = example === true; DS_LAST = r;
   var P = r.plan, m = P.metric, h = '';
   ['A','B'].forEach(function(t){
     var T = P.teams[t]; if (!T) return;
