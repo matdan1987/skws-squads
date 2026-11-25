@@ -158,6 +158,8 @@
     adminLink();
     var box = $('authBox'); if (!box || !window.Funk || !Funk.ready()) return;
     var n = $('name').value, F = F_(); box.innerHTML = '';
+    // Wer angemeldet ist, ist kein neues Mitglied: „Ich bin neu“ ausblenden
+    $('newWrap').classList.toggle('hide', !!(n && authed(n)));
     if (!n) return;
     if (DATA.av && DATA.av[n]) { var big = avEl(n, 96); big.classList.add('zoom'); big.addEventListener('click', function(){ avBig(n); }); var wr = document.createElement('div'); wr.className = 'auth-av'; wr.appendChild(big); box.appendChild(wr); loadAvatars([n], renderAuth); }
     if (authed(n)) {
@@ -318,7 +320,7 @@
     renderDs();
     var nm = $('name').value;
     $('nameSaved').classList.toggle('hide', !nm);
-    $('adminBtn').classList.toggle('hide', !(nm && DATA && (DATA.leaders || []).indexOf(nm) >= 0));
+    $('adminBtn').classList.toggle('hide', !(nm && DATA && (DATA.leaders || []).indexOf(nm) >= 0) || !$('hdrAdmin').classList.contains('hide'));
     $('linkAdminBox').classList.toggle('hide', !(nm && DATA && (DATA.leaders || []).indexOf(nm) >= 0));
     var e = DATA && DATA.entries[$('name').value];
     $('lastUpdate').classList.toggle('hide', !(e && e.updated));
