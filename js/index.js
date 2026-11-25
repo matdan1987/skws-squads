@@ -159,7 +159,12 @@
     var box = $('authBox'); if (!box || !window.Funk || !Funk.ready()) return;
     var n = $('name').value, F = F_(); box.innerHTML = '';
     // Wer angemeldet ist, ist kein neues Mitglied: „Ich bin neu“ ausblenden
-    $('newWrap').classList.toggle('hide', !!(n && authed(n)));
+    // Angemeldet: Namensauswahl wird nicht mehr gebraucht (Wechsel über „Abmelden“)
+    var inn = !!(n && authed(n)), XI = XTRA_I18N[LANG] || XTRA_I18N.en;
+    $('newWrap').classList.toggle('hide', inn);
+    ['search', 'name', 'nameLbl'].forEach(function(id){ $(id).classList.toggle('hide', inn); });
+    $('nameSaved').classList.toggle('hide', inn || !n);
+    $('introTxt').textContent = inn ? XI.introIn : t('intro');
     if (!n) return;
     if (DATA.av && DATA.av[n]) { var big = avEl(n, 96); big.classList.add('zoom'); big.addEventListener('click', function(){ avBig(n); }); var wr = document.createElement('div'); wr.className = 'auth-av'; wr.appendChild(big); box.appendChild(wr); loadAvatars([n], renderAuth); }
     if (authed(n)) {
@@ -319,7 +324,7 @@
     renderEv();
     renderDs();
     var nm = $('name').value;
-    $('nameSaved').classList.toggle('hide', !nm);
+    $('nameSaved').classList.toggle('hide', !nm || authed(nm));
     $('adminBtn').classList.toggle('hide', !(nm && DATA && (DATA.leaders || []).indexOf(nm) >= 0) || !$('hdrAdmin').classList.contains('hide'));
     $('linkAdminBox').classList.toggle('hide', !(nm && DATA && (DATA.leaders || []).indexOf(nm) >= 0));
     var e = DATA && DATA.entries[$('name').value];
