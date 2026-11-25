@@ -257,3 +257,13 @@ header h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .warn{color:var(--warn)}
 .mgadd{margin-top:8px} .mgadd select{width:100%;border-style:dashed;color:var(--accent)}
 #mgFree .mgrow select{max-width:150px}
+/* ---------- Beitritt Mentorengruppe ---------- */
+.jchip{border:1px solid var(--line);background:var(--bg2);border-radius:99px;padding:4px 9px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;margin-right:6px;flex:none}
+.jchip.ok{color:var(--ok);border-color:rgba(61,220,151,.45)} .jchip.open{color:var(--warn);border-color:rgba(245,185,66,.5)} .jchip.unk{color:var(--muted);border-style:dashed}
+.jsum{font-size:12px;margin:4px 0 2px}
+.jsum .mini{margin-left:6px;font-size:11px;padding:2px 8px}
+.mgcard .mgrow{flex-wrap:wrap;row-gap:4px}
+.mgcard .mgrow .nm{flex:1 1 50%;order:0}
+.mgcard .mgrow .jchip{order:1;margin-right:0}
+.mgcard .mgrow .v{order:2;flex:1 1 auto}
+.mgcard .mgrow select{order:3}
