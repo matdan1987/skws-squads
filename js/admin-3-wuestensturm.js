@@ -110,7 +110,7 @@ function dsExampleState(){
   st.assign = {};
   // Beispiel: gemischt wie bei echten Anmeldungen (abwechselnd A/B), nicht die Stärksten nur in A
   list.forEach(function(p, i){ var v = i < 40 ? (i % 2 ? 'BS' : 'AS') : i < 60 ? (i % 2 ? 'BE' : 'AE') : ''; if (v) st.assign[p.name] = v; });
-  st.time = { A: st.time.A || 'Fr 14:00', B: st.time.B || 'Fr 21:00' };
+  st.time = { A: st.time.A || 'Fr 21:00', B: st.time.B || 'Fr 12:00' };
   return st;
 }
 function dsRun(example){

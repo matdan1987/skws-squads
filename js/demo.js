@@ -68,16 +68,16 @@
       var id = ++db.id, lu = {}, abs = [], su = [];
       act.forEach(function(n, i){ var x = (i * 7 + id) % 10; if (open && n === ME) return; if (x < 7) su.push({ name: n, choice: pick(['A','B','AB','A','B','subA','no']), note: null, admin: false, t: iso(NOW - (ago + 1) * DAY + i * MIN) }); });
       if (!open) { su.forEach(function(s, i){ if (s.choice !== 'no') lu[s.name] = (s.choice.indexOf('B') >= 0 ? 'B' : 'A') + (s.choice.indexOf('sub') === 0 || i % 6 === 5 ? 'E' : 'S'); }); abs = Object.keys(lu).filter(function(n, i){ return i % 11 === 4; }); }
-      db.rounds.push({ id: id, kind: kind, label: label, time_a: kind === 'ds' ? 'Fr 14:00' : 'Do 15:00', time_b: kind === 'ds' ? 'Fr 21:00' : 'Do 21:00',
+      db.rounds.push({ id: id, kind: kind, label: label, time_a: kind === 'ds' ? 'Fr 21:00' : 'Do 15:00', time_b: kind === 'ds' ? 'Fr 12:00' : 'Do 15:00',
         deadline: iso(NOW + (open ? 2 * DAY : -(ago - 1) * DAY)), open: !!open, created_at: iso(NOW - (ago + 2) * DAY), by: 'Nova', lineup: lu, absent: abs, signups: open ? su.slice(0, 9) : su,
-        meta: open ? null : { plan: { A: { tac: 'Ausgewogen – Silo-Sturm', time: kind === 'ds' ? 'Fr 14:00' : 'Do 15:00', opp: 'Beispiel-Allianz', note: '' }, B: { tac: 'Ausgewogen – Silo-Sturm', time: kind === 'ds' ? 'Fr 21:00' : 'Do 21:00' } }, remark: ago > 10 ? 'Sieg mit knappem Vorsprung' : '' } });
+        meta: open ? null : { plan: { A: { tac: 'Ausgewogen – Silo-Sturm', time: kind === 'ds' ? 'Fr 21:00' : 'Do 15:00', opp: 'Beispiel-Allianz', note: '' }, B: { tac: 'Ausgewogen – Silo-Sturm', time: kind === 'ds' ? 'Fr 12:00' : 'Do 15:00' } }, remark: ago > 10 ? 'Sieg mit knappem Vorsprung' : '' } });
     }
     round('ds', 'KW 46', 14); round('cs', 'KW 46', 12); round('ds', 'KW 47', 7); round('cs', 'KW 47', 5); round('ds', 'KW 48', 0, true); round('cs', 'KW 48', 0, true);
     // veröffentlichter Wüstensturm-Einsatz (so sieht ihn der Spieler unter „Events“)
     db.ds = { at: iso(NOW - 2 * 60 * MIN), metric: 't1', teams: {
-      A: { time: 'Fr 14:00', opp: 'Beispiel-Allianz', tac: 'std', note: 'Alle: bei Minute 10 gemeinsam ans Silo!', m: [[ME,'silo'],['Orion','silo'],['Lyra','silo'],['Vega','ref2'],['Atlas','ref2'],['Juno','ref1'],['Rigel','info'],['Zephyr','hosp1'],['Sirius','hosp2']], s: ['Talon','Echo'] },
-      B: { time: 'Fr 21:00', tac: 'std', m: [['Mira','silo'],['Altair','silo'],['Deneb','ref2'],['Castor','ref1'],['Pollux','info']], s: ['Blaze'] } } };
-    db.cs = { at: iso(NOW - 3 * 60 * MIN), teams: { A: { time: 'Sa 15:00', tac: 'lab', ph: ['p0','p7','p14'], g: { sturm: [['take','tower'],['hold','tower'],['rally','lab']], dc1: [['take','dc1'],['hold','dc1'],['hold','dc1']], dc2: [['take','dc2'],['hold','dc2'],['hold','dc2']], sw1: [['take','sw1'],['hold','sw1'],['hold','sw1']] }, open: { ds1:7, ds2:7, sf1:10, sf2:10, lab:14 }, m: [['Orion','sturm'],[ME,'sturm'],['Lyra','sturm'],['Vega','dc1'],['Atlas','dc1'],['Juno','dc2'],['Rigel','sw1']], s: ['Echo'] } } };
+      A: { time: 'Fr 21:00', opp: 'Beispiel-Allianz', tac: 'std', note: 'Alle: bei Minute 10 gemeinsam ans Silo!', m: [[ME,'silo'],['Orion','silo'],['Lyra','silo'],['Vega','ref2'],['Atlas','ref2'],['Juno','ref1'],['Rigel','info'],['Zephyr','hosp1'],['Sirius','hosp2']], s: ['Talon','Echo'] },
+      B: { time: 'Fr 12:00', tac: 'std', m: [['Mira','silo'],['Altair','silo'],['Deneb','ref2'],['Castor','ref1'],['Pollux','info']], s: ['Blaze'] } } };
+    db.cs = { at: iso(NOW - 3 * 60 * MIN), teams: { A: { time: 'Do 15:00', tac: 'lab', ph: ['p0','p7','p14'], g: { sturm: [['take','tower'],['hold','tower'],['rally','lab']], dc1: [['take','dc1'],['hold','dc1'],['hold','dc1']], dc2: [['take','dc2'],['hold','dc2'],['hold','dc2']], sw1: [['take','sw1'],['hold','sw1'],['hold','sw1']] }, open: { ds1:7, ds2:7, sf1:10, sf2:10, lab:14 }, m: [['Orion','sturm'],[ME,'sturm'],['Lyra','sturm'],['Vega','dc1'],['Atlas','dc1'],['Juno','dc2'],['Rigel','sw1']], s: ['Echo'] } } };
     // Bonus / Malus
     function merit(name, kind, effect, reason, ago, vis, rounds){ db.merits.push({ id: ++db.id, name: name, kind: kind, effect: effect, scope: 'ds', reason: reason, rounds: rounds || null, until: null,
       created_at: iso(NOW - ago * DAY), vis: vis || 'public', note: null, by: 'Nova', revoked_at: null, revoked_by: null, left_ds: rounds || null, left_cs: null }); }
@@ -102,7 +102,7 @@
     return db;
   }
   function log(db, actor, action, target, details, ago){ db.log.unshift({ id: ++db.id, at: iso(Date.now() - (ago || 0) * MIN), actor: actor, action: action, target: target || null, details: details || {} }); }
-  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 3) { DB = makeDB(); DB.v = 3; }
+  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 4) { DB = makeDB(); DB.v = 4; }
   function save(){ try { oS.call(SS, 'skws_demo_db', JSON.stringify(DB)); } catch(e){} }
   save();
 
