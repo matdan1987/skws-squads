@@ -147,7 +147,14 @@
   function F_(){ return FUNK_I18N[LANG] || FUNK_I18N.en; }
   function authed(n){ var s = window.Funk && Funk.session(); return !!(s && n && s.name === n); }
   function tok(){ var s = window.Funk && Funk.session(); return s ? s.tok : null; }
+  // Schnellzugang zum Admin-Bereich für R4/R5 (oder wenn das Admin-Kennwort auf dem Gerät gemerkt ist)
+  function adminLink(){
+    var keep = false; try { keep = !!localStorage.getItem('skws_admin_pw_keep'); } catch(e){}
+    var n = $('name').value, lead = !!(DATA && DATA.leaders && n && DATA.leaders.indexOf(n) >= 0);
+    $('hdrAdmin').classList.toggle('hide', !(keep || lead)); $('hdrAdmin').title = (XTRA_I18N[LANG] || XTRA_I18N.en).admin;
+  }
   function renderAuth(){
+    adminLink();
     var box = $('authBox'); if (!box || !window.Funk || !Funk.ready()) return;
     var n = $('name').value, F = F_(); box.innerHTML = '';
     if (!n) return;
@@ -525,6 +532,21 @@
   /* ---------- Geschenke ---------- */
   var PROF_GIFT = {}, GIFT_PICK = null, GIFT_MSG = '', PROF_BADGE = {};
   var BADGE_IC = { ds:'🏜️', cs:'🧪' };
+  // Interne Notizen (nur Mentoren der Gruppe und R4/R5, nach Anmeldung)
+  var PROF_NOTES = {};
+  function notesCard(n){
+    var s = window.Funk && Funk.session(); if (!s || s.name === n) return null;
+    var key = s.name + '|' + n;
+    if (PROF_NOTES[key] === undefined) { PROF_NOTES[key] = null; rpc('notes_for', { p_token: s.tok, p_name: n }).then(function(r){ PROF_NOTES[key] = r && r.ok ? r : false; if (PROF_NOTES[key] && PROF_NOTES[key].allowed) renderProfile(); }).catch(function(){ PROF_NOTES[key] = false; }); return null; }
+    var r = PROF_NOTES[key]; if (!r || !r.allowed) return null;
+    var X = XTRA_I18N[LANG] || XTRA_I18N.en, c = document.createElement('div'); c.className = 'card notes-card';
+    function el(tag, cls, txt){ var x = document.createElement(tag); if (cls) x.className = cls; if (txt !== undefined) x.textContent = txt; return x; }
+    c.appendChild(el('div', 'sq-h')).appendChild(el('b', '', X.nTitle)); c.appendChild(el('div', 'hint', X.nHint));
+    if (!r.items.length) c.appendChild(el('div', 'hint', X.nNone));
+    r.items.forEach(function(x){ var it = el('div', 'gift-row'); var t = el('div', 'gift-tx'); t.appendChild(el('div', 'fk-body', x.body));
+      t.appendChild(el('span', '', new Date(x.t).toLocaleDateString(LANG) + (x.by ? ' · ' + x.by : ''))); it.appendChild(t); c.appendChild(it); });
+    return c;
+  }
   // Teilnehmermarken: automatisch je Wüstensturm/Schluchtsturm als Stammspieler, dazu eigene Marken von R4/R5
   function badgeCard(n){
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, l = PROF_BADGE[n] || [], c = document.createElement('div'); c.className = 'card';
@@ -706,6 +728,7 @@
     }
     c2.appendChild(info); box.appendChild(c2);
     box.appendChild(badgeCard(n));
+    var nc = notesCard(n); if (nc) box.appendChild(nc);
     box.appendChild(giftCard(n, own));
     // Erfolge mit Seltenheit
     var all = Object.keys(PROF_STATS), c3 = el('div', 'card'), h3 = el('div', 'sq-h'); h3.appendChild(el('b', '', T.ach));

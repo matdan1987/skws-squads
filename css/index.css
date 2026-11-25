@@ -233,3 +233,6 @@
   .fk-gtog{width:100%;margin-top:8px}
   .fk-gwrap{margin-top:6px}
 .gift-btns .btn,.gift-btns .ghost{flex:1;margin-top:12px}
+  .hdr-admin{text-decoration:none;font-size:18px;padding:8px 10px;border-radius:10px;border:1px solid rgba(92,200,255,.45);background:var(--bg2);flex:none}
+  header .hdr-admin + select{margin-left:0}
+  .notes-card{border-color:rgba(245,185,66,.4)}

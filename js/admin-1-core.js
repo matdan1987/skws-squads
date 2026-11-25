@@ -59,7 +59,7 @@ function prep(raw){
     var first = hs.length ? hs[0].total : null;
     return {
       name: m.name, rank: m.rank || '–', entry: e, total: total,
-      active: m.active !== false, leftAt: m.left_at ? new Date(m.left_at) : null,
+      active: m.active !== false, leftAt: m.left_at ? new Date(m.left_at) : null, joinedAt: m.joined_at ? new Date(m.joined_at) : null,
       t1: e ? Number(sq(e,0).power || 0) : 0,
       delta: prev === null ? null : Math.round((total - prev) * 100) / 100,
       growth: first === null ? null : Math.round((total - first) * 100) / 100,

@@ -26,6 +26,9 @@ function evStats(kind){
 function evSaveLineup(kind, assign){
   var r = evCur(kind); if (!r || !PW) return;
   var l = {}; Object.keys(assign || {}).forEach(function(n){ if (/^[AB][SE]$/.test(assign[n])) l[n] = assign[n]; });
+  // Taktik-Schnappschuss fürs Archiv
+  var pm = typeof arcPlanMeta === 'function' ? arcPlanMeta(kind) : null;
+  if (pm && JSON.stringify(pm) !== JSON.stringify((r.meta || {}).plan || {})) rpc('admin_extra', { p_pw: PW, p_action: 'round_meta', p_data: { id: r.id, meta: { plan: pm } }, p_actor: ACTOR || null }).then(function(){ r.meta = r.meta || {}; r.meta.plan = pm; }).catch(function(){});
   if (JSON.stringify(l) === JSON.stringify(r.lineup || {})) return;
   rpc('admin_event', { p_pw: PW, p_action: 'lineup', p_data: { id: r.id, lineup: l }, p_actor: ACTOR || null }).then(function(){ r.lineup = l; }).catch(function(){});
 }

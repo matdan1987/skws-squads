@@ -113,7 +113,7 @@ function renderAkte(){
   var s = (PSTATS && PSTATS[p.name]) || {}, mg = mgOf(p.name), CH = { A:'Stamm A', B:'Stamm B', AB:'Stamm, beide', subA:'Ersatz A', subB:'Ersatz B', sub:'Ersatz, beide', no:'diesmal nicht' };
   var h = '<div class="card"><div class="akte-h"><span class="akte-av" data-avbig="' + esc(p.name) + '">' + av(p.name, 160) + '</span><div><b>' + esc(p.name) + '</b><div class="small muted">' + p.rank + (p.active ? '' : ' · ausgeschieden') +
     (mg ? ' · Mentorengruppe ' + mg.g + (mg.role === 'mentor' ? ' (Mentor)' : mg.role === 'r4' ? ' (Leitung)' : '') : ' · keine Mentorengruppe') +
-    (p.entry ? ' · ' + (p.entry.hasEmail ? 'E-Mail hinterlegt' : 'keine E-Mail') : '') + '</div><div>' + mgBadge(p.name) + merBadge(p.name) + (typeof fkAkte === 'function' ? fkAkte(p.name) : '') + '</div></div></div>';
+    (p.entry ? ' · ' + (p.entry.hasEmail ? 'E-Mail hinterlegt' : 'keine E-Mail') : '') + '</div><div>' + mgBadge(p.name) + merBadge(p.name) + (typeof fkAkte === 'function' ? fkAkte(p.name) : '') + '</div>' + (typeof ajAkteHtml === 'function' ? ajAkteHtml(p) : '') + '</div></div>';
   var mAll = MER.filter(function(m){ return m.name === p.name && !m.revoked_at; }), mB = mAll.filter(function(m){ return m.kind === 'bonus'; }).length, mD = mAll.length - mB,
     mD90 = mAll.filter(function(m){ return m.kind === 'malus' && (Date.now() - new Date(m.created_at)) < 90 * DAY; }).length, mH = mAll.filter(function(m){ return (m.vis || 'public') !== 'public'; }).length;
   h += '<div class="akte-k"><div>Bonus / Bienchen<b class="up">▲ ' + mB + '</b></div><div>Malus / Teufelchen<b class="down">▼ ' + mD + '</b>' + (mD90 ? mD90 + ' in 90 Tagen' : '') + (mH ? ' · 🔒 ' + mH + ' nicht öffentlich' : '') + '</div>' +
@@ -133,6 +133,7 @@ function renderAkte(){
     return '<div class="akte-ev"><b>' + (r.kind === 'cs' ? 'Schluchtsturm' : 'Wüstensturm') + ' ' + esc(r.label) + '</b><span class="muted">Anmeldung: ' + (su ? CH[su.choice] || su.choice : '–') + '</span>' +
       '<span>' + (l ? 'eingeteilt: Team ' + l[0] + (l[1] === 'S' ? ' Stamm' : ' Ersatz') : '<span class="muted">nicht eingeteilt</span>') + '</span>' + (gone ? '<span class="down">gefehlt</span>' : '') + '</div>';
   }).join('') : '<div class="small muted">Noch keine Anmeldungen.</div>') + '</div>';
+  if (typeof notesHtml === 'function') h += notesHtml(p.name);
   h += '<div class="card"><h2>🎁 Geschenke</h2><div id="akteGifts" class="small muted">Lädt …</div></div>';
   box.innerHTML = h;
   akteGifts(p.name);
