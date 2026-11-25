@@ -112,7 +112,8 @@ function evRender(kind){
       '<p class="small muted" style="margin:6px 0">Nur ankreuzen, wer eingeteilt war, aber nicht da war. Alle anderen gelten als dabei. Das zählt für Rotation, Profil-Erfolge und auf Wunsch als Malus.</p>' +
       '<div class="evgrp">Stamm (' + planned.length + ')</div><div>' + planned.map(chk).join('') + '</div>' +
       (subs.length ? '<div class="evgrp">Ersatz (' + subs.length + ')</div><div>' + subs.map(chk).join('') + '</div>' : '') +
-      '<div class="btnrow"><button class="btn2" data-ev="absent" data-kind="' + K + '" data-round="' + lr.id + '">Fehlende speichern</button></div></details>';
+      '<div class="btnrow"><label class="small" style="display:flex;align-items:center;gap:6px">Malus sichtbar für <select id="evAbsVis_' + K + '">' + Object.keys(MER_VIS).map(function(k){ return '<option value="' + k + '">' + MER_VIS[k] + '</option>'; }).join('') + '</select></label>' +
+      '<button class="btn2" data-ev="absent" data-kind="' + K + '" data-round="' + lr.id + '">Fehlende speichern</button></div></details>';
   }
   h += '<div class="note" id="evMsg_' + K + '"></div>';
   box.innerHTML = h;
@@ -175,12 +176,13 @@ function evAbsent(kind, id){
   var r = EV.filter(function(x){ return x.id === id; })[0]; if (!r) return;
   var names = Array.prototype.slice.call($('ev_' + kind).querySelectorAll('[data-evabs]')).filter(function(c){ return c.checked; }).map(function(c){ return c.dataset.evabs; });
   var neu = names.filter(function(n){ return (r.absent || []).indexOf(n) < 0; });
+  var vis = ($('evAbsVis_' + kind) || {}).value || 'public';
   var reason = (merCat().reasons.filter(function(x){ return x.k === 'malus' && /nicht erschienen/i.test(x.r); })[0]) || { r:'Angemeldet, aber nicht erschienen', k:'malus', e:'sub', s:'both', n:2 };
-  var giveMalus = neu.length && confirm('Fehlende gespeichert: ' + (names.join(', ') || 'niemand') + '.\n\nFür die neu Markierten (' + neu.join(', ') + ') den Malus „' + reason.r + '“ vergeben (' + MER_EFF[reason.e] + ', ' + (reason.n || 'ohne') + ' Runde(n))?\nAbbrechen = nur als fehlend speichern.');
+  var giveMalus = neu.length && confirm('Fehlende gespeichert: ' + (names.join(', ') || 'niemand') + '.\n\nFür die neu Markierten (' + neu.join(', ') + ') den Malus „' + reason.r + '“ vergeben (' + MER_EFF[reason.e] + ', ' + (reason.n || 'ohne') + ' Runde(n), sichtbar: ' + MER_VIS[vis].replace(/^\S+ /, '') + ')?\nAbbrechen = nur als fehlend speichern.');
   evNote(kind, '…', true);
   rpc('admin_event', { p_pw: PW, p_action: 'absent', p_data: { id: id, names: names }, p_actor: ACTOR || null }).then(function(){
     if (!giveMalus) return;
-    return neu.reduce(function(pr, n){ return pr.then(function(){ return rpc('admin_merit', { p_pw: PW, p_action: 'add', p_data: { name: n, kind: 'malus', effect: reason.e, scope: reason.s, reason: reason.r, note: (kind === 'cs' ? 'Schluchtsturm ' : 'Wüstensturm ') + r.label, rounds: reason.n === '' || reason.n === undefined ? '' : String(reason.n), until: '' }, p_actor: ACTOR || null }); }); }, Promise.resolve());
+    return neu.reduce(function(pr, n){ return pr.then(function(){ return rpc('admin_merit', { p_pw: PW, p_action: 'add', p_data: { name: n, kind: 'malus', effect: reason.e, scope: reason.s, reason: reason.r, vis: vis, note: (kind === 'cs' ? 'Schluchtsturm ' : 'Wüstensturm ') + r.label, rounds: reason.n === '' || reason.n === undefined ? '' : String(reason.n), until: '' }, p_actor: ACTOR || null }); }); }, Promise.resolve());
   }).then(function(){ return load(PW, true).then(function(){ showTab(kind); evNote(kind, 'Gespeichert: ' + (names.length ? names.length + ' fehlend' : 'alle waren da') + (giveMalus ? ', Malus vergeben.' : '.'), true); }); })
     .catch(function(){ evNote(kind, 'Fehler – ist die Datenbank-Erweiterung „ausbau“ eingespielt?', false); });
 }

@@ -21,15 +21,17 @@ function ajInputs(n){
     '<input type="date" class="ajd" data-aj="' + esc(n) + '" value="' + v + '"' + (EX ? '' : ' disabled') + ' title="oder genaues Datum"></span>';
 }
 // ---------- Notizen in der Spieler-Akte ----------
+var NOTE_VIS = { lead:'🔒 nur R4/R5', mentor:'🎓 auch Mentoren der Gruppe', player:'👤 auch der Spieler selbst' };
+function noteVisOpts(v){ return Object.keys(NOTE_VIS).map(function(k){ return '<option value="' + k + '"' + (v === k ? ' selected' : '') + '>' + NOTE_VIS[k] + '</option>'; }).join(''); }
 function notesHtml(n){
-  if (!EX) return '<div class="card"><h2>🔒 Interne Notizen</h2><div class="small muted">Lädt … (oder die Datenbank-Erweiterung „archiv_notizen“ fehlt noch)</div></div>';
+  if (!EX) return '<div class="card"><h2>📝 Notizen</h2><div class="small muted">Lädt … (oder die Datenbank-Erweiterung „archiv_notizen“ fehlt noch)</div></div>';
   var l = (EX.notes || []).filter(function(x){ return x.name === n; });
-  return '<div class="card"><h2>🔒 Interne Notizen (' + l.length + ')</h2><p class="small muted" style="margin:0 0 8px">Sehen nur R4/R5 – oder zusätzlich Mentoren und R4 der Mentorengruppe des Spielers, wenn du das freigibst (auf der Spielerseite im Profil, nach dem Anmelden mit PIN).</p>' +
+  return '<div class="card"><h2>📝 Notizen (' + l.length + ')</h2><p class="small muted" style="margin:0 0 8px">Bei jeder Notiz wählst du, wer sie sieht: nur R4/R5, zusätzlich die Mentoren der Gruppe des Spielers, oder auch der Spieler selbst (in seinem Profil, nach dem Anmelden mit PIN).</p>' +
     l.map(function(x){ return '<div class="akte-ev"><span style="white-space:pre-wrap">' + esc(x.body) + '</span><span class="muted">' + fmtDateTime(new Date(x.t)) + (x.by ? ' · ' + esc(x.by) : '') + '</span>' +
-      '<select class="visel" data-notevis="' + x.id + '"><option value="lead"' + (x.vis === 'lead' ? ' selected' : '') + '>🔒 nur R4/R5</option><option value="mentor"' + (x.vis === 'mentor' ? ' selected' : '') + '>🎓 auch Mentoren der Gruppe</option></select>' +
+      '<select class="visel" data-notevis="' + x.id + '">' + noteVisOpts(x.vis) + '</select>' +
       '<button class="mini danger" data-notedel="' + x.id + '">Löschen</button></div>'; }).join('') +
     '<textarea id="noteBody" rows="3" maxlength="2000" placeholder="Neue Notiz …" style="width:100%;box-sizing:border-box;margin-top:8px"></textarea>' +
-    '<div class="btnrow" style="margin-top:6px"><select id="noteVis"><option value="lead">🔒 nur R4/R5</option><option value="mentor">🎓 auch Mentoren der Gruppe</option></select><button class="btn2" data-noteadd="' + esc(n) + '">Notiz speichern</button></div></div>';
+    '<div class="btnrow" style="margin-top:6px"><select id="noteVis">' + noteVisOpts('lead') + '</select><button class="btn2" data-noteadd="' + esc(n) + '">Notiz speichern</button></div></div>';
 }
 // ---------- Event-Archiv ----------
 function arcLoad(more){
