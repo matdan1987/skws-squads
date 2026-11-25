@@ -20,14 +20,23 @@ function ajInputs(n){
   return '<span class="aj-in"><label class="aj-days">seit <input type="number" inputmode="numeric" min="0" max="5000" placeholder="?" data-ajdays="' + esc(n) + '" value="' + ajDays(v) + '"' + (EX ? '' : ' disabled') + '> Tagen</label>' +
     '<input type="date" class="ajd" data-aj="' + esc(n) + '" value="' + v + '"' + (EX ? '' : ' disabled') + ' title="oder genaues Datum"></span>';
 }
+var AJ_OPEN = {};
 function ajRender(){
   var b = $('ajList'); if (!b) return;
   if (!EX) { b.innerHTML = '<div class="empty">Lädt … (oder die Datenbank-Erweiterung „archiv_notizen“ fehlt noch)</div>'; return; }
   var q = ($('ajQ').value || '').trim().toLowerCase(), only = $('ajOnly').checked;
   var list = D.players.filter(function(p){ return (!q || p.name.toLowerCase().indexOf(q) >= 0) && (!only || !ajOf(p.name)); });
   $('ajCount').textContent = D.players.filter(function(p){ return ajOf(p.name); }).length + ' von ' + D.players.length + ' nachgetragen';
-  b.innerHTML = list.map(function(p){ return '<div class="mgrow"><span class="nm">' + av(p.name, 28) + esc(p.name) + ' <span class="v">' + p.rank + (p.joinedAt ? ' · hier seit ' + fmtDate(p.joinedAt) : '') + '</span></span>' +
-    ajInputs(p.name) + '</div>'; }).join('') || '<div class="empty">Keine Treffer.</div>';
+  // nach Rang gruppiert (R5 → R1), je Rang aufklappbar; bei einer Suche sind alle Gruppen offen
+  b.innerHTML = RANKS.map(function(r){
+    var all = D.players.filter(function(p){ return p.rank === r; }), l = list.filter(function(p){ return p.rank === r; }).sort(function(x, y){ return x.name.localeCompare(y.name); });
+    if (!l.length) return '';
+    var miss = all.filter(function(p){ return !ajOf(p.name); }).length;
+    return '<details class="aj-grp" data-ajr="' + r + '"' + (q || AJ_OPEN[r] ? ' open' : '') + '><summary>' + r + ' <span class="muted">' + all.length + ' Spieler</span>' +
+      (miss ? '<span class="aj-miss">' + miss + ' ohne Datum</span>' : '<span class="aj-full">✓ vollständig</span>') + '</summary>' +
+      l.map(function(p){ return '<div class="mgrow"><span class="nm">' + av(p.name, 28) + esc(p.name) + ' <span class="v">' + (p.joinedAt ? 'hier seit ' + fmtDate(p.joinedAt) : '') + '</span></span>' + ajInputs(p.name) + '</div>'; }).join('') +
+      '</details>';
+  }).join('') || '<div class="empty">Keine Treffer.</div>';
 }
 // ---------- Notizen in der Spieler-Akte ----------
 function notesHtml(n){
@@ -89,7 +98,9 @@ document.addEventListener('change', function(e){
   else dn.value = ajDays(dd.value);
   dd.disabled = dn.disabled = true;
   ajSave(n, dd.value, function(ok){ dd.disabled = dn.disabled = false; [dd, dn].forEach(function(i){ i.style.borderColor = ok ? 'var(--ok)' : 'var(--err)'; }); setTimeout(function(){ dd.style.borderColor = dn.style.borderColor = ''; }, 1500);
-    if (ok) $('ajCount').textContent = D.players.filter(function(p){ return ajOf(p.name); }).length + ' von ' + D.players.length + ' nachgetragen'; });
+    if (ok) { $('ajCount').textContent = D.players.filter(function(p){ return ajOf(p.name); }).length + ' von ' + D.players.length + ' nachgetragen';
+      var g = dd.closest('.aj-grp'); if (g) { var r = g.dataset.ajr, miss = D.players.filter(function(p){ return p.rank === r && !ajOf(p.name); }).length, sp = g.querySelector('summary .aj-miss, summary .aj-full');
+        if (sp) { sp.className = miss ? 'aj-miss' : 'aj-full'; sp.textContent = miss ? miss + ' ohne Datum' : '✓ vollständig'; } } } });
 });
 $('plAkte').addEventListener('change', function(e){
   var s = e.target.closest('[data-notevis]'); if (!s) return;
@@ -103,6 +114,7 @@ $('plAkte').addEventListener('click', function(e){
   if (d && confirm('Notiz löschen?')) rpc('admin_extra', { p_pw: PW, p_action: 'note_del', p_data: { id: +d.dataset.notedel }, p_actor: ACTOR || null }).then(exLoad);
 });
 $('ajQ').addEventListener('input', ajRender);
+$('ajList').addEventListener('toggle', function(e){ var d = e.target; if (d.dataset && d.dataset.ajr && !($('ajQ').value || '').trim()) AJ_OPEN[d.dataset.ajr] = d.open; }, true);
 $('ajOnly').addEventListener('change', ajRender);
 $('arcKind').addEventListener('change', function(){ arcLoad(false); });
 $('arcQ').addEventListener('input', arcRender);

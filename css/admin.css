@@ -288,3 +288,18 @@ textarea.arc-rem{min-height:0;height:auto}
 .aj-list .mgrow{flex-wrap:wrap;row-gap:6px}
 .aj-list .aj-in{flex:0 0 auto;margin-left:auto}
 .aj-list .mgrow .nm{flex:1 0 160px !important;max-width:100%}
+/* Auf- und Zuklappen */
+.klapp-h{cursor:pointer;user-select:none;-webkit-user-select:none;position:relative;padding-right:24px}
+.klapp-h::after{content:'▾';position:absolute;right:2px;top:50%;transform:translateY(-50%);opacity:.6;font-size:14px;transition:transform .15s;color:var(--muted)}
+.card.zu > .klapp-h::after{transform:translateY(-50%) rotate(-90deg)}
+.card.zu > :not(.klapp-h){display:none !important}
+.card.zu > h2.klapp-h{margin-bottom:0}
+/* Allianzbeitritt nach Rängen */
+.aj-grp{border-top:1px solid var(--line)}
+.aj-grp > summary{margin:0;padding:9px 2px;font-size:14px;color:var(--text);font-weight:700;display:flex;align-items:center;gap:8px;list-style:none}
+.aj-grp > summary::-webkit-details-marker{display:none}
+.aj-grp > summary::before{content:'▸';opacity:.6;transition:transform .15s}
+.aj-grp[open] > summary::before{transform:rotate(90deg)}
+.aj-grp > summary .muted{font-weight:400;font-size:12.5px}
+.aj-grp > summary .aj-miss{margin-left:auto;font-size:12px;font-weight:600;color:#f5b942}
+.aj-grp > summary .aj-full{margin-left:auto;font-size:12px;font-weight:600;color:var(--ok)}
