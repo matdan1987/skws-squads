@@ -1,8 +1,8 @@
 /* SKWS Squads – Admin: start (gemeinsamer globaler Bereich, Reihenfolge der Dateien beachten) */
 /* ---------- Steuerung ---------- */
 // Bereiche der Navigation: jeder Reiter gehört zu genau einem Bereich
-var NAV = { sp:['ov','mem','pl','dev','hist'], ev:['ds','cs','bdg','arc'], al:['mg','mer','msg'], sy:['adm','acc','log','exp'] };
-function navGroupOf(t){ for (var g in NAV) if (NAV[g].indexOf(t) >= 0) return g; return 'sp'; }
+var NAV = { mi:['mlist','pl','acc'], st:['ov','mem','dev','hist','exp'], ev:['ds','cs','arc'], al:['msg','mg','mer','bdg'], sy:['log','adm'] };
+function navGroupOf(t){ for (var g in NAV) if (NAV[g].indexOf(t) >= 0) return g; return 'mi'; }
 function navRender(name){
   var g = navGroupOf(name);
   Array.prototype.forEach.call(document.querySelectorAll('#navg button'), function(b){ b.classList.toggle('on', b.dataset.g === g); });
@@ -13,12 +13,12 @@ function showTab(name){
   navRender(name);
   var bs = document.querySelectorAll('#tabs button');
   for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-  ['ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','msg','adm','acc','log','bdg','arc'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+  ['mlist','ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','msg','adm','acc','log','bdg','arc'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
   store('skws_admin_tab', name); store('skws_admin_tab_' + navGroupOf(name), name);
   if (name === 'hist') renderHistory();
   if (name === 'ov') renderOverview();
   if (name === 'pl') renderPlayer();
-  if (name === 'adm') renderAdmin();
+  if (name === 'mlist') { mlRender(); renderAdmin(); }
   if (name === 'exp') renderExport();
   if (name === 'ds') dsRender();
   if (name === 'cs') csRender();
@@ -26,7 +26,6 @@ function showTab(name){
   if (name === 'mer') merRender();
   if (name === 'msg') { fkRender(); fkLoad(); }
   if (name === 'arc') arcLoad(false);
-  if (name === 'adm') ajRender();
   if (name === 'bdg') { bdgRender(); bdgLoad(); clmRender(); clmLoad(); }
   if (name === 'acc') { accRender(); fkLoad().then(accLoad); }
   if (name === 'dev') renderDev();
@@ -81,7 +80,6 @@ $('plAkte').addEventListener('click', function(e){
   var rv = e.target.closest('[data-merrev]'); if (rv) { var m = MER.filter(function(x){ return x.id === +rv.dataset.merrev; })[0]; if (!m || !confirm('„' + m.reason + '“ von ' + m.name + ' zurücknehmen?')) return;
     rpc('admin_merit', { p_pw: PW, p_action: 'revoke', p_data: { id: m.id }, p_actor: ACTOR || null }).then(function(){ return load(PW, true).then(function(){ showTab('pl'); }); }); }
 });
-$('admSearch').addEventListener('input', renderAdmin);
 $('selSearch').addEventListener('input', renderExport);
 ['logView','logFilter'].forEach(function(id){ $(id).addEventListener('change', renderLog); });
 $('logSearch').addEventListener('input', renderLog);
@@ -152,18 +150,20 @@ $('addForm').addEventListener('submit', function(e){
   var r = $('addRank').value;
   memberAction('add', n, r, n + ' wurde als ' + r + ' hinzugefügt.').then(function(){ $('addName').value = ''; });
 });
-$('admActive').addEventListener('change', function(e){
+// Rang ändern (Mitgliederliste im Schnell-Bearbeiten oder Stammdaten der Spielerakte)
+document.addEventListener('change', function(e){
   var s = e.target.closest('select.rk'); if (!s) return;
   memberAction('rank', s.dataset.name, s.value, s.dataset.name + ' ist jetzt ' + s.value + '.');
 });
-$('tab-adm').addEventListener('click', function(e){
+// Aktionen an Mitgliedern (Stammdaten der Spielerakte, Ausgeschiedene)
+document.addEventListener('click', function(e){
   var b = e.target.closest('button[data-act]'); if (!b) return;
   var n = b.dataset.name, a = b.dataset.act;
   if (a === 'leave' && confirm(n + ' als ausgeschieden markieren?\nDer Spieler verschwindet von der Eintragsseite und bekommt keine Erinnerungen mehr. Sein Verlauf bleibt erhalten.'))
-    memberAction('leave', n, null, n + ' ist als ausgeschieden markiert.').then(function(){ mgLeave(n); });
+    memberAction('leave', n, null, n + ' ist als ausgeschieden markiert.').then(function(ok){ if (ok) mgLeave(n); });
   if (a === 'rejoin') memberAction('rejoin', n, null, n + ' ist wieder aktiv.');
-  if (a === 'avdel' && confirm('Avatar von ' + n + ' entfernen?')) rpc('admin_avatar', { p_pw: PW, p_name: n, p_actor: ACTOR || null }).then(function(){ delete AVA[n]; renderAdmin(); note('Avatar von ' + n + ' entfernt.', true); }).catch(function(){ note('Fehler – ist die Datenbank-Erweiterung „avatar“ eingespielt?', false); });
-  if (a === 'rename') { var nn = prompt('Neuer Name für ' + n + ':', n); if (nn && nn.trim() && nn.trim() !== n) { nn = nn.trim(); memberAction('rename', n, nn, n + ' heißt jetzt ' + nn + '.').then(function(){ mgRename(n, nn); }); } }
+  if (a === 'avdel' && confirm('Avatar von ' + n + ' entfernen?')) rpc('admin_avatar', { p_pw: PW, p_name: n, p_actor: ACTOR || null }).then(function(){ delete AVA[n]; showTab(store('skws_admin_tab') || 'mlist'); note('Avatar von ' + n + ' entfernt.', true); }).catch(function(){ note('Fehler – ist die Datenbank-Erweiterung „avatar“ eingespielt?', false); });
+  if (a === 'rename') { var nn = prompt('Neuer Name für ' + n + ':', n); if (nn && nn.trim() && nn.trim() !== n) { nn = nn.trim(); memberAction('rename', n, nn, n + ' heißt jetzt ' + nn + '.').then(function(ok){ if (ok) { mgRename(n, nn); if (curPlayer === n) { curPlayer = nn; if (store('skws_admin_tab') === 'pl') { fillPlayerSelect(); renderPlayer(); } } } }); } }
 });
 
 var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (!D) return; var t = store('skws_admin_tab') || 'ov'; showTab(t); }, 200); });
