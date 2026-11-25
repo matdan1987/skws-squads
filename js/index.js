@@ -479,7 +479,7 @@
     if (to === 'funk') { showTab('funk'); return; }
     if (to === 'profile') { PROF_VIEW = null; showTab('profile'); window.scrollTo(0, 0); return; }
     var id = to.split(':')[1]; showTab('form');
-    setTimeout(function(){ var x = $(id); if (x && !x.classList.contains('hide')) x.scrollIntoView({ behavior:'smooth', block:'start' }); }, 50);
+    setTimeout(function(){ var x = $(id); if (x && !x.classList.contains('hide')) { if (window.Klapp) Array.prototype.forEach.call(x.classList.contains('card') ? [x] : x.querySelectorAll('.card.zu'), function(c){ Klapp.open(c); }); x.scrollIntoView({ behavior:'smooth', block:'start' }); } }, 50);
   }
   function showTab(which){
     $('tabForm').classList.toggle('on', which === 'form');
@@ -892,7 +892,15 @@
     Funk.init({ data: function(){ return DATA; }, lang: function(){ return LANG; }, myName: function(){ return $('name').value; },
       avEl: avEl, loadAvatars: loadAvatars, openProfile: openProfile,
       onSettled: function(c){ if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }); },
+      onNews: function(c){ if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }, true); },
       onAuth: function(){ MER_FOR = null; loadMerits(); renderAuth(); renderEv(); loadClaims(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
+    // Karten auf- und zuklappen: Profil, Übersicht, Funk und die Info-Karten auf „Eintragen“ (nicht das Eingabeformular)
+    if (window.Klapp) Klapp.init({ key: 'skws_zu', ok: function(c){
+      if (c.closest('.fk-overlay, #fkModal') || c.classList.contains('fk-head') || c.classList.contains('sq') || c.classList.contains('fk-modal')) return false;
+      var v = c.closest('section'), id = v && v.id;
+      if (id === 'profileView' || id === 'overviewView' || id === 'funkView') return true;
+      return ['weekCard','merCard','dsCard','csCard','linksCard','appRemCard'].indexOf(c.id) >= 0 || !!c.closest('#evCards, #claimCards');
+    } });
     var last = store('skws_name');
     if (last && DATA.members.indexOf(last) >= 0){ $('name').value = last; loadMember(); }
     renderAuth();

@@ -264,3 +264,10 @@
 .neu-modal{padding-bottom:0}
 .neu-modal > .btn{position:sticky;bottom:0;width:100%;margin:12px 0 0;border-radius:12px;box-shadow:0 -14px 0 var(--card),0 14px 0 var(--card)}
 .neu-modal::after{content:"";display:block;height:14px}
+
+/* Auf- und Zuklappen */
+.klapp-h{cursor:pointer;user-select:none;-webkit-user-select:none;position:relative;padding-right:24px}
+.klapp-h::after{content:'▾';position:absolute;right:2px;top:50%;transform:translateY(-50%);opacity:.55;font-size:14px;transition:transform .15s}
+.card.zu > .klapp-h::after{transform:translateY(-50%) rotate(-90deg)}
+.card.zu > :not(.klapp-h){display:none !important}
+.card.zu > .klapp-h{margin-bottom:0}

@@ -189,3 +189,5 @@ document.addEventListener('click', function(e){
   o.addEventListener('click', function(){ o.remove(); }); document.body.appendChild(o);
 });
 adminLangPicker();
+// Karten per Tipp auf die Überschrift auf- und zuklappen (Login ausgenommen)
+Klapp.init({ key: 'skws_admin_zu', ok: function(c){ return c.id !== 'loginView'; } });

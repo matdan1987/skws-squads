@@ -191,6 +191,7 @@ var Funk = (function(){
     var L = T(), c = el('div', 'card fk-head');
     var row = el('div', 'fk-me'); row.appendChild(A.avEl(S.name, 56));
     var tx = el('div'); tx.appendChild(el('b', '', L.as.replace('{n}', S.name))); tx.appendChild(el('div', 'hint', L.lvl[S.level] || '')); row.appendChild(tx);
+    if (window.NEU_I18N) { var nb = btn('mini', '✨', function(){ if (A.onNews) A.onNews({ tok: S.tok, name: S.name, inbox: S.inbox || [], rooms: S.rooms, seen: seen() }); }); nb.title = (NEU_I18N[A.lang()] || NEU_I18N.en).btn; row.appendChild(nb); }
     row.appendChild(btn('mini', '🔑', function(){ S.showPin = !S.showPin; render(); }));
     row.appendChild(btn('mini', L.logout, function(){ call('auth_logout').then(drop); }));
     c.appendChild(row);
