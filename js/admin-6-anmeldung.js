@@ -35,7 +35,7 @@ function evSaveLineup(kind, assign){
 function evRender(kind){
   var box = $('ev_' + kind); if (!box || !D) return;
   var r = evCur(kind), K = kind, st = kind === 'ds' ? dsState() : csState();
-  var h = '<h2>Anmeldung der Spieler – ' + EV_NAME[kind] + '</h2>';
+  var h = '<h2>1 · Anmeldung der Spieler – ' + EV_NAME[kind] + '</h2>';
   if (r) {
     var cfg = evCfg(kind), ES = evStats(kind);
     var open = evIsOpen(r), dl = evDl(r), by = {}; (r.signups || []).forEach(function(x){ by[x.name] = x; });

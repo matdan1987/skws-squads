@@ -71,6 +71,7 @@
     var els = document.querySelectorAll('[data-t]');
     for (var i = 0; i < els.length; i++) els[i].textContent = t(els[i].dataset.t);
     $('tabProfile').textContent = (PROF_I18N[LANG] || PROF_I18N.en).tab;
+    evLabels();
     if (window.Funk && DATA) Funk.lang();
     $('newPinHint').textContent = F_().regPin; $('newPin').placeholder = F_().pinNew; $('newPin2').placeholder = F_().pinAgain;
     renderAuth();
@@ -84,7 +85,7 @@
   }
 
   /* ---------- Wüstensturm-Einsatz ---------- */
-  function renderDs(){ renderPlan('ds'); renderPlan('cs'); }
+  function renderDs(){ renderPlan('ds'); renderPlan('cs'); if ($('evIntro')) evLabels(); }
   function renderPlan(kind){
     var card = $(kind + 'Card'), P = DATA && DATA[kind], n = $('name').value;
     if (!P || !P.teams || !n) { card.classList.add('hide'); return; }
@@ -176,7 +177,18 @@
   var AUTH_OPEN = null;
   function openAuth(){ var n = $('name').value; if (!n || authed(n)) return; AUTH_OPEN = n; renderAuth(); $('authBox').scrollIntoView({ behavior:'smooth', block:'center' }); setTimeout(function(){ var i = $('authBox').querySelector('input[type=password]'); if (i) i.focus(); }, 300); }
 
-  function renderEv(){
+  // Reiter „Events“: Beschriftung, Hinweis wenn nichts offen ist, Punkt bei offener Anmeldung ohne Antwort
+  function evLabels(){
+    var X = XTRA_I18N[LANG] || XTRA_I18N.en, n = $('name').value, ev = DATA && DATA.ev || {};
+    var open = n && ['ds','cs'].some(function(k){ var r = ev[k]; return r && r.open && !(r.signups && r.signups[n]); });
+    $('tabEvents').textContent = X.evTab; if (open) { var d = document.createElement('span'); d.className = 'fk-badge'; d.textContent = '•'; $('tabEvents').appendChild(d); }
+    $('evIntro').textContent = X.evIntro.replace('{tab}', t('form'));
+    var any = ['evCards','claimCards'].some(function(id){ return $(id).children.length; }) || !$('dsCard').classList.contains('hide') || !$('csCard').classList.contains('hide');
+    $('evEmptyTxt').textContent = n ? X.evEmpty : X.evPick.replace('{tab}', t('form'));
+    $('evEmpty').classList.toggle('hide', any);
+  }
+  function renderEv(){ renderEvCards(); evLabels(); }
+  function renderEvCards(){
     var box = $('evCards'); box.innerHTML = '';
     var ev = DATA && DATA.ev; if (!ev) return;
     var T = EV_I18N[LANG] || EV_I18N.en, n = $('name').value;
@@ -195,7 +207,7 @@
       if (!n) { var pn = document.createElement('div'); pn.className = 'hint'; pn.textContent = T.pickName; card.appendChild(pn); box.appendChild(card); return; }
       var note = document.createElement('input'); note.type = 'text'; note.maxLength = 120; note.placeholder = T.note; note.style.marginTop = '8px';
       var ok = authed(n);
-      if (r.open && !ok) { var lf = document.createElement('div'); lf.className = 'hint fk-first'; lf.textContent = F_().loginFirst; card.appendChild(lf); }
+      if (r.open && !ok) { var lf = document.createElement('div'); lf.className = 'hint fk-first'; lf.textContent = F_().loginFirst; lf.style.cursor = 'pointer'; lf.addEventListener('click', function(){ showTab('form'); openAuth(); }); card.appendChild(lf); }
       if (r.open && ok) card.appendChild(note);
       function lbl(c){ return c === 'no' ? T.no : (c.indexOf('sub') === 0 ? T.hE : T.hS) + ': ' + (/A$/.test(c) && c !== 'AB' && c !== 'sub' ? T.tA : /B$/.test(c) && c !== 'AB' && c !== 'sub' ? T.tB : T.AB); }
       [['hS', [['A', T.tA, r.time_a], ['B', T.tB, r.time_b], ['AB', T.AB, '']]], ['hE', [['subA', T.tA, r.time_a], ['subB', T.tB, r.time_b], ['sub', T.AB, '']]], ['', [['no', T.no, '']]]].forEach(function(grp){
@@ -229,7 +241,7 @@
     rpc('my_merits', { p_name: n, p_token: tok() }).then(function(r){ if (MER_FOR !== n) return; MER_DATA = Array.isArray(r) ? r : []; renderMerits(); renderWeek(); }).catch(function(){});
   }
   function renderMerits(){
-    var card = $('merCard'); if (!MER_DATA.length) { card.classList.add('hide'); return; }
+    var card = $('merCard'); if (!MER_DATA.length || (PROF_VIEW && PROF_VIEW !== $('name').value)) { card.classList.add('hide'); return; }
     var T = MER_I18N[LANG] || MER_I18N.en, E = EV_I18N[LANG] || EV_I18N.en, list = $('merList'); list.innerHTML = '';
     $('merTitle').textContent = T.title; $('merHint').textContent = T.hint;
     MER_DATA.forEach(function(m){
@@ -270,7 +282,7 @@
     $('weekTitle').textContent = T.week; var l = $('weekList'); l.innerHTML = '';
     items.forEach(function(x){ var d = document.createElement('div'); d.className = 'wk ' + x.c; var ic = document.createElement('span'); ic.className = 'i'; ic.textContent = x.i; d.appendChild(ic);
       var tx = document.createElement('span'); tx.style.flex = '1'; tx.textContent = x.t; d.appendChild(tx);
-      if (x.to && $(x.to)) { d.style.cursor = 'pointer'; d.addEventListener('click', function(){ $(x.to).scrollIntoView({ behavior:'smooth', block:'start' }); }); }
+      if (x.to && $(x.to)) { d.style.cursor = 'pointer'; d.addEventListener('click', function(){ neuGo('form:' + x.to); }); }
       l.appendChild(d); });
     card.classList.toggle('hide', !items.length);
   }
@@ -485,15 +497,20 @@
     });
   }
 
-  // Sprungziel aus „Neu für dich“: 'funk', 'profile' oder 'form:<Karten-ID>'
+  // Sprungziel aus „Neu für dich“ / „Diese Woche“: 'funk', 'profile' oder 'form:<Karten-ID>' (der Reiter ergibt sich aus der Karte)
+  var VIEW_TAB = { formView:'form', eventsView:'events', profileView:'profile', overviewView:'overview', funkView:'funk' };
   function neuGo(to){
     if (to === 'funk') { showTab('funk'); return; }
     if (to === 'profile') { PROF_VIEW = null; showTab('profile'); window.scrollTo(0, 0); return; }
-    var id = to.split(':')[1]; showTab('form');
+    var id = to.split(':')[1], el0 = $(id), sec = el0 && el0.closest('section');
+    if (id === 'merCard') PROF_VIEW = null;
+    showTab(sec && VIEW_TAB[sec.id] || 'form');
     setTimeout(function(){ var x = $(id); if (x && !x.classList.contains('hide')) { if (window.Klapp) Array.prototype.forEach.call(x.classList.contains('card') ? [x] : x.querySelectorAll('.card.zu'), function(c){ Klapp.open(c); }); x.scrollIntoView({ behavior:'smooth', block:'start' }); } }, 50);
   }
   function showTab(which){
     $('tabForm').classList.toggle('on', which === 'form');
+    $('tabEvents').classList.toggle('on', which === 'events');
+    $('eventsView').classList.toggle('hide', which !== 'events');
     $('tabOverview').classList.toggle('on', which === 'overview');
     $('tabProfile').classList.toggle('on', which === 'profile');
     $('formView').classList.toggle('hide', which !== 'form');
@@ -597,7 +614,8 @@
     var s = window.Funk && Funk.session(); if (!s || s.name !== $('name').value) { CLAIMS = null; renderClaims(); return; }
     rpc('claim_list', { p_token: s.tok }).then(function(r){ CLAIMS = r && r.ok ? r.items : null; renderClaims(); }).catch(function(){ CLAIMS = null; renderClaims(); });
   }
-  function renderClaims(){
+  function renderClaims(){ renderClaimCards(); evLabels(); }
+  function renderClaimCards(){
     var box = $('claimCards'); if (!box) return; box.innerHTML = '';
     if (!CLAIMS || !CLAIMS.length) return;
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, s = Funk.session(), c = document.createElement('div'); c.className = 'card';
@@ -750,6 +768,7 @@
   function renderProfile(){
     var box = $('profBox'), T = PROF_I18N[LANG] || PROF_I18N.en, AT = AV_I18N[LANG] || AV_I18N.en, me = $('name').value, n = PROF_VIEW || me, own = !PROF_VIEW || PROF_VIEW === me; box.innerHTML = '';
     function el(tag, cls, txt){ var x = document.createElement(tag); if (cls) x.className = cls; if (txt !== undefined) x.textContent = txt; return x; }
+    $('merCard').classList.toggle('hide', !own || !MER_DATA.length);
     if (!n) { var c0 = el('div', 'card'); c0.appendChild(el('div', 'hint', T.pickName)); box.appendChild(c0); return; }
     if (!PROF_STATS) { var c1 = el('div', 'card'); c1.appendChild(el('div', 'hint', '…')); box.appendChild(c1); return; }
     var s = PROF_STATS[n] || {}, e = DATA.entries[n], stk = PROF_STK[n] || [];
@@ -778,29 +797,12 @@
     lv.appendChild(dv); c.appendChild(lv);
     if (own) c.appendChild(avUploader(n, AT));
     box.appendChild(c);
-    // Sticker-Wand
-    var c2 = el('div', 'card'), hd = el('div', 'sq-h'); hd.appendChild(el('b', '', T.stickers)); hd.appendChild(el('span', 'tag', '🐝 ' + (s.b || 0) + '  ·  😈 ' + (s.d || 0))); c2.appendChild(hd);
-    var info = el('div', 'hint');
-    if (!stk.length) c2.appendChild(el('div', 'hint', T.noStickers));
-    else {
-      var w = el('div', 'stk');
-      stk.forEach(function(x){
-        var old = x.kind === 'malus' && (Date.now() - new Date(x.t)) > 90 * 86400000;
-        var sp = el('span', (x.kind === 'bonus' ? 'b' : 'd') + (old ? ' old' : ''), x.kind === 'bonus' ? '🐝' : '😈');
-        sp.title = fmtD(x.t) + ' · ' + x.reason + (old ? ' (' + T.old + ')' : '');
-        sp.addEventListener('click', function(){ info.textContent = sp.title; });
-        w.appendChild(sp);
-      });
-      c2.appendChild(w);
-    }
-    c2.appendChild(info); box.appendChild(c2);
-    box.appendChild(badgeCard(n));
-    var nc = notesCard(n); if (nc) box.appendChild(nc);
-    box.appendChild(giftCard(n, own));
-    // Erfolge mit Seltenheit
-    var all = Object.keys(PROF_STATS), c3 = el('div', 'card'), h3 = el('div', 'sq-h'); h3.appendChild(el('b', '', T.ach));
-    var got = 0; ACH.forEach(function(a){ if (achTier(a, s, e).t) got++; });
-    h3.appendChild(el('span', 'tag req', T.unlocked.replace('{a}', got).replace('{b}', ACH.length))); c3.appendChild(h3);
+    // Meine Mentorengruppe (nur im eigenen Profil nach Anmeldung)
+    var gc = own ? groupCard(n, el) : null; if (gc) box.appendChild(gc);
+    // Auszeichnungen: Plaketten, Teilnehmermarken und Erfolge in einer Karte
+    var X = XTRA_I18N[LANG] || XTRA_I18N.en, aw = badgeCard(n);
+    var all = Object.keys(PROF_STATS), got = 0; ACH.forEach(function(a){ if (achTier(a, s, e).t) got++; });
+    var ah = el('div', 'sq-h ach-h'); ah.appendChild(el('label', 'l', T.ach)); ah.appendChild(el('span', 'tag req', T.unlocked.replace('{a}', got).replace('{b}', ACH.length))); aw.appendChild(ah);
     var g = el('div', 'achs');
     ACH.slice().sort(function(a, b){ return achTier(b, s, e).t - achTier(a, s, e).t; }).forEach(function(a){
       var r = achTier(a, s, e), tx = T.a[a.id], multi = a.t.length > 1;
@@ -817,7 +819,78 @@
       card.appendChild(el('small', '', r.t ? T.rarity.replace('{p}', all.length ? Math.round(cnt / all.length * 100) : 0) : T.locked));
       g.appendChild(card);
     });
-    c3.appendChild(g); box.appendChild(c3);
+    aw.appendChild(g); box.appendChild(aw);
+    // Von anderen: Bienchen/Teufelchen-Sticker und Geschenke in einer Karte
+    var fo = giftCard(n, own), G = GIFT_I18N[LANG] || GIFT_I18N.en, fh = fo.firstChild, sec = document.createDocumentFragment();
+    var gTot = fh.lastChild ? fh.lastChild.textContent : '0'; fh.firstChild.textContent = '💌 ' + X.fromOthers; if (fh.lastChild && fh.lastChild.className === 'tag') fh.removeChild(fh.lastChild);
+    var sh = el('div', 'sq-h'); sh.appendChild(el('label', 'l', T.stickers)); sh.appendChild(el('span', 'tag', '🐝 ' + (s.b || 0) + '  ·  😈 ' + (s.d || 0))); sec.appendChild(sh);
+    var info = el('div', 'hint');
+    if (!stk.length) sec.appendChild(el('div', 'hint', T.noStickers));
+    else {
+      var w = el('div', 'stk');
+      stk.forEach(function(x){
+        var old = x.kind === 'malus' && (Date.now() - new Date(x.t)) > 90 * 86400000;
+        var sp = el('span', (x.kind === 'bonus' ? 'b' : 'd') + (old ? ' old' : ''), x.kind === 'bonus' ? '🐝' : '😈');
+        sp.title = fmtD(x.t) + ' · ' + x.reason + (old ? ' (' + T.old + ')' : '');
+        sp.addEventListener('click', function(){ info.textContent = sp.title; });
+        w.appendChild(sp);
+      });
+      sec.appendChild(w);
+    }
+    sec.appendChild(info); var gl = el('div', 'sq-h'); gl.appendChild(el('label', 'l', '🎁 ' + G.title)); gl.appendChild(el('span', 'tag', gTot)); sec.appendChild(gl);
+    fo.insertBefore(sec, fh.nextSibling); box.appendChild(fo);
+    var nc = notesCard(n); if (nc) box.appendChild(nc);
+  }
+
+  /* ---------- Meine Mentorengruppe ---------- */
+  var GRP = null, GRP_FOR = null, GRP_BUSY = false;
+  function loadGroup(force){
+    var sx = window.Funk && Funk.session(); if (!sx) { GRP = null; GRP_FOR = null; return; }
+    if (GRP_BUSY || (!force && GRP_FOR === sx.name)) return;
+    GRP_BUSY = true; GRP_FOR = sx.name;
+    rpc('my_group', { p_token: sx.tok }).then(function(r){ GRP = r && r.ok ? r : false; if (r && r.err === 'ERR_SESSION') Funk.expired(); })
+      .catch(function(){ GRP = false; }).then(function(){ GRP_BUSY = false; if (!$('profileView').classList.contains('hide')) renderProfile(); });
+  }
+  function groupCard(n, el){
+    var sx = window.Funk && Funk.session(); if (!sx || sx.name !== n) return null;
+    if (GRP_FOR !== n) loadGroup(); if (!GRP) return null;   // false = Datenbank-Erweiterung fehlt noch → Karte weglassen
+    var X = XTRA_I18N[LANG] || XTRA_I18N.en, E = EV_I18N[LANG] || EV_I18N.en, c = el('div', 'card grp-card');
+    var hd = el('div', 'sq-h'); hd.appendChild(el('b', '', '🎓 ' + X.grpTitle)); if (GRP.g) hd.appendChild(el('span', 'tag req', X.grpNo.replace('{g}', GRP.g))); c.appendChild(hd);
+    if (!GRP.g) { c.appendChild(el('div', 'hint', X.grpNone)); return c; }
+    function who(label, names){ if (!names || !names.length) return; var r = el('div', 'grp-who'); r.appendChild(el('span', 'grp-k', label));
+      var v = el('span', 'grp-v'); names.forEach(function(m){ var a = el('a', 'grp-n'); a.href = '#'; a.appendChild(avEl(m, 28)); a.appendChild(document.createTextNode(m)); a.addEventListener('click', function(ev){ ev.preventDefault(); openProfile(m); }); v.appendChild(a); }); r.appendChild(v); c.appendChild(r); }
+    who(X.grpLead, GRP.r4 ? [GRP.r4] : []); who(X.grpMentors, GRP.mentors || []);
+    loadAvatars([GRP.r4].concat(GRP.mentors || [], (GRP.members || []).map(function(m){ return m.name; })).filter(Boolean), function(){});
+    if (GRP.intensive) c.appendChild(el('div', 'hint', '💪 ' + X.grpInt));
+    if (!GRP.members) return c;
+    // Mentoren / Gruppenleitung: alle Mitglieder mit Beitritt im Spiel, Meldung und Event-Anmeldung
+    var mem = GRP.members.filter(function(m){ return m.active; }), okN = mem.filter(function(m){ return m.ok; }).length;
+    var mh = el('div', 'sq-h'); mh.appendChild(el('label', 'l', X.grpMembers.replace('{n}', mem.length))); mh.appendChild(el('span', 'tag', X.grpSum.replace('{a}', okN).replace('{b}', mem.length - okN))); c.appendChild(mh);
+    c.appendChild(el('div', 'hint', X.grpHint));
+    var ev = DATA.ev || {}, fmt = function(x){ return new Date(x).toLocaleDateString(LANG, { day:'2-digit', month:'2-digit' }); };
+    mem.forEach(function(m){
+      var r = el('div', 'grp-row'), a = avEl(m.name, 36); a.style.cursor = 'pointer'; a.addEventListener('click', function(){ openProfile(m.name); }); r.appendChild(a);
+      var tx = el('div', 'grp-tx'); var nm = el('b', '', m.name); nm.style.cursor = 'pointer'; nm.addEventListener('click', function(){ openProfile(m.name); }); tx.appendChild(nm);
+      if (m.rank) tx.appendChild(el('span', 'grp-rk', ' ' + m.rank));
+      var bits = [], cls = [];
+      bits.push(m.ok ? '✅ ' + X.grpOk : m.at ? '⏳ ' + X.grpOpen.replace('{d}', fmt(m.at)) : '❔ ' + X.grpUnk);
+      var en = DATA.entries[m.name], d = en ? Math.floor((Date.now() - new Date(en.updated)) / 86400000) : null;
+      bits.push(en ? (d > 7 ? '⚠️ ' + X.grpStale.replace('{n}', d) : X.grpFresh) : '⚠️ ' + X.grpNever);
+      ['ds','cs'].forEach(function(k){ var rr = ev[k]; if (rr && rr.open) bits.push((rr.signups && rr.signups[m.name] ? '✓ ' + X.grpSign : '✗ ' + X.grpNoSign).replace('{ev}', E[k])); });
+      var sub = el('div', 'hint grp-sub', bits.join(' · ')); tx.appendChild(sub); r.appendChild(tx);
+      if (GRP.canEdit) {
+        var b = el('button', m.ok ? 'mini ghost grp-btn' : 'mini grp-btn', m.ok ? X.grpUndo : X.grpMark); b.type = 'button';
+        b.addEventListener('click', function(){ b.disabled = true;
+          rpc('group_join', { p_token: sx.tok, p_name: m.name, p_ok: !m.ok }).then(function(res){
+            if (res && res.err === 'ERR_SESSION') { Funk.expired(); return; }
+            if (!res || !res.ok) { b.disabled = false; b.textContent = X.grpErr; return; }
+            loadGroup(true);
+          }, function(){ b.disabled = false; b.textContent = X.grpErr; }); });
+        r.appendChild(b);
+      }
+      c.appendChild(r);
+    });
+    return c;
   }
 
   /* ---------- Sprache ---------- */
@@ -896,6 +969,7 @@
     $('tabOverview').addEventListener('click', function(){ showTab('overview'); });
     $('tabProfile').addEventListener('click', function(){ PROF_VIEW = null; showTab('profile'); });
     $('tabFunk').addEventListener('click', function(){ showTab('funk'); });
+    $('tabEvents').addEventListener('click', function(){ showTab('events'); });
     $('ovSearch').addEventListener('input', function(){ renderOverview(); });
 
     setupRem();
@@ -904,12 +978,12 @@
       avEl: avEl, loadAvatars: loadAvatars, openProfile: openProfile,
       onSettled: function(c){ if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }); },
       onNews: function(c){ if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }, true); },
-      onAuth: function(){ MER_FOR = null; loadMerits(); renderAuth(); renderEv(); loadClaims(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
+      onAuth: function(){ MER_FOR = null; GRP = null; GRP_FOR = null; loadMerits(); renderAuth(); renderEv(); loadClaims(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
     // Karten auf- und zuklappen: Profil, Übersicht, Funk und die Info-Karten auf „Eintragen“ (nicht das Eingabeformular)
     if (window.Klapp) Klapp.init({ key: 'skws_zu', ok: function(c){
       if (c.closest('.fk-overlay, #fkModal') || c.classList.contains('fk-head') || c.classList.contains('sq') || c.classList.contains('fk-modal')) return false;
       var v = c.closest('section'), id = v && v.id;
-      if (id === 'profileView' || id === 'overviewView' || id === 'funkView') return true;
+      if (id === 'profileView' || id === 'overviewView' || id === 'funkView' || id === 'eventsView') return true;
       return ['weekCard','merCard','dsCard','csCard','linksCard','appRemCard'].indexOf(c.id) >= 0 || !!c.closest('#evCards, #claimCards');
     } });
     var last = store('skws_name');

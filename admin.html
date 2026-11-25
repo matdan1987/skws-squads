@@ -6,7 +6,7 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=16">
+<link rel="stylesheet" href="css/admin.css?v=17">
 </head>
 <body>
 <div class="wrap">
@@ -223,7 +223,18 @@
     <section id="tab-ds" class="hide">
       <div class="card" id="ev_ds"></div>
       <div class="card">
-        <h2>1 · Runden</h2>
+        <h2>2 · Wer spielt mit</h2>
+        <div class="dscount" id="dsCount"></div>
+        <div class="toolbar"><input id="dsSearch" type="search" placeholder="Spieler suchen…"></div>
+        <div class="chips">
+          <button class="chip" id="dsOnlySel">nur Zugeordnete zeigen</button>
+          <button class="chip" id="dsClear">alle Zuordnungen löschen</button>
+        </div>
+        <div class="pick" id="dsList"></div>
+      </div>
+
+      <div class="card">
+        <h2>3 · Uhrzeit, Gegner &amp; Taktik</h2>
         <p class="small muted" style="margin:0 0 10px">Die Spieler melden sich über die Squad-Seite an (Karte oben), du übernimmst die Anmeldungen in die Zuordnung, prüfst sie hier und trägst die Spieler dann im Spiel ein. Die Stärke entscheidet, wer innerhalb eines Teams welches Gebäude bekommt.</p>
         <div class="formrow">
           <div><label for="dsTimeA">Team A – Uhrzeit</label><input id="dsTimeA" type="text" placeholder="z. B. Fr 14:00"></div>
@@ -244,18 +255,7 @@
       </div>
 
       <div class="card">
-        <h2>2 · Gemeldete Spieler</h2>
-        <div class="dscount" id="dsCount"></div>
-        <div class="toolbar"><input id="dsSearch" type="search" placeholder="Spieler suchen…"></div>
-        <div class="chips">
-          <button class="chip" id="dsOnlySel">nur Zugeordnete zeigen</button>
-          <button class="chip" id="dsClear">alle Zuordnungen löschen</button>
-        </div>
-        <div class="pick" id="dsList"></div>
-      </div>
-
-      <div class="card">
-        <h2>3 · Taktik &amp; Einsatzplan</h2>
+        <h2>4 · Plan erstellen &amp; teilen</h2>
         <div class="btnrow"><button class="btn" id="dsRun">Taktik erstellen</button><button class="btn2" id="dsExample">Beispiel zeigen</button></div>
         <p class="small muted" style="margin:6px 0 0">Beispiel: verteilt eure aktiven Spieler gemischt auf Team A und B (je 20 Stamm, 10 Ersatz), so wie sie sich auch im Spiel anmelden könnten, und zeigt die gewählten Taktiken. Echte Pläne entstehen immer aus deiner Zuordnung oben – es wird nie automatisch auf Teams verteilt. Deine Zuordnung bleibt unverändert, veröffentlicht wird nichts.</p>
         <div id="dsResult"></div>
@@ -302,7 +302,18 @@
     <section id="tab-cs" class="hide">
       <div class="card" id="ev_cs"></div>
       <div class="card">
-        <h2>1 · Runden</h2>
+        <h2>2 · Wer spielt mit</h2>
+        <div class="dscount" id="csCount"></div>
+        <div class="toolbar"><input id="csSearch" type="search" placeholder="Spieler suchen…"></div>
+        <div class="chips">
+          <button class="chip" id="csOnlySel">nur Zugeordnete zeigen</button>
+          <button class="chip" id="csClear">alle Zuordnungen löschen</button>
+        </div>
+        <div class="pick" id="csList"></div>
+      </div>
+
+      <div class="card">
+        <h2>3 · Uhrzeit, Gegner &amp; Taktik</h2>
         <p class="small muted" style="margin:0 0 10px">Schluchtsturm (2 gegen 1): Die Spieler melden sich über die Squad-Seite an (Karte oben), du übernimmst die Anmeldungen in die Zuordnung und trägst die Spieler dann im Spiel ein. Die Stärke entscheidet, wer innerhalb eines Teams welches Gebäude bekommt. Max. 5 Spieler pro Gebäude.</p>
         <div class="formrow">
           <div><label for="csTimeA">Team A – Tag/Uhrzeit</label><input id="csTimeA" type="text" placeholder="z. B. Do 15:00"></div>
@@ -321,18 +332,7 @@
       </div>
 
       <div class="card">
-        <h2>2 · Gemeldete Spieler</h2>
-        <div class="dscount" id="csCount"></div>
-        <div class="toolbar"><input id="csSearch" type="search" placeholder="Spieler suchen…"></div>
-        <div class="chips">
-          <button class="chip" id="csOnlySel">nur Zugeordnete zeigen</button>
-          <button class="chip" id="csClear">alle Zuordnungen löschen</button>
-        </div>
-        <div class="pick" id="csList"></div>
-      </div>
-
-      <div class="card">
-        <h2>3 · Taktik &amp; Einsatzplan</h2>
+        <h2>4 · Plan erstellen &amp; teilen</h2>
         <div class="btnrow"><button class="btn" id="csRun">Taktik erstellen</button><button class="btn2" id="csExample">Beispiel zeigen</button></div>
         <div id="csResult"></div>
         <div class="hide" id="csActions">
@@ -365,6 +365,7 @@
       <div class="card">
         <h2>Beitritt im Spiel offen (<span id="mgOpenCount">0</span>)</h2>
         <p class="small muted" style="margin:0 0 8px">Wer hier einer Gruppe zugewiesen wird, ist im Spiel noch nicht beigetreten. Sobald er drin ist, „✅ beigetreten“ antippen – hier oder direkt in der Gruppe. Ältere Zuweisungen ohne Angabe stehen in den Gruppen als „❔ prüfen“.</p>
+        <p class="small muted" style="margin:0 0 8px">Mentoren und Gruppenleitung können den Beitritt auch selbst bestätigen: auf der Spielerseite unter Profil › Meine Mentorengruppe (nach Anmeldung mit PIN). Das erscheint hier nach „Neu laden“.</p>
         <div id="mgOpen"></div>
         <div class="btnrow"><button class="btn2" id="mgOpenCopy">📋 Erinnerung für den Chat kopieren</button><button class="btn2" id="mgOpenPm">📨 Als Nachricht senden</button></div>
         <div class="note" id="mgOpenMsg"></div>
@@ -571,21 +572,21 @@
   </div>
 </div>
 
-<script src="js/admin-0-sprache.js?v=16"></script>
-<script src="js/klapp.js?v=16"></script>
-<script src="js/admin-1-core.js?v=16"></script>
-<script src="js/admin-2-ansichten.js?v=16"></script>
-<script src="js/admin-3-wuestensturm.js?v=16"></script>
-<script src="js/admin-4-schluchtsturm.js?v=16"></script>
-<script src="js/admin-5-logbuch.js?v=16"></script>
-<script src="js/admin-6-anmeldung.js?v=16"></script>
-<script src="js/admin-7-bonusmalus.js?v=16"></script>
-<script src="js/admin-8-mentoren.js?v=16"></script>
-<script src="js/admin-8b-funk.js?v=16"></script>
-<script src="js/admin-8c-zugaenge.js?v=16"></script>
-<script src="js/admin-8d-marken.js?v=16"></script>
-<script src="js/admin-8e-archiv.js?v=16"></script>
-<script src="js/admin-8f-mitglieder.js?v=16"></script>
-<script src="js/admin-9-start.js?v=16"></script>
+<script src="js/admin-0-sprache.js?v=17"></script>
+<script src="js/klapp.js?v=17"></script>
+<script src="js/admin-1-core.js?v=17"></script>
+<script src="js/admin-2-ansichten.js?v=17"></script>
+<script src="js/admin-3-wuestensturm.js?v=17"></script>
+<script src="js/admin-4-schluchtsturm.js?v=17"></script>
+<script src="js/admin-5-logbuch.js?v=17"></script>
+<script src="js/admin-6-anmeldung.js?v=17"></script>
+<script src="js/admin-7-bonusmalus.js?v=17"></script>
+<script src="js/admin-8-mentoren.js?v=17"></script>
+<script src="js/admin-8b-funk.js?v=17"></script>
+<script src="js/admin-8c-zugaenge.js?v=17"></script>
+<script src="js/admin-8d-marken.js?v=17"></script>
+<script src="js/admin-8e-archiv.js?v=17"></script>
+<script src="js/admin-8f-mitglieder.js?v=17"></script>
+<script src="js/admin-9-start.js?v=17"></script>
 </body>
 </html>

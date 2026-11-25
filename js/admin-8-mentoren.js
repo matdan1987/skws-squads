@@ -26,7 +26,9 @@ function mgState(){
 function mgSave(st){
   MG_CUR = JSON.parse(JSON.stringify(st));
   var n = $('mgNote'); n.textContent = 'Speichere …'; n.className = 'note ok';
-  return rpc('admin_mg_save', { p_pw: PW, p_data: MG_CUR, p_actor: ACTOR || null }).then(function(){
+  return rpc('admin_mg_save', { p_pw: PW, p_data: MG_CUR, p_actor: ACTOR || null }).then(function(r){
+    // Bestätigungen, die Mentoren inzwischen auf der Spielerseite gesetzt haben, übernehmen
+    if (r && r.join) { MG_CUR.join = r.join; if (typeof mgRender === 'function' && !$('tab-mg').classList.contains('hide')) setTimeout(mgRender, 0); }
     MG_DIRTY = false; MG_INFO = { updated: new Date().toISOString(), by: ACTOR || 'Admin' };
     try { ls(MG_KEY, null); } catch(e){}
     n.textContent = 'Gespeichert – für alle R4/R5 sichtbar.'; n.className = 'note ok'; mgInfo();
@@ -187,11 +189,11 @@ function mgMove(st, name, val){
   (val[0] === 't' ? G.mentors : G.members).push(name);
   // Beitritt im Spiel: bei neuer Gruppe offen; Rollenwechsel in derselben Gruppe ändert nichts
   var j = st.join[name];
-  if (!j || j.g !== i) st.join[name] = { g: i, at: new Date().toISOString(), ok: null };
+  if (!j || j.g !== i) st.join[name] = { g: i, at: new Date().toISOString(), ok: null, ts: new Date().toISOString() };
 }
 // Beitrittsstatus: 'ok' (im Spiel beigetreten), 'open' (zugewiesen, noch nicht beigetreten), 'unknown' (älterer Stand ohne Angabe)
 function mgJoin(st, name, i){ var j = st.join && st.join[name]; if (!j || j.g !== i) return { s: 'unknown' }; return j.ok ? { s: 'ok', t: j.ok } : { s: 'open', t: j.at }; }
-function mgSetJoin(st, name, i, ok){ st.join = st.join || {}; var j = st.join[name] || { g: i, at: new Date().toISOString() }; j.g = i; j.ok = ok ? new Date().toISOString() : null; if (!ok) j.at = j.at || new Date().toISOString(); st.join[name] = j; }
+function mgSetJoin(st, name, i, ok){ st.join = st.join || {}; var j = st.join[name] || { g: i, at: new Date().toISOString() }; j.g = i; j.ok = ok ? new Date().toISOString() : null; if (!ok) j.at = j.at || new Date().toISOString(); j.ts = new Date().toISOString(); st.join[name] = j; }
 function mgOpenList(st){ var out = []; st.groups.forEach(function(G, i){ G.mentors.concat(G.members).forEach(function(n){ var j = mgJoin(st, n, i); if (j.s === 'open') out.push({ n: n, g: i, r4: G.r4, t: j.t }); }); });
   return out.sort(function(a, b){ return new Date(a.t) - new Date(b.t); }); }
 function mgJoinChat(list){

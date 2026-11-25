@@ -6,7 +6,7 @@
 <title>SKWS – Skywalkers · Squads</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/index.css?v=16">
+<link rel="stylesheet" href="css/index.css?v=17">
 </head>
 <body>
 <div class="wrap">
@@ -22,6 +22,7 @@
   <div id="app" class="hide">
     <div class="tabs">
       <button id="tabForm" class="on" data-t="form"></button>
+      <button id="tabEvents"></button>
       <button id="tabOverview" data-t="overview"></button>
       <button id="tabProfile"></button>
       <button id="tabFunk"></button>
@@ -53,23 +54,6 @@
       </div>
 
       <div class="card hide" id="weekCard"><div class="sq-h"><b id="weekTitle"></b></div><div id="weekList"></div></div>
-      <div id="evCards"></div>
-      <div id="claimCards"></div>
-      <div class="card hide" id="merCard"><div class="sq-h"><b id="merTitle"></b></div><div id="merList"></div><div class="hint" id="merHint"></div></div>
-
-      <div class="card hide" id="dsCard">
-        <div class="sq-h"><b id="dsTitle"></b><span class="tag req" id="dsTeam"></span></div>
-        <div class="hint" id="dsMeta" style="margin-top:0"></div>
-        <ol id="dsSteps" class="dssteps"></ol>
-        <div class="hint" id="dsWith"></div>
-      </div>
-
-      <div class="card hide" id="csCard">
-        <div class="sq-h"><b id="csTitle"></b><span class="tag req" id="csTeam"></span></div>
-        <div class="hint" id="csMeta" style="margin-top:0"></div>
-        <ol id="csSteps" class="dssteps"></ol>
-        <div class="hint" id="csWith"></div>
-      </div>
 
       <div id="squads"></div>
 
@@ -113,8 +97,31 @@
     </section>
 
     <!-- Übersicht -->
+    <!-- Events: Anmeldung, eigener Einsatz, „Warst du dabei?“ -->
+    <section id="eventsView" class="hide">
+      <div class="hint ev-intro" id="evIntro"></div>
+      <div id="evCards"></div>
+      <div class="card hide" id="dsCard">
+        <div class="sq-h"><b id="dsTitle"></b><span class="tag req" id="dsTeam"></span></div>
+        <div class="hint" id="dsMeta" style="margin-top:0"></div>
+        <ol id="dsSteps" class="dssteps"></ol>
+        <div class="hint" id="dsWith"></div>
+      </div>
+
+      <div class="card hide" id="csCard">
+        <div class="sq-h"><b id="csTitle"></b><span class="tag req" id="csTeam"></span></div>
+        <div class="hint" id="csMeta" style="margin-top:0"></div>
+        <ol id="csSteps" class="dssteps"></ol>
+        <div class="hint" id="csWith"></div>
+      </div>
+
+      <div id="claimCards"></div>
+      <div class="card hide" id="evEmpty"><div class="hint" id="evEmptyTxt" style="margin:0"></div></div>
+    </section>
+
     <section id="profileView" class="hide">
       <div id="profBox"></div>
+      <div class="card hide" id="merCard"><div class="sq-h"><b id="merTitle"></b></div><div id="merList"></div><div class="hint" id="merHint"></div></div>
     </section>
 
     <section id="funkView" class="hide">
@@ -144,11 +151,11 @@
 </div>
 
 <div id="fkModal" class="fk-overlay hide"></div>
-<script src="js/index-texte.js?v=16"></script>
-<script src="js/index-funk-texte.js?v=16"></script>
-<script src="js/index-funk.js?v=16"></script>
-<script src="js/index-neu.js?v=16"></script>
-<script src="js/klapp.js?v=16"></script>
-<script src="js/index.js?v=16"></script>
+<script src="js/index-texte.js?v=17"></script>
+<script src="js/index-funk-texte.js?v=17"></script>
+<script src="js/index-funk.js?v=17"></script>
+<script src="js/index-neu.js?v=17"></script>
+<script src="js/klapp.js?v=17"></script>
+<script src="js/index.js?v=17"></script>
 </body>
 </html>
