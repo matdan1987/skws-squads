@@ -394,6 +394,9 @@
     if (busy) return;
     var r = collect();
     if (r.err) { setMsg(r.err, 'err'); return; }
+    // Heldenkraft wirkt zu klein (z. B. 6,1 statt 106,1 Mio.) → einmal nachfragen
+    var t1p = r.data.squads[0] && r.data.squads[0].power;
+    if (r.data.hero && r.data.hero < 20 && t1p && t1p > 15) { var XH = XTRA_I18N[LANG] || XTRA_I18N.en; if (!confirm(XH.heroLow.replace('{v}', fmtPow(r.data.hero)))) { $('hero').focus(); return; } }
     busy = true; $('save').disabled = true; $('save').textContent = t('saving'); setMsg('');
     var isNew = NEW_MODE;
     var call = isNew
@@ -445,7 +448,7 @@
     rows.forEach(function(r, i){
       var tr = document.createElement('tr');
       var td0 = document.createElement('td'); td0.textContent = r.rank; td0.className = 'typ';
-      var td1 = document.createElement('td'), nm = document.createElement('div'); nm.className = 'ovname'; nm.appendChild(avEl(r.name, 64));
+      var td1 = document.createElement('td'), nm = document.createElement('div'); nm.className = 'ovname'; nm.appendChild(avEl(r.name, 44));
       var col = document.createElement('div'); col.className = 'ovcol'; nm.appendChild(col);
       var ns = document.createElement('span'); ns.className = 'ovn'; ns.textContent = r.name; col.appendChild(ns); td1.appendChild(nm);
       nm.addEventListener('click', (function(x){ return function(){ openProfile(x); }; })(r.name));
@@ -606,7 +609,7 @@
   function badgeCard(n){
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, l = PROF_BADGE[n] || [], c = document.createElement('div'); c.className = 'card';
     function el(tag, cls, txt){ var x = document.createElement(tag); if (cls) x.className = cls; if (txt !== undefined) x.textContent = txt; return x; }
-    var hd = el('div', 'sq-h'); hd.appendChild(el('b', '', '🎖️ ' + X.bTitle)); hd.appendChild(el('span', 'tag', String(l.length))); c.appendChild(hd);
+    var hd = el('div', 'sq-h'); hd.appendChild(el('b', '', '🎖️ ' + X.awards)); hd.appendChild(el('span', 'tag', String(l.length))); c.appendChild(hd);
     plaques(n, c, el, X, l);
     if (!l.length) { c.appendChild(el('div', 'hint', X.bNone)); return c; }
     var cnt = {}; l.forEach(function(b){ var k = b.k === 'x' ? 'x:' + (b.icon || '🎖️') + (b.label || '') : b.k; cnt[k] = cnt[k] || { n:0, b:b }; cnt[k].n++; });

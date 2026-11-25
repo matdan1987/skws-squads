@@ -1,7 +1,7 @@
 /* SKWS Squads – Admin: Funk (Rundnachrichten mit Lesestatus, PINs der Spieler) */
 var FK = null, FK_NAMES = [];
 function fkLoad(){
-  return rpc('admin_funk', { p_pw: PW }).then(function(r){ FK = r && r.pins ? r : null; if (!$('tab-msg').classList.contains('hide')) fkRender(); if (!$('tab-pl').classList.contains('hide')) renderAkte(); })
+  return rpc('admin_funk', { p_pw: PW }).then(function(r){ FK = r && r.pins ? r : null; if (!$('tab-msg').classList.contains('hide') || !$('tab-acc').classList.contains('hide')) fkRender(); if (!$('tab-pl').classList.contains('hide')) renderAkte(); })
     .catch(function(){ FK = null; });
 }
 function fkHasPin(n){ return !!(FK && FK.pins.indexOf(n) >= 0); }
@@ -83,3 +83,5 @@ $('tab-msg').addEventListener('click', function(e){
     rpc('admin_funk', { p_pw: PW, p_action: 'bc_delete', p_data: { id: +d.dataset.fkdel }, p_actor: ACTOR || null }).then(fkLoad); return; }
   var p = e.target.closest('[data-fkpin]'); if (p) fkPinReset(p.dataset.fkpin);
 });
+// PIN-Übersicht steht unter Mitglieder › Zugänge
+$('tab-acc').addEventListener('click', function(e){ var p = e.target.closest('[data-fkpin]'); if (p) fkPinReset(p.dataset.fkpin); });
