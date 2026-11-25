@@ -164,10 +164,17 @@
       var a = document.createElement('a'); a.href = '#'; a.className = 'fk-link'; a.textContent = F.notYou;
       a.addEventListener('click', function(e){ e.preventDefault(); Funk.logout(); }); d.appendChild(a); box.appendChild(d); return;
     }
-    var h = document.createElement('div'); h.className = 'hint'; h.textContent = F.needPin; box.appendChild(h);
+    // nicht angemeldet: erst nur ein Knopf, das PIN-Feld öffnet sich beim Antippen (oder beim Speichern)
+    var X = XTRA_I18N[LANG] || XTRA_I18N.en, h = document.createElement('div'); h.className = 'hint'; h.textContent = X.viewOk; box.appendChild(h);
+    var keep = false; try { keep = !!localStorage.getItem('skws_admin_pw_keep'); } catch(e){}
+    if (keep) { var ah = document.createElement('div'); ah.className = 'hint'; ah.textContent = X.adminPin; box.appendChild(ah); }
     var inner = document.createElement('div'); box.appendChild(inner);
-    Funk.authBox(inner, n, null);
+    if (AUTH_OPEN === n) { Funk.authBox(inner, n, null); return; }
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'ghost auth-open'; b.textContent = X.pinBtn;
+    b.addEventListener('click', function(){ AUTH_OPEN = n; renderAuth(); var i = $('authBox').querySelector('input[type=password]'); if (i) i.focus(); }); inner.appendChild(b);
   }
+  var AUTH_OPEN = null;
+  function openAuth(){ var n = $('name').value; if (!n || authed(n)) return; AUTH_OPEN = n; renderAuth(); $('authBox').scrollIntoView({ behavior:'smooth', block:'center' }); setTimeout(function(){ var i = $('authBox').querySelector('input[type=password]'); if (i) i.focus(); }, 300); }
 
   function renderEv(){
     var box = $('evCards'); box.innerHTML = '';
@@ -392,6 +399,7 @@
 
   function save(){
     if (busy) return;
+    if (!NEW_MODE && $('name').value && !authed($('name').value)) { openAuth(); setMsg(F_().loginFirst, 'err'); return; }
     var r = collect();
     if (r.err) { setMsg(r.err, 'err'); return; }
     // Heldenkraft wirkt zu klein (z. B. 6,1 statt 106,1 Mio.) → einmal nachfragen
