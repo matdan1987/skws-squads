@@ -10,7 +10,7 @@ function mlMatch(p, f){
 }
 function mlInfo(p){
   var d = mlDays(p.name), bits = [];
-  bits.push(d === null ? '<span class="ml-miss">Beitritt fehlt</span>' : 'seit ' + d + ' Tagen in der Allianz');
+  bits.push(d === null ? '<span class="ml-miss">Beitrittsdatum fehlt</span>' : 'seit ' + d + ' Tagen in der Allianz');
   bits.push(p.entry ? (p.stale ? '<span class="ml-miss">Meldung vor ' + Math.floor((Date.now() - p.updated) / DAY) + ' Tagen</span>' : 'Meldung aktuell') : '<span class="ml-miss">keine Meldung</span>');
   if (typeof FK !== 'undefined' && FK) bits.push(fkHasPin(p.name) ? '🔑 PIN' : '<span class="muted">ohne PIN</span>');
   return bits.join(' · ');
@@ -21,7 +21,7 @@ function mlRender(){
   var list = D.players.filter(function(p){ return (!q || p.name.toLowerCase().indexOf(q) >= 0) && mlMatch(p, f); });
   $('mlCount').textContent = D.players.length;
   var noaj = D.players.filter(function(p){ return !ajOf(p.name); }).length;
-  $('mlSum').textContent = EX ? (noaj ? noaj + ' ohne Allianzbeitritt' : 'Allianzbeitritt bei allen eingetragen') : 'Allianzbeitritt lädt …';
+  $('mlSum').textContent = EX ? (noaj ? noaj + ' Spieler ohne Beitrittsdatum (seit wann in der Allianz)' : 'Beitrittsdatum bei allen eingetragen') : 'Beitrittsdaten laden …';
   $('mlHits').textContent = list.length !== D.players.length ? list.length + ' Treffer' : '';
   b.classList.toggle('ml-quickon', quick);
   b.innerHTML = RANKS.map(function(r){
@@ -29,7 +29,7 @@ function mlRender(){
     if (!l.length) return '';
     var miss = all.filter(function(p){ return !ajOf(p.name); }).length;
     return '<details class="aj-grp" data-mlr="' + r + '"' + (q || f !== 'all' || ML_OPEN[r] ? ' open' : '') + '><summary>' + r + ' <span class="muted">' + all.length + ' Spieler</span>' +
-      (EX ? (miss ? '<span class="aj-miss">' + miss + ' ohne Beitritt</span>' : '<span class="aj-full">✓ Beitritt vollständig</span>') : '') + '</summary>' +
+      (EX ? (miss ? '<span class="aj-miss">' + miss + ' ohne Beitrittsdatum</span>' : '<span class="aj-full">✓ Beitrittsdaten vollständig</span>') : '') + '</summary>' +
       l.map(function(p){
         if (quick) return '<div class="mgrow ml-q"><span class="nm"><a href="#" data-mlopen="' + esc(p.name) + '">' + av(p.name, 28) + esc(p.name) + '</a></span>' + rankSelect(p) + (EX ? ajInputs(p.name) : '') + '</div>';
         return '<div class="mlrow" data-mlopen="' + esc(p.name) + '">' + av(p.name, 36) + '<div class="ml-tx"><b>' + esc(p.name) + '</b>' + mgBadge(p.name) + '<div class="small muted">' + mlInfo(p) + '</div></div><span class="ml-go">›</span></div>';
@@ -40,10 +40,10 @@ function mlRender(){
 function mlCounts(el){
   if (!$('mlSum')) return;
   var noaj = D.players.filter(function(p){ return !ajOf(p.name); }).length;
-  $('mlSum').textContent = noaj ? noaj + ' ohne Allianzbeitritt' : 'Allianzbeitritt bei allen eingetragen';
+  $('mlSum').textContent = noaj ? noaj + ' Spieler ohne Beitrittsdatum (seit wann in der Allianz)' : 'Beitrittsdatum bei allen eingetragen';
   var g = el && el.closest('.aj-grp'); if (!g) return;
   var r = g.dataset.mlr, miss = D.players.filter(function(p){ return p.rank === r && !ajOf(p.name); }).length, sp = g.querySelector('summary .aj-miss, summary .aj-full');
-  if (sp) { sp.className = miss ? 'aj-miss' : 'aj-full'; sp.textContent = miss ? miss + ' ohne Beitritt' : '✓ Beitritt vollständig'; }
+  if (sp) { sp.className = miss ? 'aj-miss' : 'aj-full'; sp.textContent = miss ? miss + ' ohne Beitrittsdatum' : '✓ Beitrittsdaten vollständig'; }
 }
 // Stammdaten-Karte oben in der Spielerakte: alles, was man an einem Spieler ändern kann
 function stammHtml(p){
