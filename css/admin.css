@@ -330,3 +330,5 @@ textarea.arc-rem{min-height:0;height:auto}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .toast.ok{border-color:rgba(80,200,140,.6)} .toast.err{border-color:rgba(255,92,122,.7)}
 .av-up{cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.pl-hits .mlrow:first-child{border-top:0}
+.pl-hits{margin-top:4px}
