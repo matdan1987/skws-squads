@@ -7,13 +7,15 @@ function evDl(r){ return r && r.deadline ? new Date(r.deadline) : null; }
 function evIsOpen(r){ var d = evDl(r); return !!(r && r.open && (!d || Date.now() <= +d)); }
 function evKW(){ var d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7); var w1 = new Date(d.getFullYear(), 0, 4); return 1 + Math.round(((d - w1) / 86400000 - 3 + (w1.getDay() + 6) % 7) / 7); }
 function evLocalInput(d){ var p = function(n){ return String(n).padStart(2, '0'); }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes()); }
+// übliche Startzeiten laut Spiel (Lokale Zeit), solange noch nichts gespeichert ist
+var EV_TIME_DEF = { ds: { A: 'Fr 21:00', B: 'Fr 12:00' }, cs: { A: 'Do 15:00', B: 'Do 15:00' } };
 // zuletzt verwendete Uhrzeit je Team: neueste aus Anmelderunden und veröffentlichtem Plan (zentral gespeichert), sonst die vom Gerät
 function evLastTime(kind, t){
   var best = '', at = 0, k = 'time_' + t.toLowerCase(), pub = kind === 'ds' ? (typeof DS_PUB !== 'undefined' && DS_PUB) : (typeof CS_PUB !== 'undefined' && CS_PUB);
   EV.forEach(function(r){ var d = +new Date(r.created_at || 0); if (r.kind === kind && r[k] && d > at) { at = d; best = r[k]; } });
   if (pub && pub.at && pub.teams && pub.teams[t] && pub.teams[t].time && +new Date(pub.at) > at) { at = +new Date(pub.at); best = pub.teams[t].time; }
   if (!best) { var st = kind === 'ds' ? dsState() : csState(); best = (st.time && st.time[t]) || ''; }
-  return best;
+  return best || (EV_TIME_DEF[kind] || {})[t] || '';
 }
 function evCfg(kind){ var c = EVCFG[kind] || {}; return { fixed: (c.fixed || []).slice(), rot: c.rot !== false }; }
 // Letzte 4 abgeschlossene Runden: wie oft Stamm gespielt, wie oft angemeldet aber nicht Stamm (pausiert)
@@ -94,8 +96,8 @@ function evRender(kind){
   var nd = new Date(); nd.setDate(nd.getDate() + ((4 - nd.getDay() + 7) % 7 || 7)); nd.setHours(20, 0, 0, 0);
   var form = '<div class="formrow" style="margin-top:8px"><div><label>Bezeichnung</label><input id="evLabel_' + K + '" type="text" maxlength="40" value="KW ' + evKW() + '"></div>' +
     '<div><label>Anmeldeschluss</label><input id="evDl_' + K + '" type="datetime-local" value="' + evLocalInput(nd) + '"></div>' +
-    '<div><label>Team A – Uhrzeit</label><input id="evTa_' + K + '" type="text" maxlength="30" value="' + esc(evLastTime(kind, 'A')) + '" placeholder="z. B. Fr 14:00"></div>' +
-    '<div><label>Team B – Uhrzeit</label><input id="evTb_' + K + '" type="text" maxlength="30" value="' + esc(evLastTime(kind, 'B')) + '" placeholder="z. B. Fr 21:00"></div></div>' +
+    '<div><label>Team A – Uhrzeit</label><input id="evTa_' + K + '" type="text" maxlength="30" value="' + esc(evLastTime(kind, 'A')) + '" placeholder="z. B. Fr 21:00"></div>' +
+    '<div><label>Team B – Uhrzeit</label><input id="evTb_' + K + '" type="text" maxlength="30" value="' + esc(evLastTime(kind, 'B')) + '" placeholder="z. B. Fr 12:00"></div></div>' +
     '<p class="small muted" style="margin:0 0 6px">Vorgeschlagen ist die zuletzt verwendete Uhrzeit je Team – nur ändern, wenn es diesmal anders ist. Die Uhrzeiten sehen die Spieler bei der Auswahl.' + (r ? ' Eine neue Runde schließt die bisherige (' + esc(r.label) + ').' : '') + '</p>' +
     '<div class="btnrow"><button class="btn" data-ev="create" data-kind="' + K + '">Anmelderunde starten</button></div>';
   var stale = r && !evIsOpen(r) && Date.now() - new Date(r.created_at || 0) > 5 * 86400000;   // letzte Runde vorbei → Start-Formular gleich offen

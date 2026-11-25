@@ -75,7 +75,7 @@ function csRun(example){
     st = JSON.parse(JSON.stringify(csState())); var mm = st.metric;
     var list = D.players.filter(function(p){ return p.active && p.entry; }).sort(function(a,b){ return dsMetricVal(b,mm) - dsMetricVal(a,mm); });
     st.assign = {}; list.forEach(function(p, i){ var v = i < 40 ? (i % 2 ? 'BS' : 'AS') : i < 50 ? (i % 2 ? 'BE' : 'AE') : ''; if (v) st.assign[p.name] = v; });
-    st.time = { A: st.time.A || 'Do 15:00', B: st.time.B || 'Do 21:00' };
+    st.time = { A: st.time.A || 'Do 15:00', B: st.time.B || 'Do 15:00' };
   }
   var moved = [];
   if (example !== true) { var st0 = csState(); moved = evFill('cs', st0.assign, st0.metric); if (moved.length) { csSave(st0); csRenderList(); } }
