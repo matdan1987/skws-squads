@@ -11,6 +11,15 @@ function ajSave(n, date, cb){
     .then(function(){ if (EX) { if (date) EX.ajoin[n] = date; else delete EX.ajoin[n]; } if (cb) cb(true); })
     .catch(function(){ if (cb) cb(false); });
 }
+// Im Spiel steht nur „seit X Tagen in der Allianz“ → Tage eingeben, Datum wird daraus berechnet
+function ajYmd(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function ajFromDays(n){ var d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - n); return ajYmd(d); }
+function ajDays(date){ if (!date) return ''; var a = new Date(date + 'T12:00:00'), t = new Date(); t.setHours(12, 0, 0, 0); return String(Math.max(0, Math.round((t - a) / 86400000))); }
+function ajInputs(n){
+  var v = ajOf(n);
+  return '<span class="aj-in"><label class="aj-days">seit <input type="number" inputmode="numeric" min="0" max="5000" placeholder="?" data-ajdays="' + esc(n) + '" value="' + ajDays(v) + '"' + (EX ? '' : ' disabled') + '> Tagen</label>' +
+    '<input type="date" class="ajd" data-aj="' + esc(n) + '" value="' + v + '"' + (EX ? '' : ' disabled') + ' title="oder genaues Datum"></span>';
+}
 function ajRender(){
   var b = $('ajList'); if (!b) return;
   if (!EX) { b.innerHTML = '<div class="empty">Lädt … (oder die Datenbank-Erweiterung „archiv_notizen“ fehlt noch)</div>'; return; }
@@ -18,7 +27,7 @@ function ajRender(){
   var list = D.players.filter(function(p){ return (!q || p.name.toLowerCase().indexOf(q) >= 0) && (!only || !ajOf(p.name)); });
   $('ajCount').textContent = D.players.filter(function(p){ return ajOf(p.name); }).length + ' von ' + D.players.length + ' nachgetragen';
   b.innerHTML = list.map(function(p){ return '<div class="mgrow"><span class="nm">' + av(p.name, 28) + esc(p.name) + ' <span class="v">' + p.rank + (p.joinedAt ? ' · hier seit ' + fmtDate(p.joinedAt) : '') + '</span></span>' +
-    '<input type="date" class="ajd" data-aj="' + esc(p.name) + '" value="' + ajOf(p.name) + '"></div>'; }).join('') || '<div class="empty">Keine Treffer.</div>';
+    ajInputs(p.name) + '</div>'; }).join('') || '<div class="empty">Keine Treffer.</div>';
 }
 // ---------- Notizen in der Spieler-Akte ----------
 function notesHtml(n){
@@ -32,7 +41,7 @@ function notesHtml(n){
     '<div class="btnrow" style="margin-top:6px"><select id="noteVis"><option value="lead">🔒 nur R4/R5</option><option value="mentor">🎓 auch Mentoren der Gruppe</option></select><button class="btn2" data-noteadd="' + esc(n) + '">Notiz speichern</button></div></div>';
 }
 function ajAkteHtml(p){
-  return '<div class="aj-akte"><label>Allianzbeitritt <input type="date" class="ajd" data-aj="' + esc(p.name) + '" value="' + ajOf(p.name) + '"' + (EX ? '' : ' disabled') + '></label>' +
+  return '<div class="aj-akte"><span>Allianzbeitritt</span>' + ajInputs(p.name) +
     '<span class="small muted">auf dieser Seite seit ' + (p.joinedAt ? fmtDate(p.joinedAt) : '–') + '</span></div>';
 }
 // ---------- Event-Archiv ----------
@@ -74,9 +83,13 @@ function arcPlanMeta(kind){
 }
 // ---------- Ereignisse ----------
 document.addEventListener('change', function(e){
-  var d = e.target.closest('input[data-aj]'); if (!d) return;
-  var n = d.dataset.aj; d.disabled = true;
-  ajSave(n, d.value, function(ok){ d.disabled = false; d.style.borderColor = ok ? 'var(--ok)' : 'var(--err)'; setTimeout(function(){ d.style.borderColor = ''; }, 1500); });
+  var t = e.target.closest('input[data-aj], input[data-ajdays]'); if (!t) return;
+  var box = t.closest('.aj-in'), dd = box.querySelector('[data-aj]'), dn = box.querySelector('[data-ajdays]'), n = dd.dataset.aj;
+  if (t === dn) { var x = dn.value.trim(); if (x !== '' && !/^\d+$/.test(x)) { dn.style.borderColor = 'var(--err)'; return; } dd.value = x === '' ? '' : ajFromDays(+x); }
+  else dn.value = ajDays(dd.value);
+  dd.disabled = dn.disabled = true;
+  ajSave(n, dd.value, function(ok){ dd.disabled = dn.disabled = false; [dd, dn].forEach(function(i){ i.style.borderColor = ok ? 'var(--ok)' : 'var(--err)'; }); setTimeout(function(){ dd.style.borderColor = dn.style.borderColor = ''; }, 1500);
+    if (ok) $('ajCount').textContent = D.players.filter(function(p){ return ajOf(p.name); }).length + ' von ' + D.players.length + ' nachgetragen'; });
 });
 $('plAkte').addEventListener('change', function(e){
   var s = e.target.closest('[data-notevis]'); if (!s) return;
