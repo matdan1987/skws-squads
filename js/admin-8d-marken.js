@@ -65,3 +65,43 @@ $('tab-bdg').addEventListener('click', function(e){
     rpc('admin_badge', { p_pw: PW, p_action: 'delete', p_data: { id: +t.dataset.bdgdel1 }, p_actor: ACTOR || null }).then(bdgLoad); return; }
   if ((t = e.target.closest('[data-bdgname]'))) { curPlayer = t.dataset.bdgname; $('plSelect').value = curPlayer; showTab('pl'); window.scrollTo(0, 0); }
 });
+/* ---------- Selbstmeldung „Ich war dabei“ und Saison-Plaketten ---------- */
+var CLM = null, CLM_ICON = '🧟';
+function clmLoad(){
+  return rpc('admin_claim', { p_pw: PW, p_action: 'list' }).then(function(r){ CLM = r; clmRender(); }).catch(function(){ CLM = null; clmRender(); });
+}
+function clmRender(){
+  $('clmIcons').innerHTML = BDG_ICONS.map(function(i){ return '<button class="bdg-pick' + (i === CLM_ICON ? ' on' : '') + '" data-clmicon="' + i + '">' + i + '</button>'; }).join('');
+  if (!CLM) { $('clmList').innerHTML = '<div class="empty">Lädt … (oder die Datenbank-Erweiterung „plaketten“ fehlt noch)</div>'; $('seaList').innerHTML = ''; return; }
+  $('clmList').innerHTML = CLM.events.length ? CLM.events.map(function(e){
+    var pend = e.claims.filter(function(c){ return c.status === 'pending'; }), ok = e.claims.filter(function(c){ return c.status === 'ok'; }), no = e.claims.filter(function(c){ return c.status === 'no'; });
+    return '<div class="clm-ev"><div class="bdg-row" style="border:0"><div class="bdg-ic x">' + esc(e.icon || '🎖️') + '</div><div class="bdg-tx"><b>' + esc(e.label) + '</b><div class="small muted">' + fmtDate(new Date(e.t)) + ' · ' + (e.open ? '<span class="up">Meldung offen</span>' : 'geschlossen') +
+      ' · ' + ok.length + ' bestätigt' + (pend.length ? ' · <span class="warn">' + pend.length + ' offen</span>' : '') + (no.length ? ' · ' + no.length + ' abgelehnt' : '') + '</div></div>' +
+      '<button class="mini" data-clmtoggle="' + e.id + '" data-open="' + (e.open ? 1 : 0) + '">' + (e.open ? 'Schließen' : 'Öffnen') + '</button><button class="mini danger" data-clmdel="' + e.id + '">Löschen</button></div>' +
+      (pend.length ? '<div class="clm-pend">' + pend.map(function(c){ return '<label class="chip" style="display:inline-flex;align-items:center;gap:6px;margin:2px"><input type="checkbox" data-clmn="' + esc(c.name) + '" data-ev="' + e.id + '" checked style="width:16px;height:16px">' + av(c.name, 22) + esc(c.name) + '</label>'; }).join('') +
+        '<div class="btnrow" style="margin-top:6px"><button class="btn2" data-clmok="' + e.id + '">✅ Angehakte bestätigen</button><button class="btn2" data-clmno="' + e.id + '">✖ Angehakte ablehnen</button></div></div>' : '') +
+      (ok.length || no.length ? '<details><summary class="small">Entschiedene anzeigen</summary><div class="small" style="margin-top:4px">' + ok.map(function(c){ return '✅ ' + esc(c.name) + ' <a class="muted" data-clmre="' + esc(c.name) + '" data-ev="' + e.id + '" data-st="no" title="doch ablehnen">✕</a>'; }).concat(no.map(function(c){ return '✖ ' + esc(c.name) + ' <a class="muted" data-clmre="' + esc(c.name) + '" data-ev="' + e.id + '" data-st="ok" title="doch bestätigen">✓</a>'; })).join(' · ') + '</div></details>' : '') + '</div>';
+  }).join('') : '<div class="empty">Noch keine Selbstmelde-Events.</div>';
+  $('seaList').innerHTML = CLM.seasons.length ? CLM.seasons.map(function(s){ return '<div class="bdg-row"><div class="bdg-ic x">' + esc(s.icon || '🎄') + '</div><div class="bdg-tx"><b>' + esc(s.label) + '</b><div class="small muted">' + fmtDate(new Date(s.from)) + ' – ' + fmtDate(new Date(s.to)) + '</div></div><button class="mini danger" data-seadel="' + s.id + '">Löschen</button></div>'; }).join('')
+    : '<div class="empty">Noch keine Saison-Plaketten. Beispiel: „Weihnachten 2026“ vom 20.12. bis 31.12.</div>';
+}
+function clmAct(action, data, msg){
+  return rpc('admin_claim', { p_pw: PW, p_action: action, p_data: data, p_actor: ACTOR || null }).then(function(){ if (msg) { $('clmMsg').textContent = msg; $('clmMsg').className = 'msg ok'; } return clmLoad(); })
+    .catch(function(e){ $('clmMsg').textContent = 'Fehler: ' + e.message; $('clmMsg').className = 'msg err'; });
+}
+$('clmCreate').addEventListener('click', function(){ var l = $('clmLabel').value.trim(); if (!l) { $('clmMsg').textContent = 'Bitte eine Bezeichnung eingeben.'; $('clmMsg').className = 'msg err'; return; }
+  clmAct('create', { label: l, icon: CLM_ICON }, 'Angelegt – die Spieler sehen „Warst du dabei?“ auf der Eintragen-Seite, sobald sie mit PIN angemeldet sind.').then(function(){ $('clmLabel').value = ''; }); });
+$('seaAdd').addEventListener('click', function(){ var l = $('seaLabel').value.trim(), f = $('seaFrom').value, t = $('seaTo').value;
+  if (!l || !f || !t || t < f) { $('seaMsg').textContent = 'Bitte Bezeichnung und gültigen Zeitraum angeben.'; $('seaMsg').className = 'msg err'; return; }
+  rpc('admin_claim', { p_pw: PW, p_action: 'season_add', p_data: { label: l, icon: $('seaIcon').value || '🎄', from: f, to: t }, p_actor: ACTOR || null }).then(function(){ $('seaLabel').value = ''; $('seaMsg').textContent = 'Gespeichert. Alle, die im Zeitraum Mitglied waren, bekommen die Plakette, sobald er begonnen hat.'; $('seaMsg').className = 'msg ok'; return clmLoad(); })
+    .catch(function(e){ $('seaMsg').textContent = 'Fehler: ' + e.message; $('seaMsg').className = 'msg err'; }); });
+$('tab-bdg').addEventListener('click', function(e){
+  var t;
+  if ((t = e.target.closest('[data-clmicon]'))) { CLM_ICON = t.dataset.clmicon; clmRender(); return; }
+  if ((t = e.target.closest('[data-clmok], [data-clmno]'))) { var id = +(t.dataset.clmok || t.dataset.clmno), names = Array.prototype.map.call(document.querySelectorAll('input[data-clmn][data-ev="' + id + '"]:checked'), function(x){ return x.dataset.clmn; });
+    if (!names.length) return; clmAct('decide', { id: id, names: names, status: t.dataset.clmok ? 'ok' : 'no' }, names.length + ' Spieler ' + (t.dataset.clmok ? 'bestätigt – die Marke steht jetzt in ihrem Profil.' : 'abgelehnt.')); return; }
+  if ((t = e.target.closest('[data-clmre]'))) { clmAct('decide', { id: +t.dataset.ev, names: [t.dataset.clmre], status: t.dataset.st }); return; }
+  if ((t = e.target.closest('[data-clmtoggle]'))) { clmAct(t.dataset.open === '1' ? 'close' : 'reopen', { id: +t.dataset.clmtoggle }); return; }
+  if ((t = e.target.closest('[data-clmdel]'))) { if (confirm('Selbstmelde-Event löschen? Die bestätigten Marken verschwinden auch.')) clmAct('delete', { id: +t.dataset.clmdel }); return; }
+  if ((t = e.target.closest('[data-seadel]'))) { if (confirm('Saison-Plakette löschen?')) clmAct('season_del', { id: +t.dataset.seadel }); }
+});

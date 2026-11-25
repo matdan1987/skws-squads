@@ -236,3 +236,16 @@
   .hdr-admin{text-decoration:none;font-size:18px;padding:8px 10px;border-radius:10px;border:1px solid rgba(92,200,255,.45);background:var(--bg2);flex:none}
   header .hdr-admin + select{margin-left:0}
   .notes-card{border-color:rgba(245,185,66,.4)}
+  /* ---------- Plaketten, Selbstmeldung ---------- */
+  .plq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:6px 0 10px}
+  .plq{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:8px}
+  .plq i{font-style:normal;font-size:26px;width:40px;height:40px;display:grid;place-items:center;border-radius:50%;flex:none;background:radial-gradient(circle,#2a3a5c,#141d33)}
+  .plq b{display:block;font-size:12.5px;line-height:1.2} .plq small{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+  .plq.py i{background:radial-gradient(circle,#9cc7f0,#3d6fb0)} .plq.ps i{background:radial-gradient(circle,#ffd6e0,#b8475f)} .plq.pl i{background:radial-gradient(circle,#ffe08a,#c08a1e)}
+  .plq.pt0 i{background:radial-gradient(circle,#e0a070,#8a5228)} .plq.pt1 i{background:radial-gradient(circle,#f0f0f0,#8d97a8)} .plq.pt2 i{background:radial-gradient(circle,#ffe58a,#c79a12)} .plq.pt3 i{background:radial-gradient(circle,#c9f3ff,#3fb4d8);box-shadow:0 0 12px rgba(92,200,255,.5)}
+  .plq.pf i{background:radial-gradient(circle,#ffb070,#d0452b)} .plq.pn{opacity:.7}
+  .claim-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+  .claim-row:first-of-type{border-top:0}
+  .claim-row i{font-style:normal;font-size:24px} .claim-row b{flex:1;min-width:0}
+  .claim-btn{width:auto!important;padding:9px 12px!important;font-size:14px!important}
+  .claim-st{font-size:12px;color:var(--muted)} .claim-st.ok{color:var(--ok)} .claim-st.no{color:var(--err)} .claim-st.pending{color:#f5b942}
