@@ -6,7 +6,7 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=7">
+<link rel="stylesheet" href="css/admin.css?v=8">
 </head>
 <body>
 <div class="wrap">
@@ -324,14 +324,6 @@
     <section id="tab-mg" class="hide">
       <div class="tiles" id="mgTiles"></div>
       <div class="card">
-        <h2>Mentorengruppen</h2>
-        <p class="small muted" style="margin:0 0 4px">Rolle oder Gruppe über das Auswahlfeld neben dem Namen ändern. Jede Änderung wird sofort zentral gespeichert und ist für alle R4/R5 sichtbar. Ø T1 zählt nur Spieler mit Meldung.</p>
-        <p class="small muted" id="mgInfo" style="margin:0 0 10px"></p>
-        <div class="mggrid" id="mgGroups"></div>
-        <div class="btnrow"><button class="btn hide" id="mgSaveAll">Für alle speichern</button><button class="btn2" id="mgCopy">Übersicht für den Chat kopieren</button><button class="btn2" id="mgReset">Auf Ausgangsliste zurücksetzen</button></div>
-        <div class="note" id="mgNote"></div>
-      </div>
-      <div class="card">
         <h2>Ohne Gruppe – Empfehlung (<span id="mgFreeCount">0</span>)</h2>
         <div class="formrow" style="grid-template-columns:1fr">
           <div><label for="mgThr">Intensivgruppe, wenn T1 unter (Mio.)</label><input id="mgThr" type="number" step="0.5" min="0" max="200"></div>
@@ -341,6 +333,14 @@
         <div class="btnrow"><button class="btn" id="mgApplyAll">Alle Empfehlungen übernehmen</button></div>
         <div id="mgLead" class="small muted" style="margin-top:10px"></div>
         <div id="mgMissing" class="small" style="margin-top:6px;color:var(--warn)"></div>
+      </div>
+      <div class="card">
+        <h2>Mentorengruppen</h2>
+        <p class="small muted" style="margin:0 0 4px">Rolle oder Gruppe über das Auswahlfeld neben dem Namen ändern. Jede Änderung wird sofort zentral gespeichert und ist für alle R4/R5 sichtbar. Ø T1 zählt nur Spieler mit Meldung.</p>
+        <p class="small muted" id="mgInfo" style="margin:0 0 10px"></p>
+        <div class="mggrid" id="mgGroups"></div>
+        <div class="btnrow"><button class="btn hide" id="mgSaveAll">Für alle speichern</button><button class="btn2" id="mgCopy">Übersicht für den Chat kopieren</button><button class="btn2" id="mgReset">Auf Ausgangsliste zurücksetzen</button></div>
+        <div class="note" id="mgNote"></div>
       </div>
       <div class="card">
         <h2>Mentor-Vorschläge</h2>
@@ -516,18 +516,18 @@
   </div>
 </div>
 
-<script src="js/admin-0-sprache.js?v=7"></script>
-<script src="js/admin-1-core.js?v=7"></script>
-<script src="js/admin-2-ansichten.js?v=7"></script>
-<script src="js/admin-3-wuestensturm.js?v=7"></script>
-<script src="js/admin-4-schluchtsturm.js?v=7"></script>
-<script src="js/admin-5-logbuch.js?v=7"></script>
-<script src="js/admin-6-anmeldung.js?v=7"></script>
-<script src="js/admin-7-bonusmalus.js?v=7"></script>
-<script src="js/admin-8-mentoren.js?v=7"></script>
-<script src="js/admin-8b-funk.js?v=7"></script>
-<script src="js/admin-8c-zugaenge.js?v=7"></script>
-<script src="js/admin-8d-marken.js?v=7"></script>
-<script src="js/admin-9-start.js?v=7"></script>
+<script src="js/admin-0-sprache.js?v=8"></script>
+<script src="js/admin-1-core.js?v=8"></script>
+<script src="js/admin-2-ansichten.js?v=8"></script>
+<script src="js/admin-3-wuestensturm.js?v=8"></script>
+<script src="js/admin-4-schluchtsturm.js?v=8"></script>
+<script src="js/admin-5-logbuch.js?v=8"></script>
+<script src="js/admin-6-anmeldung.js?v=8"></script>
+<script src="js/admin-7-bonusmalus.js?v=8"></script>
+<script src="js/admin-8-mentoren.js?v=8"></script>
+<script src="js/admin-8b-funk.js?v=8"></script>
+<script src="js/admin-8c-zugaenge.js?v=8"></script>
+<script src="js/admin-8d-marken.js?v=8"></script>
+<script src="js/admin-9-start.js?v=8"></script>
 </body>
 </html>

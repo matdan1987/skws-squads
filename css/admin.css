@@ -255,3 +255,5 @@ header h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bdg-pick.on{border-color:var(--accent);box-shadow:0 0 10px rgba(92,200,255,.4)}
 #bdgTable td.n,#bdgTable th.n{text-align:right}
 .warn{color:var(--warn)}
+.mgadd{margin-top:8px} .mgadd select{width:100%;border-style:dashed;color:var(--accent)}
+#mgFree .mgrow select{max-width:150px}
