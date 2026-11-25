@@ -790,6 +790,8 @@
     var hn = el('div'); hn.appendChild(el('b', '', n));
     var sub = []; if (s.jd || s.fe) sub.push(T.since.replace('{d}', fmtD(s.jd || s.fe))); if (s.role) sub.push(T.role[s.role]);
     hn.appendChild(el('div', 'hint', sub.join(' · '))); h.appendChild(hn); c.appendChild(h);
+    // „Avatar ändern“ direkt unter Bild und Name
+    if (own) { var avu = avUploader(n, AT); avu.classList.add('av-under'); c.appendChild(avu); }
     var lv = el('div', 'lvl');
     function lvlBox(title, icon, count, idx, th, names, col){
       var d = el('div'); d.appendChild(el('div', 'hint', title)); var big = el('div', 'big'); big.appendChild(el('span', '', icon + ' ' + count)); d.appendChild(big);
@@ -802,7 +804,6 @@
     lv.appendChild(lvlBox(T.beeLevel, '🐝', s.b || 0, lvlB, BEE_T, T.beeL, '#f5c518'));
     var dv = lvlBox(T.devilLevel, '😈', s.d90 || 0, lvlD, DEV_T, T.devL, '#ff6b6b'); if (!lvlD) dv.lastChild.textContent = '😇';
     lv.appendChild(dv); c.appendChild(lv);
-    if (own) c.appendChild(avUploader(n, AT));
     // Fremdes Profil: direkt eine Nachricht schreiben (ohne Anmeldung führt der Knopf zur PIN-Anmeldung)
     if (!own && DATA.members.indexOf(n) >= 0) {
       var pmr = el('div', 'btnrow prof-pm'), pmb = el('button', 'btn', (FUNK_I18N[LANG] || FUNK_I18N.en).newMsg); pmb.type = 'button';

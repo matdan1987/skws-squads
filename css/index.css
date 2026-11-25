@@ -301,3 +301,6 @@
 .tabs button .fk-badge{margin-left:4px}
 @media (max-width:420px){ .tabs{padding:3px;gap:2px} .tabs button{font-size:13.5px;padding:9px 1px} .tabs button .fk-badge{margin-left:2px} }
 .prof-pm{margin-top:12px}.prof-pm .btn{width:100%}
+.av-under{display:flex;flex-direction:column;align-items:center;text-align:center;margin:-4px 0 12px}
+.av-under > div{width:100%;text-align:left}
+.av-under.avup{border-top:0;padding-top:0;margin-top:8px}
