@@ -114,6 +114,18 @@ function evDo(kind, action, data, okText){
     .then(function(){ return load(PW, true).then(function(){ showTab(kind); evNote(kind, okText, true); }); })
     .catch(function(err){ var m = String(err && err.message); evNote(kind, m.indexOf('ERR_AUTH') >= 0 ? 'Nicht angemeldet – bitte neu anmelden.' : 'Fehler – ist die Datenbank-Erweiterung „event-anmeldung“ schon eingespielt?', false); });
 }
+// Ist ein Team im Stamm nicht voll (unter 20), rücken Ersatzspieler dieses Teams nach – die Stärksten zuerst.
+// Ausgenommen: Spieler mit Malus „nur Ersatz“. Gibt die Namen der Nachgerückten zurück (ändert assign direkt).
+function evFill(kind, assign, metric){
+  var by = {}, out = []; D.players.forEach(function(p){ by[p.name] = p; });
+  ['A','B'].forEach(function(t){
+    var s = Object.keys(assign).filter(function(n){ return assign[n] === t + 'S' && by[n] && by[n].active; }).length;
+    Object.keys(assign).filter(function(n){ return assign[n] === t + 'E' && by[n] && by[n].active && !merEff(n, kind).sub; })
+      .sort(function(a, b){ return dsMetricVal(by[b], metric) - dsMetricVal(by[a], metric) || a.localeCompare(b); })
+      .forEach(function(n){ if (s < 20) { assign[n] = t + 'S'; s++; out.push(n); } });
+  });
+  return out;
+}
 // Anmeldungen -> Stamm/Ersatz je Team. Feste Wünsche (nur A / nur B) zuerst, dann die Flexiblen dorthin, wo weniger sind.
 function evTake(kind){
   var r = evCur(kind); if (!r) return;
@@ -138,13 +150,15 @@ function evTake(kind){
   });
   act.filter(function(p){ return by[p.name] === 'subA'; }).forEach(function(p){ put(p, 'A', 'E'); });
   act.filter(function(p){ return by[p.name] === 'subB'; }).forEach(function(p){ put(p, 'B', 'E'); });
-  act.filter(function(p){ return by[p.name] === 'sub'; }).forEach(function(p){ put(p, n.AE <= n.BE ? 'A' : 'B', 'E'); });
+  // flexible Ersatzspieler dorthin, wo insgesamt weniger sind – dort rücken sie eher in den Stamm nach
+  act.filter(function(p){ return by[p.name] === 'sub'; }).forEach(function(p){ put(p, (n.AS + n.AE) <= (n.BS + n.BE) ? 'A' : 'B', 'E'); });
+  var moved = evFill(kind, asg, m); moved.forEach(function(nm){ var t = asg[nm][0]; n[t + 'E']--; n[t + 'S']++; });
   var msg = 'Zuordnung aus den Anmeldungen übernehmen?\n\nTeam A: ' + n.AS + ' Stamm, ' + n.AE + ' Ersatz\nTeam B: ' + n.BS + ' Stamm, ' + n.BE + ' Ersatz' +
-    (blocked.length ? '\n\nGesperrt (nicht eingeteilt): ' + blocked.join(', ') : '') + (forced.length ? '\nMalus „nur Ersatz“: ' + forced.join(', ') : '') + '\n\nDie bisherige Zuordnung wird ersetzt.';
+    (moved.length ? '\n\nErsatz rückt in den Stamm nach (Team sonst nicht voll): ' + moved.join(', ') : '') + (blocked.length ? '\n\nGesperrt (nicht eingeteilt): ' + blocked.join(', ') : '') + (forced.length ? '\nMalus „nur Ersatz“: ' + forced.join(', ') : '') + '\n\nDie bisherige Zuordnung wird ersetzt.';
   if (!confirm(msg)) return;
   st.assign = asg; if (r.time_a) st.time.A = r.time_a; if (r.time_b) st.time.B = r.time_b;
   if (kind === 'ds') { dsSave(st); dsRender(); } else { csSave(st); csRender(); }
-  evNote(kind, 'Übernommen: A ' + n.AS + ' + ' + n.AE + ' Ersatz, B ' + n.BS + ' + ' + n.BE + ' Ersatz.' + (blocked.length ? ' Gesperrt: ' + blocked.join(', ') + '.' : '') + (forced.length ? ' Nur Ersatz (Malus): ' + forced.join(', ') + '.' : '') + ' Jetzt im Spiel eintragen und unten den Plan erstellen.', true);
+  evNote(kind, 'Übernommen: A ' + n.AS + ' + ' + n.AE + ' Ersatz, B ' + n.BS + ' + ' + n.BE + ' Ersatz.' + (blocked.length ? ' Gesperrt: ' + blocked.join(', ') + '.' : '') + (forced.length ? ' Nur Ersatz (Malus): ' + forced.join(', ') + '.' : '') + (moved.length ? ' Nachgerückt in den Stamm: ' + moved.join(', ') + '.' : '') + ' Jetzt im Spiel eintragen und unten den Plan erstellen.', true);
 }
 // Fehlende speichern und für neu Markierte auf Wunsch den Malus „nicht erschienen“ vergeben
 function evAbsent(kind, id){
