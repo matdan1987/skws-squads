@@ -105,6 +105,9 @@ function mgRender(){
     var v = !p ? '<span class="stale">nicht in der Mitgliederliste</span>' : p.entry ? 'T1 ' + fmt(p.t1) : 'keine Meldung';
     return '<div class="mgrow"><span class="nm">' + av(n, 30) + esc(n) + '</span><span class="v">' + v + '</span><select data-mg="' + esc(n) + '">' + opts(cur) + '</select></div>';
   }
+  var free = mgRecommend(st, by);
+  function addSel(i){ return free.length ? '<div class="mgadd"><select data-mgaddto="' + i + '"><option value="">+ Spieler ohne Gruppe hinzufügen (' + free.length + ')</option>' +
+    free.map(function(r){ return '<option value="' + esc(r.p.name) + '">' + esc(r.p.name) + ' · ' + (r.p.entry ? 'T1 ' + fmt(r.p.t1) : 'keine Meldung') + '</option>'; }).join('') + '</select></div>' : ''; }
   $('mgGroups').innerHTML = st.groups.map(function(G, i){
     var s = mgStats(G, by); total += s.n; mentors += G.mentors.length; inGroups[G.r4] = 1;
     return '<div class="mgcard' + (G.intensive ? ' int' : '') + '"><h3>Gruppe ' + (i + 1) + ' – ' + esc(G.r4) + (G.intensive ? ' <span class="mgb m">Intensiv</span>' : '') + '</h3>' +
@@ -113,15 +116,16 @@ function mgRender(){
         (!by[G.r4] ? '<span class="v stale">nicht in der Mitgliederliste</span>' : (by[G.r4].rank !== 'R4' && by[G.r4].rank !== 'R5') ? '<span class="v stale">ist kein R4 mehr</span>' : '') +
         '<select data-mgr4="' + i + '" title="R4 der Gruppe wechseln">' + r4opts(G.r4) + '</select></div>' +
       '<div class="mglbl">' + (G.mentors.length === 1 ? 'Mentor' : 'Mentoren') + '</div>' + (G.mentors.map(function(n){ return row(n, 't' + i); }).join('') || '<div class="small muted">–</div>') +
-      '<div class="mglbl">Mitglieder</div>' + (G.members.map(function(n){ return row(n, 'm' + i); }).join('') || '<div class="small muted">–</div>') + '</div>';
+      '<div class="mglbl">Mitglieder</div>' + (G.members.map(function(n){ return row(n, 'm' + i); }).join('') || '<div class="small muted">–</div>') + addSel(i) + '</div>';
   }).join('');
   var recs = mgRecommend(st, by);
-  $('mgTiles').innerHTML = tile('In Gruppen', String(total), mentors + ' Mentoren · ' + st.groups.length + ' R4') + tile('Ohne Gruppe', String(recs.length), recs.length ? 'Empfehlung unten' : 'alle verteilt') +
+  $('mgTiles').innerHTML = tile('In Gruppen', String(total), mentors + ' Mentoren · ' + st.groups.length + ' R4') + tile('Ohne Gruppe', String(recs.length), recs.length ? 'Liste direkt darunter' : 'alle verteilt') +
     tile('Größte / kleinste', Math.max.apply(null, st.groups.map(function(G){ return G.mentors.length + G.members.length; })) + ' / ' + Math.min.apply(null, st.groups.map(function(G){ return G.mentors.length + G.members.length; })), 'Spieler je Gruppe');
   $('mgFreeCount').textContent = recs.length;
   $('mgFree').innerHTML = recs.map(function(r){
     return '<div class="mgrow"><span class="nm">' + esc(r.p.name) + ' <span class="v">' + r.p.rank + ' · ' + (r.p.entry ? 'T1 ' + fmt(r.p.t1) : 'keine Meldung') + '</span><div class="tl">' + esc(r.why) + '</div></span>' +
-      '<button class="mini okb" data-mgadd="' + esc(r.p.name) + '" data-g="' + r.g + '">→ Gruppe ' + (r.g + 1) + '</button></div>';
+      '<select data-mgpick="' + esc(r.p.name) + '" title="Gruppe frei wählen"><option value="">Gruppe wählen …</option>' + opts('').replace(/<option value="x"[^<]*<\/option>/, '') + '</select>' +
+      '<button class="mini okb" data-mgadd="' + esc(r.p.name) + '" data-g="' + r.g + '" title="Empfehlung übernehmen">→ G' + (r.g + 1) + '</button></div>';
   }).join('') || '<div class="empty">Alle aktiven Spieler sind einer Gruppe zugeordnet.</div>';
   $('mgApplyAll').disabled = !recs.length; $('mgApplyAll').style.opacity = recs.length ? '' : .4;
   mgRenderMentors(st, by);
@@ -202,6 +206,14 @@ function mgChat(){
     var st = mgState(); mgMove(st, b.dataset.mgment, 't' + b.dataset.g); mgSave(st); mgRender(); renderMembers();
   });
   $('mgR1').addEventListener('change', function(){ mgRender(); });
+  $('mgFree').addEventListener('change', function(e){
+    var s = e.target.closest('select[data-mgpick]'); if (!s || !s.value) return;
+    var st = mgState(); mgMove(st, s.dataset.mgpick, s.value); mgSave(st); mgRender(); renderMembers();
+  });
+  $('mgGroups').addEventListener('change', function(e){
+    var s = e.target.closest('select[data-mgaddto]'); if (!s || !s.value) return;
+    var st = mgState(); mgMove(st, s.value, 'm' + s.dataset.mgaddto); mgSave(st); mgRender(); renderMembers();
+  });
   $('mgFree').addEventListener('click', function(e){
     var b = e.target.closest('[data-mgadd]'); if (!b) return;
     var st = mgState(); mgMove(st, b.dataset.mgadd, 'm' + b.dataset.g); mgSave(st); mgRender(); renderMembers();
