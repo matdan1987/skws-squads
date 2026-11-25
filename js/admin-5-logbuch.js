@@ -50,11 +50,11 @@ function logText(r){
   if (a === 'cs_publish') return { tag:'adm', label:'Schluchtsturm', text: who(r.actor) + (d.cleared ? ' hat den Schluchtsturm-Einsatz zurückgenommen' : ' hat den Schluchtsturm-Einsatz veröffentlicht'), sub: d.cleared ? '' : ('Team A: ' + (d.a || 0) + ' · Team B: ' + (d.b || 0) + ' Spieler') };
   if (a === 'ds_publish') return { tag:'adm', label:'Wüstensturm', text: who(r.actor) + (d.cleared ? ' hat den Einsatzplan zurückgenommen' : ' hat den Wüstensturm-Einsatzplan veröffentlicht'), sub: d.cleared ? '' : ('Team A: ' + (d.a || 0) + ' · Team B: ' + (d.b || 0) + ' Spieler') };
   if (a === 'admin_login') return { tag:'adm', label:'Admin', text: who(r.actor) + ' hat sich im Admin-Bereich angemeldet', sub: '' };
-  if (a === 'admin_add') return { tag:'adm', label:'Verwaltung', text: who(r.actor) + ' hat ' + who(r.target) + (d.returned ? ' wieder aufgenommen' : ' hinzugefügt'), sub: 'Rang ' + (d.rank || '–') };
-  if (a === 'admin_leave') return { tag:'warn', label:'Verwaltung', text: who(r.actor) + ' hat ' + who(r.target) + ' als ausgeschieden markiert', sub: d.rank ? 'war ' + d.rank : '' };
-  if (a === 'admin_rejoin') return { tag:'adm', label:'Verwaltung', text: who(r.actor) + ' hat ' + who(r.target) + ' wieder aufgenommen', sub: '' };
-  if (a === 'admin_rank') return { tag:'adm', label:'Verwaltung', text: who(r.actor) + ' hat den Rang von ' + who(r.target) + ' geändert', sub: (d.from || '–') + ' → ' + (d.to || '–') };
-  if (a === 'admin_rename') return { tag:'adm', label:'Verwaltung', text: who(r.actor) + ' hat ' + esc(d.from || '') + ' umbenannt in ' + who(r.target), sub: '' };
+  if (a === 'admin_add') return { tag:'adm', label:'Mitglieder', text: who(r.actor) + ' hat ' + who(r.target) + (d.returned ? ' wieder aufgenommen' : ' hinzugefügt'), sub: 'Rang ' + (d.rank || '–') };
+  if (a === 'admin_leave') return { tag:'warn', label:'Mitglieder', text: who(r.actor) + ' hat ' + who(r.target) + ' als ausgeschieden markiert', sub: d.rank ? 'war ' + d.rank : '' };
+  if (a === 'admin_rejoin') return { tag:'adm', label:'Mitglieder', text: who(r.actor) + ' hat ' + who(r.target) + ' wieder aufgenommen', sub: '' };
+  if (a === 'admin_rank') return { tag:'adm', label:'Mitglieder', text: who(r.actor) + ' hat den Rang von ' + who(r.target) + ' geändert', sub: (d.from || '–') + ' → ' + (d.to || '–') };
+  if (a === 'admin_rename') return { tag:'adm', label:'Mitglieder', text: who(r.actor) + ' hat ' + esc(d.from || '') + ' umbenannt in ' + who(r.target), sub: '' };
   if (a === 'reminder_sent') return { tag:'', label:'System', text: 'Wöchentliche Erinnerungs-Mail verschickt', sub: (d.count !== undefined ? d.count + ' Empfänger' : '') + (d.errors ? ' · ' + d.errors + ' Fehler' : '') };
   return { tag:'', label: a, text: esc(r.actor || '') + ' ' + esc(r.target || ''), sub: '' };
 }
@@ -110,30 +110,21 @@ function rankSelect(p){
   return '<select class="rk" data-name="' + esc(p.name) + '">' + RANKS.map(function(r){ return '<option' + (r === p.rank ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select>';
 }
 function renderAdmin(){
-  var q = $('admSearch').value.trim().toLowerCase();
-  var act = D.players.filter(function(p){ return !q || p.name.toLowerCase().indexOf(q) >= 0; })
-    .sort(function(a,b){ return RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank) || a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); });
-  $('admActiveCount').textContent = D.players.length;
-  $('admActive').innerHTML = act.map(function(p){
-    return '<tr><td class="sticky">' + av(p.name) + esc(p.name) + mgBadge(p.name) + '</td><td>' + rankSelect(p) + '</td><td style="text-align:right">' +
-      (AVA[p.name] ? '<button class="mini" data-act="avdel" data-name="' + esc(p.name) + '">Avatar entfernen</button> ' : '') +
-      '<button class="mini" data-act="rename" data-name="' + esc(p.name) + '">Umbenennen</button> ' +
-      '<button class="mini danger" data-act="leave" data-name="' + esc(p.name) + '">Ausgeschieden</button></td></tr>';
-  }).join('') || '<tr><td class="muted">Keine Treffer.</td></tr>';
   $('admLeftCount').textContent = D.left.length;
   $('admLeft').innerHTML = D.left.slice().sort(function(a,b){ return (b.leftAt || 0) - (a.leftAt || 0); }).map(function(p){
     return '<tr><td class="sticky">' + esc(p.name) + '</td><td class="muted">' + p.rank + '</td><td class="muted">seit ' + (p.leftAt ? fmtDate(p.leftAt) : '–') + '</td><td style="text-align:right">' +
       '<button class="mini okb" data-act="rejoin" data-name="' + esc(p.name) + '">Wieder aufnehmen</button></td></tr>';
   }).join('') || '<tr><td class="muted">Niemand.</td></tr>';
 }
-function note(txt, ok){ var n = $('admNote'); n.textContent = txt; n.className = 'note ' + (ok ? 'ok' : 'err'); }
+function note(txt, ok){ var n = $('admNote'); if (n) { n.textContent = txt === '…' ? '' : txt; n.className = 'note ' + (ok ? 'ok' : 'err'); } if (txt !== '…' && typeof toast === 'function') toast(txt, ok); }
 function memberAction(action, name, value, okText){
   note('…', true);
   return rpc('admin_member', { p_pw: PW, p_action: action, p_name: name, p_value: value || null, p_actor: ACTOR || null })
-    .then(function(){ return load(PW, true).then(function(){ showTab('adm'); note(okText, true); }); })
+    .then(function(){ return load(PW, true).then(function(){ showTab(store('skws_admin_tab') || 'mlist'); note(okText, true); return true; }); })
     .catch(function(err){
       var m = String(err && err.message);
       note(m.indexOf('ERR_EXISTS') >= 0 ? 'Diesen Namen gibt es schon.' : m.indexOf('ERR_AUTH') >= 0 ? 'Nicht angemeldet – bitte neu anmelden.' :
            m.indexOf('ERR_NAME') >= 0 ? 'Ungültiger Name.' : 'Fehler – bitte erneut versuchen.', false);
+      return false;
     });
 }

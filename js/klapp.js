@@ -11,10 +11,10 @@ var Klapp = (function(){
     var h = head(c); if (!h || !OK(c)) return;
     c.dataset.klapp = '1'; h.classList.add('klapp-h');
     var k = key(c, h); if (!k.split(':')[1]) { c.dataset.klapp = ''; h.classList.remove('klapp-h'); return; }
-    c.dataset.kk = k; if (ST[k]) c.classList.add('zu');
+    c.dataset.kk = k; if (ST[k] === 1 || (ST[k] === undefined && c.classList.contains('klapp-zu'))) c.classList.add('zu');
   }
   function scan(n){ if (n.classList && n.classList.contains('card')) bind(n); if (n.querySelectorAll) Array.prototype.forEach.call(n.querySelectorAll('.card'), bind); }
-  function toggle(c, zu){ c.classList.toggle('zu', zu); if (zu) ST[c.dataset.kk] = 1; else delete ST[c.dataset.kk]; save(); }
+  function toggle(c, zu){ c.classList.toggle('zu', zu); ST[c.dataset.kk] = zu ? 1 : 0; save(); }
   function init(cfg){
     KEY = cfg.key || KEY; OK = cfg.ok || OK; load(); scan(document);
     // Karten, deren Überschrift erst später Text bekommt, nachträglich erfassen

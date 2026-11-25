@@ -6,7 +6,7 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=14">
+<link rel="stylesheet" href="css/admin.css?v=15">
 </head>
 <body>
 <div class="wrap">
@@ -35,29 +35,66 @@
 
   <div id="app" class="hide">
     <div class="navg" id="navg">
-      <button data-g="sp"><span>👥</span>Spieler</button>
+      <button data-g="mi"><span>👥</span>Mitglieder</button>
+      <button data-g="st"><span>📊</span>Stärke</button>
       <button data-g="ev"><span>⚔️</span>Events</button>
       <button data-g="al"><span>🛡️</span>Allianz</button>
       <button data-g="sy"><span>⚙️</span>System</button>
     </div>
     <div class="tabs" id="tabs">
+      <button data-tab="mlist">Mitgliederliste</button>
+      <button data-tab="pl">Spielerakte</button>
+      <button data-tab="acc">Zugänge</button>
       <button data-tab="ov" class="on">Übersicht</button>
-      <button data-tab="mem">Mitglieder</button>
-      <button data-tab="hist">Verlauf</button>
-      <button data-tab="pl">Spieler</button>
+      <button data-tab="mem">Trupps</button>
       <button data-tab="dev">Entwicklung</button>
+      <button data-tab="hist">Verlauf</button>
       <button data-tab="exp">Export</button>
       <button data-tab="ds">Wüstensturm</button>
       <button data-tab="cs">Schluchtsturm</button>
-      <button data-tab="bdg">Marken</button>
       <button data-tab="arc">Archiv</button>
+      <button data-tab="msg">Nachrichten</button>
       <button data-tab="mg">Mentoren</button>
       <button data-tab="mer">Bonus/Malus</button>
-      <button data-tab="msg">Nachrichten</button>
-      <button data-tab="adm">Verwaltung</button>
-      <button data-tab="acc">Zugänge</button>
+      <button data-tab="bdg">Marken</button>
       <button data-tab="log">Logbuch</button>
+      <button data-tab="adm">Datensicherung</button>
     </div>
+
+    <!-- Mitgliederliste: alles, was einen Spieler betrifft, beginnt hier -->
+    <section id="tab-mlist" class="hide">
+      <div class="card">
+        <h2>Mitglieder (<span id="mlCount">0</span>)</h2>
+        <p class="small muted" style="margin:0 0 8px">Spieler antippen öffnet die Spielerakte. Dort änderst du alles an einem Spieler: Rang, Name, Allianzbeitritt, ausgeschieden, Avatar, PIN, Nachricht. Für viele auf einmal „Schnell-Bearbeiten“ einschalten: Rang und Tage in der Allianz direkt in der Liste.</p>
+        <div class="toolbar">
+          <input id="mlQ" type="search" placeholder="Spieler suchen…">
+          <select id="mlFilter">
+            <option value="all">alle</option>
+            <option value="noaj">ohne Allianzbeitritt</option>
+            <option value="noentry">ohne Meldung</option>
+            <option value="nopin">ohne PIN</option>
+            <option value="nomg">ohne Mentorengruppe</option>
+          </select>
+          <label class="small ml-quick"><input type="checkbox" id="mlQuick"> ✏️ Schnell-Bearbeiten</label>
+        </div>
+        <div class="small muted" style="margin:4px 0"><span id="mlSum"></span> <span id="mlHits"></span></div>
+        <div id="mlList" class="aj-list"></div>
+      </div>
+      <div class="card">
+        <h2>Neues Mitglied</h2>
+        <form id="addForm" class="addrow">
+          <input id="addName" placeholder="Spielername (wie im Spiel)" maxlength="40" autocomplete="off">
+          <select id="addRank"><option>R1</option><option>R2</option><option>R3</option><option>R4</option><option>R5</option></select>
+          <button class="btn" type="submit">Hinzufügen</button>
+        </form>
+        <div class="note" id="admNote"></div>
+      </div>
+      <div class="card klapp-zu">
+        <h2>Ausgeschiedene (<span id="admLeftCount"></span>)</h2>
+        <p class="small muted" style="margin:0 0 8px">Ihr Verlauf bleibt erhalten. „Wieder aufnehmen“, wenn jemand zurückkommt. Ausscheiden markierst du in der Spielerakte.</p>
+        <div class="tw"><table id="admLeft"></table></div>
+      </div>
+    </section>
 
     <!-- Übersicht -->
     <section id="tab-ov">
@@ -114,7 +151,7 @@
 
     <!-- Spieler -->
     <section id="tab-pl" class="hide">
-      <div class="card"><select id="plSelect"></select></div>
+      <div class="card pl-pick"><button class="mini" id="plBack" type="button">← Mitgliederliste</button><select id="plSelect"></select></div>
       <div id="plAkte"></div>
       <div class="tiles" id="plTiles"></div>
       <div class="card"><h2>Kampfkraft je Trupp</h2><div class="chart" id="chartPlayer"></div></div>
@@ -525,55 +562,30 @@
     <!-- Verwaltung -->
     <section id="tab-adm" class="hide">
       <div class="card">
-        <h2>Allianzbeitritt nachtragen</h2>
-        <p class="small muted" style="margin:0 0 8px">Im Spiel steht beim Spieler „seit X Tagen in der Allianz“ – trag einfach diese Zahl ein, das Beitrittsdatum wird daraus berechnet (oder wähle das genaue Datum). Speichert sofort. Getrennt vom Datum, an dem er auf dieser Seite angelegt wurde („hier seit“). Zählt für Treue-Plaketten und „dabei seit“ im Profil.</p>
-        <div class="toolbar"><input id="ajQ" type="search" placeholder="Spieler suchen…"><label class="small" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ajOnly" style="width:16px;height:16px"> nur ohne Datum</label></div>
-        <div class="small muted" id="ajCount" style="margin:4px 0"></div>
-        <div id="ajList" class="aj-list"></div>
-      </div>
-      <div class="card">
         <h2>Datensicherung</h2>
         <p class="small muted" style="margin:0 0 8px">Lädt alle Daten (Mitglieder, Meldungen, Verlauf, Anmeldungen, Bonus/Malus, Mentorengruppen, Avatare, Pläne, Logbuch) als eine JSON-Datei herunter. Zusätzlich legt die Datenbank jeden Montag automatisch eine Sicherung an (die letzten 12 bleiben).</p>
         <div class="btnrow"><button class="btn2" id="bkDl">Datensicherung herunterladen</button></div>
         <div class="note" id="bkMsg"></div>
-      </div>
-      <div class="card">
-        <h2>Neues Mitglied</h2>
-        <form id="addForm" class="addrow">
-          <input id="addName" placeholder="Spielername (wie im Spiel)" maxlength="40" autocomplete="off">
-          <select id="addRank"><option>R1</option><option>R2</option><option>R3</option><option>R4</option><option>R5</option></select>
-          <button class="btn" type="submit">Hinzufügen</button>
-        </form>
-        <div class="note" id="admNote"></div>
-      </div>
-      <div class="card">
-        <h2>Aktive Mitglieder (<span id="admActiveCount"></span>)</h2>
-        <input id="admSearch" type="search" placeholder="Suchen…" style="margin-bottom:8px">
-        <div class="tw"><table id="admActive"></table></div>
-        <p class="small muted" style="margin:8px 0 0">Rang direkt ändern · „Umbenennen“, wenn jemand im Spiel seinen Namen ändert (Verlauf bleibt erhalten) · „Ausgeschieden“ entfernt den Spieler von der Eintragsseite und stoppt seine Erinnerungen.</p>
-      </div>
-      <div class="card">
-        <h2>Ausgeschiedene (<span id="admLeftCount"></span>)</h2>
-        <div class="tw"><table id="admLeft"></table></div>
       </div>
     </section>
   </div>
 </div>
 
 <script src="js/admin-0-sprache.js?v=15"></script>
-<script src="js/klapp.js?v=14"></script>
-<script src="js/admin-1-core.js?v=13"></script>
-<script src="js/admin-2-ansichten.js?v=13"></script>
-<script src="js/admin-3-wuestensturm.js?v=13"></script>
-<script src="js/admin-4-schluchtsturm.js?v=13"></script>
-<script src="js/admin-5-logbuch.js?v=13"></script>
-<script src="js/admin-6-anmeldung.js?v=13"></script>
-<script src="js/admin-7-bonusmalus.js?v=13"></script>
-<script src="js/admin-8-mentoren.js?v=13"></script>
-<script src="js/admin-8b-funk.js?v=13"></script>
-<script src="js/admin-8c-zugaenge.js?v=13"></script>
-<script src="js/admin-8d-marken.js?v=13"></script>
-<script src="js/admin-8e-archiv.js?v=14"></script>
-<script src="js/admin-9-start.js?v=14"></script>
+<script src="js/klapp.js?v=15"></script>
+<script src="js/admin-1-core.js?v=15"></script>
+<script src="js/admin-2-ansichten.js?v=15"></script>
+<script src="js/admin-3-wuestensturm.js?v=15"></script>
+<script src="js/admin-4-schluchtsturm.js?v=15"></script>
+<script src="js/admin-5-logbuch.js?v=15"></script>
+<script src="js/admin-6-anmeldung.js?v=15"></script>
+<script src="js/admin-7-bonusmalus.js?v=15"></script>
+<script src="js/admin-8-mentoren.js?v=15"></script>
+<script src="js/admin-8b-funk.js?v=15"></script>
+<script src="js/admin-8c-zugaenge.js?v=15"></script>
+<script src="js/admin-8d-marken.js?v=15"></script>
+<script src="js/admin-8e-archiv.js?v=15"></script>
+<script src="js/admin-8f-mitglieder.js?v=15"></script>
+<script src="js/admin-9-start.js?v=15"></script>
 </body>
 </html>
