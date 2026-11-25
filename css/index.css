@@ -249,3 +249,18 @@
   .claim-row i{font-style:normal;font-size:24px} .claim-row b{flex:1;min-width:0}
   .claim-btn{width:auto!important;padding:9px 12px!important;font-size:14px!important}
   .claim-st{font-size:12px;color:var(--muted)} .claim-st.ok{color:var(--ok)} .claim-st.no{color:var(--err)} .claim-st.pending{color:#f5b942}
+
+/* „Neu für dich“ */
+.neu-modal{border-color:rgba(120,200,255,.45);box-shadow:0 0 30px rgba(120,200,255,.18)}
+.neu-modal .neu-title{color:#8fd3ff;font-size:14px}
+.neu-sub{margin:0 0 10px}
+.neu-list{display:flex;flex-direction:column;gap:6px}
+.neu-row{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:inherit;font:inherit;font-size:14px;cursor:pointer}
+.neu-row:hover{background:rgba(255,255,255,.08)}
+.neu-row i{font-style:normal;font-size:20px;width:28px;text-align:center;flex:none}
+.neu-row span{flex:1;min-width:0;overflow-wrap:anywhere}
+.neu-row .neu-go{opacity:.5;font-size:18px}
+.neu-row.ok{border-color:rgba(80,200,140,.35)} .neu-row.warn{border-color:rgba(245,185,66,.45)}
+.neu-modal{padding-bottom:0}
+.neu-modal > .btn{position:sticky;bottom:0;width:100%;margin:12px 0 0;border-radius:12px;box-shadow:0 -14px 0 var(--card),0 14px 0 var(--card)}
+.neu-modal::after{content:"";display:block;height:14px}
