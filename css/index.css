@@ -282,3 +282,21 @@
 #overviewView td.n .typ{white-space:normal;line-height:1.2}
 
 .auth-open{width:100%;margin-top:8px}
+
+/* Profil: Abschnitte in Karten */
+.ach-h,.card .sq-h + .sq-h{margin-top:14px}
+.card > .sq-h .l{margin:0}
+/* Meine Mentorengruppe */
+.grp-who{display:flex;gap:10px;align-items:flex-start;padding:6px 0}
+.grp-k{flex:0 0 78px;color:var(--muted);font-size:13px;padding-top:6px}
+.grp-v{display:flex;flex-wrap:wrap;gap:6px 12px}
+.grp-n{display:inline-flex;align-items:center;gap:6px;color:inherit;text-decoration:none;font-weight:600}
+.grp-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.grp-tx{flex:1;min-width:0}
+.grp-rk{color:var(--muted);font-size:12px}
+.grp-sub{margin:2px 0 0;line-height:1.35}
+.grp-btn{flex:none;white-space:nowrap}
+/* Events-Reiter */
+.ev-intro{margin:0 4px 10px}
+.tabs button .fk-badge{margin-left:4px}
+@media (max-width:420px){ .tabs{padding:3px;gap:2px} .tabs button{font-size:13.5px;padding:9px 1px} .tabs button .fk-badge{margin-left:2px} }
