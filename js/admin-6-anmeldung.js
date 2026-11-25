@@ -36,6 +36,7 @@ function evRender(kind){
   var box = $('ev_' + kind); if (!box || !D) return;
   var r = evCur(kind), K = kind, st = kind === 'ds' ? dsState() : csState();
   var h = '<h2>1 · Anmeldung der Spieler – ' + EV_NAME[kind] + '</h2>';
+  if (typeof ablHelpBox === 'function') h += ablHelpBox('ev');
   if (r) {
     var cfg = evCfg(kind), ES = evStats(kind);
     var open = evIsOpen(r), dl = evDl(r), by = {}; (r.signups || []).forEach(function(x){ by[x.name] = x; });
@@ -62,11 +63,11 @@ function evRender(kind){
       '<div class="formrow" style="margin-top:6px;grid-template-columns:1fr auto"><select id="evFix_' + K + '"><option value="">– Spieler setzen –</option>' +
       act.filter(function(p){ return cfg.fixed.indexOf(p.name) < 0; }).sort(function(a, b){ return (a.rank === b.rank ? 0 : a.rank > b.rank ? -1 : 1) || a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); }).map(function(p){ return '<option value="' + esc(p.name) + '">' + esc(p.name) + ' (' + p.rank + ')</option>'; }).join('') +
       '</select><button class="btn2" data-ev="fix" data-kind="' + K + '">Setzen</button></div></details>';
-    h += '<div class="formrow" style="margin-top:10px"><div><label>Spieler nachtragen / ändern</label><select id="evSetName_' + K + '"><option value="">– Spieler –</option>' +
+    h += '<details style="margin-top:10px"><summary class="small">Antwort für einen Spieler eintragen oder ändern (z. B. wenn jemand im Chat geantwortet hat)</summary><div class="formrow" style="margin-top:8px"><div><label>Spieler</label><select id="evSetName_' + K + '"><option value="">– Spieler –</option>' +
       act.slice().sort(function(a, b){ return a.name.localeCompare(b.name, 'de', {sensitivity:'base'}); }).map(function(p){ return '<option>' + esc(p.name) + '</option>'; }).join('') + '</select></div>' +
       '<div><label>Antwort</label><select id="evSetCh_' + K + '">' + Object.keys(EV_CH).map(function(c){ return '<option value="' + c + '">' + EV_CH[c] + '</option>'; }).join('') + '<option value="">Anmeldung löschen</option></select></div></div>';
-    h += '<div class="btnrow"><button class="btn2" data-ev="set" data-kind="' + K + '">Eintragen</button>' +
-      '<button class="btn" data-ev="take" data-kind="' + K + '">In die Zuordnung übernehmen</button>' +
+    h += '<div class="btnrow"><button class="btn2" data-ev="set" data-kind="' + K + '">Eintragen</button></div></details>';
+    h += '<div class="btnrow"><button class="btn" data-ev="take" data-kind="' + K + '">➡ In Schritt 2 übernehmen (Teams einteilen)</button>' +
       '<button class="btn2" data-ev="' + (r.open ? 'close' : 'reopen') + '" data-kind="' + K + '">' + (r.open ? 'Anmeldung schließen' : 'Wieder öffnen') + '</button>' +
       '<button class="btn2" data-ev="call" data-kind="' + K + '">Aufruf für den Chat kopieren</button>' +
       (none.length ? '<button class="btn2" data-ev="nudge" data-kind="' + K + '">Erinnerung an Fehlende kopieren</button>' : '') + '</div>';

@@ -160,6 +160,7 @@ function dsRender(){
   evRender('ds');
   dsRenderList();
   dsPubInfo();
+  if (typeof ablRender === 'function') ablRender('ds');
 }
 function dsRenderList(){
   var st = dsState(), m = st.metric, q = $('dsSearch').value.trim().toLowerCase();
@@ -339,7 +340,7 @@ function dsPubInfo(){
 function dsPublish(plan){
   $('dsMsg').textContent = 'Speichere…'; $('dsMsg').className = 'note';
   rpc('admin_ds_publish', { p_pw: PW, p_plan: plan, p_actor: ACTOR || null }).then(function(){
-    DS_PUB = plan; dsPubInfo();
+    DS_PUB = plan; dsPubInfo(); if (typeof ablRender === 'function') ablRender('ds');
     $('dsMsg').textContent = plan ? 'Veröffentlicht – die Spieler sehen ihren Einsatz jetzt auf der Seite.' : 'Veröffentlichung zurückgenommen.'; $('dsMsg').className = 'note ok';
   }).catch(function(e){ $('dsMsg').textContent = 'Fehler beim Speichern: ' + (e && e.message || ''); $('dsMsg').className = 'note err'; });
 }
