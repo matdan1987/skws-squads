@@ -6,13 +6,14 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=9">
+<link rel="stylesheet" href="css/admin.css?v=11">
 </head>
 <body>
 <div class="wrap">
   <header>
     <img class="logo" src="img/skws-emblem.jpg" alt="SKWS">
     <div class="htxt"><div class="a">SKWS – Skywalkers</div><h1>Admin · <span id="who">R4/R5</span></h1></div>
+    <a href="./" class="ghost hdrlink" id="toPlayer" title="Zur Spielerseite">👥</a>
     <select id="admLang" class="langsel" aria-label="Sprache"></select>
     <button class="ghost hide" id="reload" title="Neu laden">↻</button>
     <button class="ghost hide" id="logout">Abmelden</button>
@@ -49,6 +50,7 @@
       <button data-tab="ds">Wüstensturm</button>
       <button data-tab="cs">Schluchtsturm</button>
       <button data-tab="bdg">Marken</button>
+      <button data-tab="arc">Archiv</button>
       <button data-tab="mg">Mentoren</button>
       <button data-tab="mer">Bonus/Malus</button>
       <button data-tab="msg">Nachrichten</button>
@@ -357,6 +359,16 @@
       </div>
     </section>
 
+    <section id="tab-arc" class="hide">
+      <div class="card">
+        <h2>Event-Archiv</h2>
+        <p class="small muted" style="margin-top:0">Alle bisherigen Runden mit Aufstellung, Taktik und Uhrzeit (gespeichert beim Erstellen des Plans) sowie Besonderheiten, die ihr nachträglich eintragt. Durchgestrichen = gefehlt.</p>
+        <div class="toolbar"><select id="arcKind"><option value="">alle Events</option><option value="ds">Wüstensturm</option><option value="cs">Schluchtsturm</option></select><input id="arcQ" type="search" placeholder="Spieler oder Runde suchen…"></div>
+        <div id="arcList"></div>
+        <div class="btnrow"><button class="btn2 hide" id="arcMore">Ältere Runden laden</button></div>
+      </div>
+    </section>
+
     <section id="tab-bdg" class="hide">
       <div class="card">
         <h2>Teilnehmermarken aus Events</h2>
@@ -495,6 +507,13 @@
     <!-- Verwaltung -->
     <section id="tab-adm" class="hide">
       <div class="card">
+        <h2>Allianzbeitritt nachtragen</h2>
+        <p class="small muted" style="margin:0 0 8px">Wann ist der Spieler der Allianz beigetreten? Das ist getrennt vom Datum, an dem er auf dieser Seite angelegt wurde („hier seit“). Datum wählen speichert sofort. Zählt für Treue-Plaketten und „dabei seit“ im Profil.</p>
+        <div class="toolbar"><input id="ajQ" type="search" placeholder="Spieler suchen…"><label class="small" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ajOnly" style="width:16px;height:16px"> nur ohne Datum</label></div>
+        <div class="small muted" id="ajCount" style="margin:4px 0"></div>
+        <div id="ajList" class="aj-list"></div>
+      </div>
+      <div class="card">
         <h2>Datensicherung</h2>
         <p class="small muted" style="margin:0 0 8px">Lädt alle Daten (Mitglieder, Meldungen, Verlauf, Anmeldungen, Bonus/Malus, Mentorengruppen, Avatare, Pläne, Logbuch) als eine JSON-Datei herunter. Zusätzlich legt die Datenbank jeden Montag automatisch eine Sicherung an (die letzten 12 bleiben).</p>
         <div class="btnrow"><button class="btn2" id="bkDl">Datensicherung herunterladen</button></div>
@@ -523,18 +542,19 @@
   </div>
 </div>
 
-<script src="js/admin-0-sprache.js?v=10"></script>
-<script src="js/admin-1-core.js?v=10"></script>
-<script src="js/admin-2-ansichten.js?v=10"></script>
-<script src="js/admin-3-wuestensturm.js?v=10"></script>
-<script src="js/admin-4-schluchtsturm.js?v=10"></script>
-<script src="js/admin-5-logbuch.js?v=10"></script>
-<script src="js/admin-6-anmeldung.js?v=10"></script>
-<script src="js/admin-7-bonusmalus.js?v=10"></script>
-<script src="js/admin-8-mentoren.js?v=10"></script>
-<script src="js/admin-8b-funk.js?v=10"></script>
-<script src="js/admin-8c-zugaenge.js?v=10"></script>
-<script src="js/admin-8d-marken.js?v=10"></script>
-<script src="js/admin-9-start.js?v=10"></script>
+<script src="js/admin-0-sprache.js?v=11"></script>
+<script src="js/admin-1-core.js?v=11"></script>
+<script src="js/admin-2-ansichten.js?v=11"></script>
+<script src="js/admin-3-wuestensturm.js?v=11"></script>
+<script src="js/admin-4-schluchtsturm.js?v=11"></script>
+<script src="js/admin-5-logbuch.js?v=11"></script>
+<script src="js/admin-6-anmeldung.js?v=11"></script>
+<script src="js/admin-7-bonusmalus.js?v=11"></script>
+<script src="js/admin-8-mentoren.js?v=11"></script>
+<script src="js/admin-8b-funk.js?v=11"></script>
+<script src="js/admin-8c-zugaenge.js?v=11"></script>
+<script src="js/admin-8d-marken.js?v=11"></script>
+<script src="js/admin-8e-archiv.js?v=11"></script>
+<script src="js/admin-9-start.js?v=11"></script>
 </body>
 </html>

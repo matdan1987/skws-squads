@@ -1,7 +1,7 @@
 /* SKWS Squads – Admin: start (gemeinsamer globaler Bereich, Reihenfolge der Dateien beachten) */
 /* ---------- Steuerung ---------- */
 // Bereiche der Navigation: jeder Reiter gehört zu genau einem Bereich
-var NAV = { sp:['ov','mem','pl','dev','hist'], ev:['ds','cs','bdg'], al:['mg','mer','msg'], sy:['adm','acc','log','exp'] };
+var NAV = { sp:['ov','mem','pl','dev','hist'], ev:['ds','cs','bdg','arc'], al:['mg','mer','msg'], sy:['adm','acc','log','exp'] };
 function navGroupOf(t){ for (var g in NAV) if (NAV[g].indexOf(t) >= 0) return g; return 'sp'; }
 function navRender(name){
   var g = navGroupOf(name);
@@ -13,7 +13,7 @@ function showTab(name){
   navRender(name);
   var bs = document.querySelectorAll('#tabs button');
   for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-  ['ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','msg','adm','acc','log','bdg'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+  ['ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','msg','adm','acc','log','bdg','arc'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
   store('skws_admin_tab', name); store('skws_admin_tab_' + navGroupOf(name), name);
   if (name === 'hist') renderHistory();
   if (name === 'ov') renderOverview();
@@ -25,6 +25,8 @@ function showTab(name){
   if (name === 'mg') mgRender();
   if (name === 'mer') merRender();
   if (name === 'msg') { fkRender(); fkLoad(); }
+  if (name === 'arc') arcLoad(false);
+  if (name === 'adm') ajRender();
   if (name === 'bdg') { bdgRender(); bdgLoad(); }
   if (name === 'acc') { accRender(); fkLoad().then(accLoad); }
   if (name === 'dev') renderDev();
@@ -45,7 +47,7 @@ function load(pw, silent){
     if (first) rpc('admin_login', { p_pw: pw, p_actor: ACTOR || null }).catch(function(){});
     $('loginView').classList.add('hide'); $('app').classList.remove('hide');
     $('reload').classList.remove('hide'); $('logout').classList.remove('hide');
-    renderAll(); avLoad(); psLoad(); fkLoad();
+    renderAll(); avLoad(); psLoad(); fkLoad(); exLoad();
   }).catch(function(err){
     if (String(err && err.message).indexOf('ERR_AUTH') >= 0) forgetPw();
     if (!silent) $('loginMsg').textContent = String(err && err.message).indexOf('ERR_AUTH') >= 0 ? 'Kennwort falsch.' : 'Laden fehlgeschlagen – bitte erneut versuchen.';

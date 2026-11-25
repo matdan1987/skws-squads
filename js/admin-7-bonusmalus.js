@@ -154,6 +154,13 @@ function merCatEdit(){ if (!MER_EDIT) MER_EDIT = merCat(); return MER_EDIT; }
     if (data.effect !== 'none' && data.rounds === '' && !data.until && !confirm('Ohne Runden und ohne Datum gilt der Eintrag, bis du ihn zurücknimmst. Trotzdem speichern?')) return;
     hint.textContent = '…'; hint.className = 'note ok';
     rpc('admin_merit', { p_pw: PW, p_action: 'add', p_data: data, p_actor: ACTOR || null }).then(function(){
+      // „nicht erschienen“: auf Wunsch in der passenden Runde als gefehlt markieren (dann entfällt auch die Teilnehmermarke)
+      if (data.kind === 'malus' && /nicht erschienen/i.test(reason)) {
+        var rr = (EV || []).filter(function(r){ return r.lineup && r.lineup[nm] && (r.absent || []).indexOf(nm) < 0; }).sort(function(a, b){ return b.id - a.id; })[0];
+        if (rr && confirm(nm + ' auch in der Runde „' + (rr.kind === 'cs' ? 'Schluchtsturm' : 'Wüstensturm') + ' ' + rr.label + '“ als gefehlt markieren? Dann entfällt dort auch die Teilnehmermarke.'))
+          return rpc('admin_event', { p_pw: PW, p_action: 'absent', p_data: { id: rr.id, names: (rr.absent || []).concat([nm]) }, p_actor: ACTOR || null }).catch(function(){});
+      }
+    }).then(function(){
       return load(PW, true).then(function(){ showTab('mer'); $('merNote').value = ''; $('merOwn').value = ''; $('merHint').textContent = 'Gespeichert: ' + (data.kind === 'bonus' ? 'Bonus' : 'Malus') + ' für ' + nm + '.'; $('merHint').className = 'note ok'; });
     }).catch(function(err){ var m = String(err && err.message); hint.textContent = m.indexOf('ERR_AUTH') >= 0 ? 'Nicht angemeldet – bitte neu anmelden.' : 'Fehler – ist die Datenbank-Erweiterung „bonus-malus“ schon eingespielt?'; hint.className = 'note err'; });
   });

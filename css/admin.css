@@ -267,3 +267,15 @@ header h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mgcard .mgrow .jchip{order:1;margin-right:0}
 .mgcard .mgrow .v{order:2;flex:1 1 auto}
 .mgcard .mgrow select{order:3}
+/* ---------- Archiv, Beitritt, Notizen, Kopf ---------- */
+.hdrlink{text-decoration:none;display:inline-grid;place-items:center;font-size:18px;padding:8px 10px;border-radius:10px}
+.aj-list .mgrow input[type=date]{width:auto;padding:4px 6px;font-size:13px}
+.aj-akte{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;margin-top:8px;font-size:13px}
+.aj-akte input{width:auto;padding:4px 6px;font-size:13px;margin-left:6px}
+.arc-card{border-top:1px solid var(--line);padding:12px 0}
+.arc-card:first-child{border-top:0}
+.arc-h{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.arc-team{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:6px}
+.arc-rem{width:100%;box-sizing:border-box;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px;color:var(--text);font:inherit;font-size:13px}
+textarea.arc-rem{min-height:0;height:auto}
+#tab-adm .toolbar label{white-space:nowrap}
