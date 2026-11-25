@@ -159,7 +159,7 @@ function planMe(g, o, me, FS){
   var pre = parts.slice(0, k).join(', ') + (k ? ', ' : ''), x0 = o.x - g.measureText(o.s).width / 2 + g.measureText(pre).width, w = g.measureText(me).width;
   g.fillStyle = '#facc15'; g.beginPath(); if (g.roundRect) g.roundRect(x0 - 6, o.y - 3, w + 12, FS + 8, 6); else g.rect(x0 - 6, o.y - 3, w + 12, FS + 8); g.fill();
 }
-function dstDraw(T, lang, me){
+function dstDraw(T, lang, me, loc){
   var DE = lang === 'de';
   function phTxt(k){ return DE ? DS_PHL[k].replace(/^Ab/, 'ab') : DS_PHL_EN[k].replace(/^phase \d, /, ''); }
   var TC = DS_TACTICS[T.tac] || DS_TACTICS.std; T = Object.assign({ s: [], m: [], ph: TC.ph }, T); if (!T.ph) T.ph = TC.ph;
@@ -226,6 +226,7 @@ function dstDraw(T, lang, me){
   var head = 'BRIEFING' + (T.opp ? (DE ? ' · gegen ' : ' · vs ') + T.opp : '');
   if (T.time) { g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillStyle = '#ffffff'; g.font = '800 34px system-ui, sans-serif'; g.shadowColor = '#3d8bff'; g.shadowBlur = 12; g.fillText(T.time, DST.time[0] * S, DST.time[1] * S); g.shadowBlur = 0; }
   var parts = [DE ? TC.desc : TC.en];
+  if (loc) parts.unshift(loc);
   var flex = groups.filter(function(x){ return x.g.steps.some(function(s){ return s[0] === 'watch'; }); });
   flex.forEach(function(x){ var silo = x.g.steps[2] && x.g.steps[2][1] === 'silo'; parts.push(x.names.join(', ') + (DE ? ': beobachten, wo wir unter Druck sind, und dort verstärken' + (silo ? '; ab Minute 20 das Atomsilo erobern.' : '.') : ': watch where we are under pressure and reinforce there' + (silo ? '; from minute 20 take the Nuclear Silo.' : '.'))); });
   if (T.note) parts.push(T.note);
@@ -375,7 +376,7 @@ function csLoadTpl(t, lang, cb){
   var key = t + lang; if (CS_IMGS[key]) return cb(CS_IMGS[key]);
   var im = new Image(); im.onload = function(){ CS_IMGS[key] = im; cb(im); }; im.onerror = function(){ cb(null); }; im.src = 'cs-vorlage-' + t.toLowerCase() + '-' + lang + '.jpg?v=2';
 }
-function csDraw(T, t, lang, IMG, me){
+function csDraw(T, t, lang, IMG, me, loc){
   var DE = lang === 'de', L = DE ? 'de' : 'en', CT = CST_T[t] || CST_T.A, TC = CS_TACTICS[T.tac] || CS_TACTICS.lab, T = Object.assign({ s: [], m: [], ph: TC.ph }, T), groups = csGroupsOf(T);
   var S = 1920 / 1672, W = 1920, H = Math.round(941 * S), c = document.createElement('canvas'); c.width = W; c.height = H;
   var g = c.getContext('2d'); g.lineJoin = 'round'; g.miterLimit = 2; g.drawImage(IMG, 0, 0, W, H);
@@ -445,6 +446,7 @@ function csDraw(T, t, lang, IMG, me){
   var bx = CT.box[0] * S, by = CT.box[1] * S, bw = (CT.box[2] - CT.box[0]) * S, bh = (CT.box[3] - CT.box[1]) * S;
   var head = 'BRIEFING' + (T.opp ? (DE ? ' · gegen ' : ' · vs ') + T.opp : '');
   var parts = [DE ? TC.desc : TC.en];
+  if (loc) parts.unshift(loc);
   if (T.note) parts.push(T.note);
   if (unplaced.length) parts.push((DE ? 'Ohne Kartenposition: ' : 'Not on the map yet: ') + unplaced.join('; '));
   if (T.s.length) parts.push((DE ? 'Ersatz: ' : 'Substitutes: ') + T.s.join(', '));
