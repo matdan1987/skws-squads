@@ -61,7 +61,7 @@ var Funk = (function(){
   // Unbestätigte Nachrichten erscheinen nach dem Anmelden sofort und müssen bestätigt werden
   function modal(){
     var box = $('fkModal'), open = (S.inbox || []).filter(function(m){ return !m.ack; }).reverse();
-    if (!S.tok || !open.length) { box.classList.add('hide'); box.innerHTML = ''; document.body.classList.remove('fk-lock'); return; }
+    if (!S.tok || !open.length) { box.classList.add('hide'); box.innerHTML = ''; if (!MUST_OPEN) document.body.classList.remove('fk-lock'); settled(); return; }
     var m = open[0], L = T(); box.innerHTML = '';
     var c = el('div', 'card fk-modal');
     c.appendChild(el('div', 'fk-mtitle', (m.kind === 'gift' ? '🎁 ' + giftT().got.replace('{n}', m.from) : L.mustAck) + (open.length > 1 ? ' · ' + L.ofN.replace('{i}', 1).replace('{n}', open.length) : '')));
@@ -71,6 +71,8 @@ var Funk = (function(){
     c.appendChild(b);
     box.appendChild(c); box.classList.remove('hide'); document.body.classList.add('fk-lock');
   }
+  // Alles Pflichtige erledigt (Nachrichten bestätigt, keine PIN-Änderung offen) → „Neu für dich“ darf erscheinen
+  function settled(){ if (S.tok && S.inbox && !MUST_OPEN && A && A.onSettled) A.onSettled({ tok: S.tok, name: S.name, inbox: S.inbox, rooms: S.rooms, seen: seen() }); }
   function giftT(){ return (window.GIFT_I18N && (GIFT_I18N[A.lang()] || GIFT_I18N.en)) || { g:{}, thanks:'OK', got:'{n}' }; }
   // Nachrichtentext; Geschenke als großes Symbol mit Namen und Notiz
   function msgBody(m, c){
@@ -141,7 +143,7 @@ var Funk = (function(){
   function mustChange(old){
     if (MUST_OPEN) return; MUST_OPEN = true;
     var L = T(), o = el('div', 'fk-overlay'), c = el('div', 'card fk-modal');
-    function done(){ MUST_OPEN = false; o.remove(); document.body.classList.remove('fk-lock'); }
+    function done(){ MUST_OPEN = false; o.remove(); document.body.classList.remove('fk-lock'); modal(); }
     c.appendChild(el('div', 'fk-mtitle', '🔑 ' + L.newPinTitle));
     c.appendChild(el('div', 'hint', L.mustChange));
     var p1 = el('input'); p1.type = 'password'; p1.placeholder = L.pinNew; c.appendChild(p1);

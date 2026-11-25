@@ -474,6 +474,13 @@
     });
   }
 
+  // Sprungziel aus „Neu für dich“: 'funk', 'profile' oder 'form:<Karten-ID>'
+  function neuGo(to){
+    if (to === 'funk') { showTab('funk'); return; }
+    if (to === 'profile') { PROF_VIEW = null; showTab('profile'); window.scrollTo(0, 0); return; }
+    var id = to.split(':')[1]; showTab('form');
+    setTimeout(function(){ var x = $(id); if (x && !x.classList.contains('hide')) x.scrollIntoView({ behavior:'smooth', block:'start' }); }, 50);
+  }
   function showTab(which){
     $('tabForm').classList.toggle('on', which === 'form');
     $('tabOverview').classList.toggle('on', which === 'overview');
@@ -884,6 +891,7 @@
     setupLinks();
     Funk.init({ data: function(){ return DATA; }, lang: function(){ return LANG; }, myName: function(){ return $('name').value; },
       avEl: avEl, loadAvatars: loadAvatars, openProfile: openProfile,
+      onSettled: function(c){ if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }); },
       onAuth: function(){ MER_FOR = null; loadMerits(); renderAuth(); renderEv(); loadClaims(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
     var last = store('skws_name');
     if (last && DATA.members.indexOf(last) >= 0){ $('name').value = last; loadMember(); }
