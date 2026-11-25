@@ -84,6 +84,19 @@ function mgRecommend(st, by){
     return { p: p, g: gi, why: why };
   });
 }
+function mgDays(t){ var d = Math.floor((Date.now() - new Date(t)) / DAY); return d <= 0 ? 'seit heute' : d === 1 ? 'seit 1 Tag' : 'seit ' + d + ' Tagen'; }
+function mgJoinSum(st, G, i){
+  var c = { ok:0, open:0, unknown:0 }; G.mentors.concat(G.members).forEach(function(n){ c[mgJoin(st, n, i).s]++; });
+  return '<div class="jsum"><span class="up">✅ ' + c.ok + ' beigetreten</span>' + (c.open ? ' · <span class="warn">⏳ ' + c.open + ' offen</span>' : '') + (c.unknown ? ' · <span class="muted">❔ ' + c.unknown + ' prüfen</span> <button class="mini" data-mgallok="' + i + '">alle als beigetreten</button>' : '') + '</div>';
+}
+function mgRenderOpen(st){
+  var l = mgOpenList(st);
+  $('mgOpenCount').textContent = l.length;
+  $('mgOpen').innerHTML = l.length ? l.map(function(x){ var p = D.all.filter(function(q){ return q.name === x.n; })[0];
+    return '<div class="mgrow"><span class="nm">' + av(x.n, 30) + esc(x.n) + ' <span class="v">→ Gruppe ' + (x.g + 1) + ' (' + esc(x.r4) + ')</span><div class="tl">zugewiesen ' + fmtDate(new Date(x.t)) + ' · ' + mgDays(x.t) + (p && !p.active ? ' · ausgeschieden' : '') + '</div></span>' +
+      '<button class="mini okb" data-mgjoin="' + esc(x.n) + '" data-g="' + x.g + '" data-v="1">✅ beigetreten</button></div>'; }).join('') : '<div class="empty">Alle zugewiesenen Spieler sind im Spiel beigetreten (oder noch nicht erfasst – „❔ prüfen“ in den Gruppen).</div>';
+  $('mgOpenCopy').disabled = $('mgOpenPm').disabled = !l.length;
+}
 function mgRender(){
   if (!D) return;
   var st = mgState(), by = mgPlayers();
@@ -103,7 +116,11 @@ function mgRender(){
   function row(n, cur){
     var p = by[n]; inGroups[n] = 1;
     var v = !p ? '<span class="stale">nicht in der Mitgliederliste</span>' : p.entry ? 'T1 ' + fmt(p.t1) : 'keine Meldung';
-    return '<div class="mgrow"><span class="nm">' + av(n, 30) + esc(n) + '</span><span class="v">' + v + '</span><select data-mg="' + esc(n) + '">' + opts(cur) + '</select></div>';
+    var gi = +cur.slice(1), j = mgJoin(st, n, gi);
+    var chip = j.s === 'ok' ? '<button class="jchip ok" data-mgjoin="' + esc(n) + '" data-g="' + gi + '" data-v="0" title="Im Spiel beigetreten am ' + fmtDate(new Date(j.t)) + ' – antippen, um wieder auf offen zu setzen">✅ beigetreten</button>'
+      : j.s === 'open' ? '<button class="jchip open" data-mgjoin="' + esc(n) + '" data-g="' + gi + '" data-v="1" title="Antippen, sobald er im Spiel beigetreten ist">⏳ offen ' + mgDays(j.t) + '</button>'
+      : '<button class="jchip unk" data-mgjoin="' + esc(n) + '" data-g="' + gi + '" data-v="1" title="Noch nicht erfasst – antippen, wenn er im Spiel in der Gruppe ist">❔ prüfen</button>';
+    return '<div class="mgrow"><span class="nm">' + av(n, 30) + esc(n) + '</span><span class="v">' + v + '</span>' + chip + '<select data-mg="' + esc(n) + '">' + opts(cur) + '</select></div>';
   }
   var free = mgRecommend(st, by);
   function addSel(i){ return free.length ? '<div class="mgadd"><select data-mgaddto="' + i + '"><option value="">+ Spieler ohne Gruppe hinzufügen (' + free.length + ')</option>' +
@@ -111,7 +128,7 @@ function mgRender(){
   $('mgGroups').innerHTML = st.groups.map(function(G, i){
     var s = mgStats(G, by); total += s.n; mentors += G.mentors.length; inGroups[G.r4] = 1;
     return '<div class="mgcard' + (G.intensive ? ' int' : '') + '"><h3>Gruppe ' + (i + 1) + ' – ' + esc(G.r4) + (G.intensive ? ' <span class="mgb m">Intensiv</span>' : '') + '</h3>' +
-      '<div class="sub">' + s.n + ' Spieler + 1 R4 · Ø T1 ' + (s.known ? fmt(s.avg) : '–') + ' (' + s.known + ' mit Meldung)</div>' +
+      '<div class="sub">' + s.n + ' Spieler + 1 R4 · Ø T1 ' + (s.known ? fmt(s.avg) : '–') + ' (' + s.known + ' mit Meldung)</div>' + mgJoinSum(st, G, i) +
       '<div class="mglbl">R4 – Kontrolle</div><div class="mgrow"><span class="nm">' + esc(G.r4) + '</span>' +
         (!by[G.r4] ? '<span class="v stale">nicht in der Mitgliederliste</span>' : (by[G.r4].rank !== 'R4' && by[G.r4].rank !== 'R5') ? '<span class="v stale">ist kein R4 mehr</span>' : '') +
         '<select data-mgr4="' + i + '" title="R4 der Gruppe wechseln">' + r4opts(G.r4) + '</select></div>' +
@@ -128,7 +145,7 @@ function mgRender(){
       '<button class="mini okb" data-mgadd="' + esc(r.p.name) + '" data-g="' + r.g + '" title="Empfehlung übernehmen">→ G' + (r.g + 1) + '</button></div>';
   }).join('') || '<div class="empty">Alle aktiven Spieler sind einer Gruppe zugeordnet.</div>';
   $('mgApplyAll').disabled = !recs.length; $('mgApplyAll').style.opacity = recs.length ? '' : .4;
-  mgRenderMentors(st, by);
+  mgRenderMentors(st, by); mgRenderOpen(st);
   var lead = D.players.filter(function(p){ return (p.rank === 'R4' || p.rank === 'R5') && !inGroups[p.name]; }).map(function(p){ return p.name + ' (' + p.rank + ')'; });
   $('mgLead').textContent = lead.length ? 'R4/R5 ohne eigene Gruppe (werden nicht verteilt): ' + lead.join(', ') : '';
   var miss = Object.keys(inGroups).filter(function(n){ return !by[n]; });
@@ -164,9 +181,23 @@ function mgSetR4(st, i, name){
 }
 function mgMove(st, name, val){
   st.groups.forEach(function(G){ G.mentors = G.mentors.filter(function(n){ return n !== name; }); G.members = G.members.filter(function(n){ return n !== name; }); });
-  if (!val || val === 'x') return;
+  st.join = st.join || {};
+  if (!val || val === 'x') { delete st.join[name]; return; }
   var i = +val.slice(1), G = st.groups[i]; if (!G) return;
   (val[0] === 't' ? G.mentors : G.members).push(name);
+  // Beitritt im Spiel: bei neuer Gruppe offen; Rollenwechsel in derselben Gruppe ändert nichts
+  var j = st.join[name];
+  if (!j || j.g !== i) st.join[name] = { g: i, at: new Date().toISOString(), ok: null };
+}
+// Beitrittsstatus: 'ok' (im Spiel beigetreten), 'open' (zugewiesen, noch nicht beigetreten), 'unknown' (älterer Stand ohne Angabe)
+function mgJoin(st, name, i){ var j = st.join && st.join[name]; if (!j || j.g !== i) return { s: 'unknown' }; return j.ok ? { s: 'ok', t: j.ok } : { s: 'open', t: j.at }; }
+function mgSetJoin(st, name, i, ok){ st.join = st.join || {}; var j = st.join[name] || { g: i, at: new Date().toISOString() }; j.g = i; j.ok = ok ? new Date().toISOString() : null; if (!ok) j.at = j.at || new Date().toISOString(); st.join[name] = j; }
+function mgOpenList(st){ var out = []; st.groups.forEach(function(G, i){ G.mentors.concat(G.members).forEach(function(n){ var j = mgJoin(st, n, i); if (j.s === 'open') out.push({ n: n, g: i, r4: G.r4, t: j.t }); }); });
+  return out.sort(function(a, b){ return new Date(a.t) - new Date(b.t); }); }
+function mgJoinChat(list){
+  var by = {}; list.forEach(function(x){ (by[x.g] = by[x.g] || []).push(x); });
+  return Object.keys(by).map(function(g){ var l = by[g], G = l[0];
+    return 'Mentorengruppe ' + (+g + 1) + ' (R4: ' + G.r4 + ') – bitte im Spiel beitreten / please join in the game: ' + l.map(function(x){ return '@' + x.n; }).join(' '); }).join('\n');
 }
 function mgRename(o, nn){
   if (!D || !D.players.some(function(p){ return p.name === nn; })) return;
@@ -175,6 +206,7 @@ function mgRename(o, nn){
     if (G.r4 === o) { G.r4 = nn; hit = true; }
     ['mentors','members'].forEach(function(k){ G[k] = G[k].map(function(x){ if (x === o) { hit = true; return nn; } return x; }); });
   });
+  if (st.join && st.join[o]) { st.join[nn] = st.join[o]; delete st.join[o]; }
   if (hit) mgSave(st).then(renderMembers);
 }
 function mgChat(){
@@ -206,6 +238,27 @@ function mgChat(){
     var st = mgState(); mgMove(st, b.dataset.mgment, 't' + b.dataset.g); mgSave(st); mgRender(); renderMembers();
   });
   $('mgR1').addEventListener('change', function(){ mgRender(); });
+  // Beitritt im Spiel bestätigen / zurücksetzen
+  document.getElementById('tab-mg').addEventListener('click', function(e){
+    var b = e.target.closest('[data-mgjoin]');
+    if (b) { var st = mgState(); if (b.dataset.v === '0' && !confirm(b.dataset.mgjoin + ' wieder auf „noch nicht beigetreten“ setzen?')) return;
+      mgSetJoin(st, b.dataset.mgjoin, +b.dataset.g, b.dataset.v === '1'); mgSave(st); mgRender(); return; }
+    var a = e.target.closest('[data-mgallok]');
+    if (a) { var st2 = mgState(), i = +a.dataset.mgallok, G = st2.groups[i]; if (!confirm('Alle noch nicht erfassten Spieler in Gruppe ' + (i + 1) + ' als „im Spiel beigetreten“ markieren?')) return;
+      G.mentors.concat(G.members).forEach(function(n){ if (mgJoin(st2, n, i).s === 'unknown') mgSetJoin(st2, n, i, true); }); mgSave(st2); mgRender(); }
+  });
+  $('mgOpenCopy').addEventListener('click', function(){ copyText(mgJoinChat(mgOpenList(mgState())), 'mgOpenMsg'); });
+  $('mgOpenPm').addEventListener('click', function(){
+    var l = mgOpenList(mgState()); if (!l.length) return;
+    var by = {}; l.forEach(function(x){ (by[x.g] = by[x.g] || []).push(x); });
+    if (!confirm('Erinnerung als Nachricht an ' + l.length + ' Spieler senden? Sie sehen sie beim nächsten Anmelden unter „Funk“ und müssen sie bestätigen.')) return;
+    var m = $('mgOpenMsg'); m.textContent = 'Sende …'; m.className = 'note ok';
+    Promise.all(Object.keys(by).map(function(g){ var G = by[g][0];
+      return rpc('admin_msg', { p_pw: PW, p_actor: ACTOR || null, p_data: { names: by[g].map(function(x){ return x.n; }), subject: 'Mentorengruppe ' + (+g + 1) + ' / Mentor group ' + (+g + 1),
+        body: 'Bitte tritt im Spiel deiner Mentorengruppe bei: Gruppe ' + (+g + 1) + ', R4: ' + G.r4 + '.\n\nPlease join your mentor group in the game: group ' + (+g + 1) + ', R4: ' + G.r4 + '.' } }); }))
+      .then(function(){ m.textContent = 'Gesendet an ' + l.length + ' Spieler.'; m.className = 'note ok'; })
+      .catch(function(e){ m.textContent = 'Fehler: ' + e.message; m.className = 'note err'; });
+  });
   $('mgFree').addEventListener('change', function(e){
     var s = e.target.closest('select[data-mgpick]'); if (!s || !s.value) return;
     var st = mgState(); mgMove(st, s.dataset.mgpick, s.value); mgSave(st); mgRender(); renderMembers();
