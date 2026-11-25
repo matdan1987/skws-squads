@@ -803,6 +803,12 @@
     var dv = lvlBox(T.devilLevel, '😈', s.d90 || 0, lvlD, DEV_T, T.devL, '#ff6b6b'); if (!lvlD) dv.lastChild.textContent = '😇';
     lv.appendChild(dv); c.appendChild(lv);
     if (own) c.appendChild(avUploader(n, AT));
+    // Fremdes Profil: direkt eine Nachricht schreiben (ohne Anmeldung führt der Knopf zur PIN-Anmeldung)
+    if (!own && DATA.members.indexOf(n) >= 0) {
+      var pmr = el('div', 'btnrow prof-pm'), pmb = el('button', 'btn', (FUNK_I18N[LANG] || FUNK_I18N.en).newMsg); pmb.type = 'button';
+      pmb.addEventListener('click', function(){ if (window.Funk && Funk.session()) { showTab('funk'); Funk.compose(n); } else { showTab('form'); openAuth(); } });
+      pmr.appendChild(pmb); c.appendChild(pmr);
+    }
     box.appendChild(c);
     // Auszeichnungen: Plaketten, Teilnehmermarken und Erfolge in einer Karte
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, aw = badgeCard(n);

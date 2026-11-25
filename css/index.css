@@ -300,3 +300,4 @@
 .ev-intro{margin:0 4px 10px}
 .tabs button .fk-badge{margin-left:4px}
 @media (max-width:420px){ .tabs{padding:3px;gap:2px} .tabs button{font-size:13.5px;padding:9px 1px} .tabs button .fk-badge{margin-left:2px} }
+.prof-pm{margin-top:12px}.prof-pm .btn{width:100%}
