@@ -352,3 +352,21 @@ textarea.arc-rem{min-height:0;height:auto}
 .abl-help.hide{display:none}
 .abl-help b{color:#f5b942}
 .abl-more{margin-top:8px}
+
+/* Schritt 1: Anmeldung */
+.ev-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 8px}
+.ev-head b{font-size:17px}
+.ev-pill{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px}
+.ev-pill.on{background:rgba(80,200,140,.15);color:var(--ok);border:1px solid rgba(80,200,140,.5)}
+.ev-pill.off{background:rgba(255,92,122,.12);color:#ff8aa0;border:1px solid rgba(255,92,122,.45)}
+.ev-head .small{flex-basis:100%}
+.ev-prog{margin:0 0 10px;font-size:14px}.ev-prog .fk-bar{margin-top:5px}
+.ev-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.ev-tile{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.ev-tile small{color:var(--muted);font-size:12px}.ev-tile b{font-size:15px}.ev-tile span{color:var(--muted);font-size:12px}
+.ev-todo{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
+.ev-todo button{width:100%}
+.ev-todo .ghostbtn{background:none;border:1px dashed var(--line);color:var(--muted);padding:8px}
+.ev-more{margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.ev-more > summary{font-size:14px;font-weight:600;color:var(--text);margin:0}
+.ev-start{border:1px solid rgba(92,200,255,.35);border-radius:10px;padding:10px;background:rgba(92,200,255,.05)}
