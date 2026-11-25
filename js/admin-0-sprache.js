@@ -325,7 +325,7 @@ ADMIN_I18N.en = {
 ADMIN_I18N.en.__tpl = {
   'vor # Tagen':'# days ago', '# Empfänger':'# recipients', '# Spieler':'# players', '# in 90 Tagen':'# in 90 days', '# nicht öffentlich':'# not public',
   'Nachricht an # Spieler senden?':'Send message to # players?', '# von # bestätigt':'# of # confirmed', '# von # Spielern haben eine PIN':'# of # players have a PIN', '# noch mit Start-PIN':'# still with starter PIN',
-  'Heute noch # von 5 Geschenken frei':'# of 5 gifts left today', '# gesperrt · # nur Ersatz':'# blocked · # substitute only', '# mit Vorrang':'# with priority', 'Runde #':'Round #'
+  'Heute noch # von 5 Geschenken frei':'# of 5 gifts left today', '# gesperrt · # nur Ersatz':'# blocked · # substitute only', '# mit Vorrang':'# with priority', 'Runde #':'Round #', '# von # nachgetragen':'# of # entered'
 };
 
 /* ---------- Übersetzer ---------- */
