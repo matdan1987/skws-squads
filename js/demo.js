@@ -21,6 +21,8 @@
   function memLoad(k){ try { return JSON.parse(oG.call(SS, k) || 'null'); } catch(e){ return null; } }
   mem.l = memLoad('skws_demo_ls') || { skws_name: ME, skws_funk: JSON.stringify({ tok: 'demo-' + ME, name: ME }), skws_admin_pw_keep: 'demo', skws_admin_actor: 'Demo' };
   mem.s = memLoad('skws_demo_ss') || {};
+  // Sprache des Geräts übernehmen, damit die Demo in der gewohnten Sprache startet
+  ['skws_lang','skws_admin_lang'].forEach(function(k){ try { var v = LS && oG.call(LS, k); if (v && !(k in mem.l)) mem.l[k] = v; } catch(e){} });
   function box(st){ return st === LS ? 'l' : st === SS ? 's' : null; }
   function own(k){ return String(k).indexOf('skws_demo') === 0; }
   function memSave(b){ oS.call(SS, b === 'l' ? 'skws_demo_ls' : 'skws_demo_ss', JSON.stringify(mem[b])); }
