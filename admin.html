@@ -6,7 +6,7 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=18">
+<link rel="stylesheet" href="css/admin.css?v=21">
 </head>
 <body>
 <div class="wrap">
@@ -151,7 +151,8 @@
 
     <!-- Spieler -->
     <section id="tab-pl" class="hide">
-      <div class="card pl-pick"><button class="mini" id="plBack" type="button">← Mitgliederliste</button><select id="plSelect"></select></div>
+      <div class="card"><div class="pl-pick"><button class="mini" id="plBack" type="button">← Mitgliederliste</button><select id="plSelect"></select></div>
+        <input id="plQ" type="search" placeholder="🔍 Spieler suchen …" autocomplete="off" style="margin-top:8px"><div id="plHits" class="pl-hits"></div></div>
       <div id="plAkte"></div>
       <div class="tiles" id="plTiles"></div>
       <div class="card"><h2>Kampfkraft je Trupp</h2><div class="chart" id="chartPlayer"></div></div>
@@ -573,7 +574,7 @@
 </div>
 
 <script src="js/demo.js?v=2"></script>
-<script src="js/admin-0-sprache.js?v=20"></script>
+<script src="js/admin-0-sprache.js?v=21"></script>
 <script src="js/klapp.js?v=18"></script>
 <script src="js/zuschnitt.js?v=19"></script>
 <script src="js/admin-1-core.js?v=18"></script>
@@ -588,7 +589,7 @@
 <script src="js/admin-8c-zugaenge.js?v=18"></script>
 <script src="js/admin-8d-marken.js?v=18"></script>
 <script src="js/admin-8e-archiv.js?v=18"></script>
-<script src="js/admin-8f-mitglieder.js?v=20"></script>
+<script src="js/admin-8f-mitglieder.js?v=21"></script>
 <script src="js/admin-9-start.js?v=18"></script>
 </body>
 </html>

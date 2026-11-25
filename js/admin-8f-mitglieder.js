@@ -111,3 +111,17 @@ document.addEventListener('change', function(e){
     }).catch(function(err){ toast(String(err && err.message).indexOf('ERR_AUTH') >= 0 ? 'Nicht angemeldet – bitte neu anmelden.' : 'Fehler – ist die Datenbank-Erweiterung „admin_avatar“ eingespielt?', false); });
   });
 });
+
+// Suche in der Spielerakte: Treffer antippen öffnet die Akte (Enter = erster Treffer)
+function plHits(){
+  var q = ($('plQ').value || '').trim().toLowerCase(), box = $('plHits');
+  if (!q) { box.innerHTML = ''; return; }
+  var l = D.all.filter(function(p){ return p.name.toLowerCase().indexOf(q) >= 0; })
+    .sort(function(a, b){ return (b.active - a.active) || (a.name.toLowerCase().indexOf(q) - b.name.toLowerCase().indexOf(q)) || a.name.localeCompare(b.name, 'de', { sensitivity:'base' }); }).slice(0, 10);
+  box.innerHTML = l.length ? l.map(function(p){ return '<div class="mlrow" data-plhit="' + esc(p.name) + '">' + av(p.name, 30) + '<div class="ml-tx"><b>' + esc(p.name) + '</b> <span class="small muted">' + p.rank + (p.active ? '' : ' · ausgeschieden') + '</span></div><span class="ml-go">›</span></div>'; }).join('')
+    : '<div class="empty">Keine Treffer.</div>';
+}
+function plOpen(n){ $('plQ').value = ''; $('plHits').innerHTML = ''; curPlayer = n; $('plSelect').value = n; renderPlayer(); }
+$('plQ').addEventListener('input', plHits);
+$('plQ').addEventListener('keydown', function(e){ if (e.key !== 'Enter') return; var f = $('plHits').querySelector('[data-plhit]'); if (f) { e.preventDefault(); plOpen(f.dataset.plhit); } });
+$('plHits').addEventListener('click', function(e){ var r = e.target.closest('[data-plhit]'); if (r) plOpen(r.dataset.plhit); });
