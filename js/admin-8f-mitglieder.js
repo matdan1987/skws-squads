@@ -54,7 +54,8 @@ function stammHtml(p){
     h += row('Name', '<b>' + esc(p.name) + '</b><button class="mini" data-act="rename" data-name="' + esc(p.name) + '">Umbenennen</button>');
     h += row('Allianzbeitritt', EX ? ajInputs(p.name) : '<span class="small muted">lädt …</span>');
     h += row('Auf dieser Seite', p.joinedAt ? fmtDate(p.joinedAt) : '–');
-    if (AVA[p.name]) h += row('Avatar', '<button class="mini" data-act="avdel" data-name="' + esc(p.name) + '">Avatar entfernen</button>');
+    h += row('Profilbild', '<label class="mini av-up">📷 ' + (AVA[p.name] ? 'Neues Bild hochladen' : 'Bild hochladen') + '<input type="file" accept="image/*" data-avup="' + esc(p.name) + '" hidden></label>' +
+      (AVA[p.name] ? '<button class="mini" data-act="avdel" data-name="' + esc(p.name) + '">Entfernen</button>' : ''));
     h += row('Status', '<span>aktiv</span> <button class="mini danger" data-act="leave" data-name="' + esc(p.name) + '">Ausgeschieden …</button>');
   } else {
     h += row('Rang', p.rank);
@@ -82,3 +83,28 @@ $('mlList').addEventListener('toggle', function(e){ var d = e.target; if (!d.dat
   if (($('mlQ').value || '').trim() || $('mlFilter').value !== 'all') return;
   ML_OPEN[d.dataset.mlr] = d.open; ls('skws_admin_mlopen', JSON.stringify(ML_OPEN)); }, true);
 $('plBack').addEventListener('click', function(){ showTab('mlist'); window.scrollTo(0, 0); });
+
+// Profilbild für einen Spieler hochladen (R4/R5): quadratisch zuschneiden, verkleinern, als JPEG speichern
+function avShrink(file, cb){
+  var rd = new FileReader();
+  rd.onload = function(){ var im = new Image(); im.onload = function(){
+    var c = document.createElement('canvas'), S = 320; c.width = c.height = S; var g = c.getContext('2d');
+    var m = Math.min(im.width, im.height), sx = (im.width - m) / 2, sy = (im.height - m) / 2;
+    g.fillStyle = '#0b1220'; g.fillRect(0, 0, S, S); g.drawImage(im, sx, sy, m, m, 0, 0, S, S);
+    var q = .85, url = c.toDataURL('image/jpeg', q); while (url.length > 76000 && q > .3) { q -= .1; url = c.toDataURL('image/jpeg', q); }
+    cb(url);
+  }; im.onerror = function(){ cb(null); }; im.src = rd.result; };
+  rd.onerror = function(){ cb(null); }; rd.readAsDataURL(file);
+}
+document.addEventListener('change', function(e){
+  var inp = e.target.closest('input[data-avup]'); if (!inp || !inp.files || !inp.files[0]) return;
+  var n = inp.dataset.avup;
+  avShrink(inp.files[0], function(url){
+    inp.value = '';
+    if (!url) { toast('Das Bild konnte nicht gelesen werden.', false); return; }
+    rpc('admin_avatar_set', { p_pw: PW, p_name: n, p_data: url, p_actor: ACTOR || null }).then(function(r){
+      if (!r || !r.ok) { toast(r && r.err === 'ERR_IMAGE' ? 'Bild ungültig oder zu groß.' : 'Speichern fehlgeschlagen.', false); return; }
+      AVA[n] = url; showTab(store('skws_admin_tab') || 'pl'); toast('Profilbild von ' + n + ' gespeichert.', true);
+    }).catch(function(err){ toast(String(err && err.message).indexOf('ERR_AUTH') >= 0 ? 'Nicht angemeldet – bitte neu anmelden.' : 'Fehler – ist die Datenbank-Erweiterung „admin_avatar“ eingespielt?', false); });
+  });
+});
