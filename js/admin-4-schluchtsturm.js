@@ -141,6 +141,7 @@ function csRender(){
   $('csMetric').value = st.metric;
   evRender('cs'); csPubInfo();
   csRenderList();
+  if (typeof ablRender === 'function') ablRender('cs');
 }
 function csRenderList(){
   var st = csState(), m = st.metric, q = $('csSearch').value.trim().toLowerCase();
@@ -187,7 +188,7 @@ function csPubInfo(){
 function csPublish(plan){
   $('csMsg').textContent = 'Speichere…'; $('csMsg').className = 'note';
   rpc('admin_cs_publish', { p_pw: PW, p_plan: plan, p_actor: ACTOR || null }).then(function(){
-    CS_PUB = plan; csPubInfo();
+    CS_PUB = plan; csPubInfo(); if (typeof ablRender === 'function') ablRender('cs');
     $('csMsg').textContent = plan ? 'Veröffentlicht – die Spieler sehen ihren Schluchtsturm-Einsatz jetzt auf der Seite.' : 'Veröffentlichung zurückgenommen.'; $('csMsg').className = 'note ok';
   }).catch(function(e){ $('csMsg').textContent = 'Fehler beim Speichern – ist die Datenbank-Erweiterung „ausbau“ eingespielt? ' + (e && e.message || ''); $('csMsg').className = 'note err'; });
 }

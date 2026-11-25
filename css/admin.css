@@ -332,3 +332,23 @@ textarea.arc-rem{min-height:0;height:auto}
 .av-up{cursor:pointer;display:inline-flex;align-items:center;gap:4px}
 .pl-hits .mlrow:first-child{border-top:0}
 .pl-hits{margin-top:4px}
+
+/* Ablauf Wüstensturm/Schluchtsturm */
+.abl-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.abl-top h2{margin:0}
+.abl-tg{display:flex;align-items:center;gap:6px;white-space:nowrap}.abl-tg input{width:16px;height:16px}
+.abl-steps{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.abl-steps li{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:rgba(255,255,255,.02)}
+.abl-steps li:hover{background:rgba(92,200,255,.07)}
+.abl-steps li div{flex:1;min-width:0}.abl-steps li b{display:block;font-size:14px}.abl-steps li small{color:var(--muted);font-size:12px}
+.abl-n{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;background:var(--bg2);border:1px solid var(--line);color:var(--muted)}
+.abl-steps li.done .abl-n{background:rgba(80,200,140,.18);border-color:rgba(80,200,140,.6);color:var(--ok)}
+.abl-steps li.now{border-color:rgba(92,200,255,.7);box-shadow:0 0 0 1px rgba(92,200,255,.35)}
+.abl-steps li.now .abl-n{background:linear-gradient(135deg,#5cc8ff,#7c5cff);border:0;color:#081020}
+.abl-go{opacity:.5;font-size:18px}
+.abl-now{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(92,200,255,.08);border:1px solid rgba(92,200,255,.35);font-size:14px;line-height:1.45}
+.abl-now .mini{margin-left:4px}
+.abl-help{display:flex;gap:8px;align-items:flex-start;margin:0 0 10px;padding:9px 11px;border-radius:10px;background:rgba(245,185,66,.08);border:1px solid rgba(245,185,66,.35);font-size:13px;line-height:1.45;color:var(--text)}
+.abl-help.hide{display:none}
+.abl-help b{color:#f5b942}
+.abl-more{margin-top:8px}
