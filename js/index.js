@@ -122,9 +122,10 @@
     }
     PLAN_HIT[kind] = hit;
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, pk = [P.at, hit.t, LANG, n].join('|'), pic = $(kind + 'Pic');
-    if (pic.dataset.k !== pk) { pic.innerHTML = ''; pic.dataset.k = pk; }
-    $(kind + 'PicBtn').textContent = pic.firstChild ? X.planHide : X.planShow;
+    $(kind + 'PicBtn').textContent = X.planShow;
     card.classList.remove('hide');
+    // Bild direkt mit anzeigen (nur neu zeichnen, wenn sich Plan, Team, Sprache oder Name geändert haben)
+    if (pic.dataset.k !== pk) { pic.innerHTML = ''; pic.dataset.k = pk; planPic(kind); }
   }
   /* ---------- Plan-Bild (gleiches Bild wie im Admin-Bereich, eigener Name gelb markiert) ---------- */
   var PLAN_HIT = {}, PB_WAIT = null;
@@ -138,14 +139,13 @@
   }
   function planPic(kind){
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, box = $(kind + 'Pic'), btn = $(kind + 'PicBtn'), hit = PLAN_HIT[kind];
-    if (box.firstChild) { box.innerHTML = ''; btn.textContent = X.planShow; return; }
     if (!hit) return;
-    var lang = LANG === 'de' ? 'de' : 'en', me = $('name').value;
-    btn.disabled = true; btn.textContent = X.planLoad;
+    var lang = LANG === 'de' ? 'de' : 'en', me = $('name').value, key = box.dataset.k;
+    btn.classList.add('hide'); box.innerHTML = ''; var ld = document.createElement('div'); ld.className = 'hint'; ld.textContent = X.planLoad; box.appendChild(ld);
     function done(url){
-      btn.disabled = false;
-      if (!url) { btn.textContent = X.planShow; box.innerHTML = ''; var er = document.createElement('div'); er.className = 'hint'; er.textContent = X.planErr; box.appendChild(er); return; }
-      btn.textContent = X.planHide; box.innerHTML = '';
+      if (box.dataset.k !== key) return;   // inzwischen anderer Plan
+      if (!url) { btn.classList.remove('hide'); box.innerHTML = ''; var er = document.createElement('div'); er.className = 'hint'; er.textContent = X.planErr; box.appendChild(er); return; }
+      box.innerHTML = '';
       var im = document.createElement('img'); im.src = url; im.alt = X.planShow; im.addEventListener('click', function(){ planBig(url); }); box.appendChild(im);
       var h = document.createElement('div'); h.className = 'hint'; h.textContent = X.planHint; box.appendChild(h);
       var name = 'SKWS-' + (kind === 'ds' ? 'Wuestensturm' : 'Schluchtsturm') + '-Team-' + hit.t + '.jpg', A = window.SKWSAndroid;
