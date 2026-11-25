@@ -99,8 +99,11 @@ function avShrink(file, cb){
 document.addEventListener('change', function(e){
   var inp = e.target.closest('input[data-avup]'); if (!inp || !inp.files || !inp.files[0]) return;
   var n = inp.dataset.avup;
-  avShrink(inp.files[0], function(url){
+  var zl = 'de'; try { zl = localStorage.getItem('skws_admin_lang') || 'de'; } catch(x){}
+  var shrink = window.Zuschnitt ? function(f, cb){ Zuschnitt.open(f, zl, cb); } : avShrink;
+  shrink(inp.files[0], function(url, cancel){
     inp.value = '';
+    if (cancel) return;
     if (!url) { toast('Das Bild konnte nicht gelesen werden.', false); return; }
     rpc('admin_avatar_set', { p_pw: PW, p_name: n, p_data: url, p_actor: ACTOR || null }).then(function(r){
       if (!r || !r.ok) { toast(r && r.err === 'ERR_IMAGE' ? 'Bild ungültig oder zu groß.' : 'Speichern fehlgeschlagen.', false); return; }

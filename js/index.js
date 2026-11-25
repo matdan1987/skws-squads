@@ -747,7 +747,7 @@
     var data = null;
     bp.addEventListener('click', function(){ fi.click(); });
     fi.addEventListener('change', function(){ var f = fi.files && fi.files[0]; if (!f) return; msg.textContent = '…';
-      avShrink(f, function(u){ data = u; msg.textContent = u ? '' : AT.err; pv.innerHTML = ''; if (u) { var im = document.createElement('img'); im.src = u; im.style.cssText = 'width:64px;height:64px;border-radius:50%;object-fit:cover'; pv.appendChild(im); } bs.disabled = !u; }); });
+      (window.Zuschnitt ? function(file, cb){ Zuschnitt.open(file, LANG, cb); } : avShrink)(f, function(u, cancel){ fi.value = ''; if (cancel) { msg.textContent = ''; return; } data = u; msg.textContent = u ? '' : AT.err; pv.innerHTML = ''; if (u) { var im = document.createElement('img'); im.src = u; im.style.cssText = 'width:64px;height:64px;border-radius:50%;object-fit:cover'; pv.appendChild(im); } bs.disabled = !u; }); });
     function send(d){
       msg.textContent = '…'; msg.style.color = '';
       rpc('set_avatar', { p_token: tok(), p_data: d || '' }).then(function(r){
