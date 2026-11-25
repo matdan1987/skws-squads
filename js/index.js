@@ -120,8 +120,56 @@
       var nl = document.createElement('li'); nl.style.listStyle = 'none'; nl.style.marginLeft = '-20px';
       var nb = document.createElement('b'); nb.textContent = L.note; nl.appendChild(nb); nl.appendChild(document.createTextNode(hit.T.note)); ol.appendChild(nl);
     }
+    PLAN_HIT[kind] = hit;
+    var X = XTRA_I18N[LANG] || XTRA_I18N.en, pk = [P.at, hit.t, LANG, n].join('|'), pic = $(kind + 'Pic');
+    if (pic.dataset.k !== pk) { pic.innerHTML = ''; pic.dataset.k = pk; }
+    $(kind + 'PicBtn').textContent = pic.firstChild ? X.planHide : X.planShow;
     card.classList.remove('hide');
   }
+  /* ---------- Plan-Bild (gleiches Bild wie im Admin-Bereich, eigener Name gelb markiert) ---------- */
+  var PLAN_HIT = {}, PB_WAIT = null;
+  function planLib(cb){
+    if (typeof dstDraw === 'function') return cb(true);
+    if (PB_WAIT) { PB_WAIT.push(cb); return; }
+    PB_WAIT = [cb]; var sc = document.createElement('script'); sc.src = 'js/plan-bild.js?v=1';
+    function fin(ok){ var l = PB_WAIT; PB_WAIT = null; if (!ok) sc.remove(); l.forEach(function(f){ f(ok); }); }
+    sc.onload = function(){ fin(typeof dstDraw === 'function'); }; sc.onerror = function(){ fin(false); };
+    document.head.appendChild(sc);
+  }
+  function planPic(kind){
+    var X = XTRA_I18N[LANG] || XTRA_I18N.en, box = $(kind + 'Pic'), btn = $(kind + 'PicBtn'), hit = PLAN_HIT[kind];
+    if (box.firstChild) { box.innerHTML = ''; btn.textContent = X.planShow; return; }
+    if (!hit) return;
+    var lang = LANG === 'de' ? 'de' : 'en', me = $('name').value;
+    btn.disabled = true; btn.textContent = X.planLoad;
+    function done(url){
+      btn.disabled = false;
+      if (!url) { btn.textContent = X.planShow; box.innerHTML = ''; var er = document.createElement('div'); er.className = 'hint'; er.textContent = X.planErr; box.appendChild(er); return; }
+      btn.textContent = X.planHide; box.innerHTML = '';
+      var im = document.createElement('img'); im.src = url; im.alt = X.planShow; im.addEventListener('click', function(){ planBig(url); }); box.appendChild(im);
+      var h = document.createElement('div'); h.className = 'hint'; h.textContent = X.planHint; box.appendChild(h);
+      var name = 'SKWS-' + (kind === 'ds' ? 'Wuestensturm' : 'Schluchtsturm') + '-Team-' + hit.t + '.jpg', A = window.SKWSAndroid;
+      if (A && A.saveImage) { var b = document.createElement('button'); b.type = 'button'; b.className = 'mini'; b.textContent = X.planSave; b.addEventListener('click', function(){ try { A.saveImage(name, url); } catch(e){} }); box.appendChild(b); }
+      else if (!A) { var a = document.createElement('a'); a.className = 'mini'; a.download = name; a.href = url; a.textContent = X.planSave; box.appendChild(a); }
+    }
+    planLib(function(ok){
+      if (!ok) return done(null);
+      try {
+        if (kind === 'ds') dstLoad(hit.t, function(){ try { done(DST_IMG ? dstDraw(hit.T, lang, me) : null); } catch(e){ done(null); } });
+        else csLoadTpl(hit.t, lang, function(im){ try { done(im ? csDraw(hit.T, hit.t, lang, im, me) : null); } catch(e){ done(null); } });
+      } catch(e){ done(null); }
+    });
+  }
+  function planBig(url){
+    var o = document.createElement('div'); o.className = 'plan-big';
+    var im = document.createElement('img'); im.src = url; o.appendChild(im);
+    var x = document.createElement('button'); x.type = 'button'; x.className = 'plan-x'; x.textContent = '✕'; o.appendChild(x);
+    im.addEventListener('click', function(){ o.classList.toggle('zoom'); });
+    x.addEventListener('click', function(){ o.remove(); });
+    o.addEventListener('click', function(e){ if (e.target === o) o.remove(); });
+    document.body.appendChild(o);
+  }
+  ['ds', 'cs'].forEach(function(k){ $(k + 'PicBtn').addEventListener('click', function(){ planPic(k); }); });
 
   /* ---------- Formular ---------- */
   function loadMember(){

@@ -77,6 +77,7 @@
     db.ds = { at: iso(NOW - 2 * 60 * MIN), metric: 't1', teams: {
       A: { time: 'Fr 14:00', opp: 'Beispiel-Allianz', tac: 'std', note: 'Alle: bei Minute 10 gemeinsam ans Silo!', m: [[ME,'silo'],['Orion','silo'],['Lyra','silo'],['Vega','ref2'],['Atlas','ref2'],['Juno','ref1'],['Rigel','info'],['Zephyr','hosp1'],['Sirius','hosp2']], s: ['Talon','Echo'] },
       B: { time: 'Fr 21:00', tac: 'std', m: [['Mira','silo'],['Altair','silo'],['Deneb','ref2'],['Castor','ref1'],['Pollux','info']], s: ['Blaze'] } } };
+    db.cs = { at: iso(NOW - 3 * 60 * MIN), teams: { A: { time: 'Sa 15:00', tac: 'lab', ph: ['p0','p7','p14'], g: { sturm: [['take','tower'],['hold','tower'],['rally','lab']], dc1: [['take','dc1'],['hold','dc1'],['hold','dc1']], dc2: [['take','dc2'],['hold','dc2'],['hold','dc2']], sw1: [['take','sw1'],['hold','sw1'],['hold','sw1']] }, open: { ds1:7, ds2:7, sf1:10, sf2:10, lab:14 }, m: [['Orion','sturm'],[ME,'sturm'],['Lyra','sturm'],['Vega','dc1'],['Atlas','dc1'],['Juno','dc2'],['Rigel','sw1']], s: ['Echo'] } } };
     // Bonus / Malus
     function merit(name, kind, effect, reason, ago, vis, rounds){ db.merits.push({ id: ++db.id, name: name, kind: kind, effect: effect, scope: 'ds', reason: reason, rounds: rounds || null, until: null,
       created_at: iso(NOW - ago * DAY), vis: vis || 'public', note: null, by: 'Nova', revoked_at: null, revoked_by: null, left_ds: rounds || null, left_cs: null }); }
@@ -101,7 +102,7 @@
     return db;
   }
   function log(db, actor, action, target, details, ago){ db.log.unshift({ id: ++db.id, at: iso(Date.now() - (ago || 0) * MIN), actor: actor, action: action, target: target || null, details: details || {} }); }
-  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 2) { DB = makeDB(); DB.v = 2; }
+  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 3) { DB = makeDB(); DB.v = 3; }
   function save(){ try { oS.call(SS, 'skws_demo_db', JSON.stringify(DB)); } catch(e){} }
   save();
 
