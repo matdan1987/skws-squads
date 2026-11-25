@@ -3,7 +3,7 @@
    dazu kurze Hilfetexte in jeder Karte (lassen sich ausblenden). */
 var ABL_HELP = (function(){ try { return localStorage.getItem('skws_admin_help') !== '0'; } catch(e){ return true; } })();
 var ABL_TXT = {
-  ev: 'So geht’s: „Neue Anmelderunde starten“ aufklappen, Bezeichnung (z. B. KW 48), Anmeldeschluss und Uhrzeiten eintragen und starten. Dann „Aufruf für den Chat kopieren“ und im Allianz-Chat einfügen. Die Spieler antworten auf der Spielerseite unter „Events“ – hier siehst du live, wer wie geantwortet hat. Kurz vor dem Event: „In Schritt 2 übernehmen“.',
+  ev: 'So geht\u2019s: Runde mit Bezeichnung (z. B. KW 48), Anmeldeschluss und Uhrzeiten starten. Dann „📣 Aufruf für den Chat kopieren“ und im Allianz-Chat einfügen. Die Spieler antworten auf der Spielerseite unter „Events“ – hier siehst du live, wie viele schon geantwortet haben. Wer noch fehlt, erinnerst du mit „🔔 Erinnerung … kopieren“. Kurz vor dem Event: „➡ In Schritt 2 übernehmen“.',
   pick: 'Hier steht, wer in welchem Team spielt (Stamm oder Ersatz). Nach „In Schritt 2 übernehmen“ ist schon alles vorausgefüllt – die Stärksten zuerst, Wünsche der Spieler berücksichtigt. Prüfe die Zahlen oben und ändere bei Bedarf einzelne Spieler über ihr Auswahlfeld. Wichtig: genauso trägst du die Spieler anschließend im Spiel ein.',
   tac: 'Uhrzeit und (wenn bekannt) den Gegner je Team eintragen. Dann die Taktik wählen – unter der Auswahl steht, wann sie passt und was dafür und dagegen spricht. Im Zweifel die vorgeschlagene Taktik lassen. Die Sonderanweisung erscheint im Plan des Teams.',
   plan: '„Taktik erstellen“ verteilt die eingeteilten Spieler auf die Gebäude – die Stärksten auf die wichtigsten. Plan prüfen, dann Chat-Text oder Plan-Bild kopieren und im Chat teilen. Zum Schluss „Für Spieler veröffentlichen“: Dann sieht jeder seinen eigenen Einsatz auf der Spielerseite unter „Events“. „Beispiel zeigen“ ist nur zum Ausprobieren und wird nie veröffentlicht.'
@@ -61,7 +61,6 @@ function ablRender(k){
 function ablGo(k, i){
   var C = ablCards(k), el = [C.ev, C.pick, C.tac, C.plan, C.ev][i]; if (!el) return;
   if (window.Klapp && el.classList.contains('zu')) Klapp.open(el);
-  if (i === 0) { var nd = el.querySelector('details:not(.abl-more)'); if (nd && !evCur(k)) nd.open = true; }
   if (i === 4) { var ab = el.querySelector('[data-ev="absent"]'); if (ab) { var d = ab.closest('details'); if (d) d.open = true; el = d || el; } }
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
