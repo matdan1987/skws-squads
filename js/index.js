@@ -804,8 +804,6 @@
     lv.appendChild(dv); c.appendChild(lv);
     if (own) c.appendChild(avUploader(n, AT));
     box.appendChild(c);
-    // Meine Mentorengruppe (nur im eigenen Profil nach Anmeldung)
-    var gc = own ? groupCard(n, el) : null; if (gc) box.appendChild(gc);
     // Auszeichnungen: Plaketten, Teilnehmermarken und Erfolge in einer Karte
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, aw = badgeCard(n);
     var all = Object.keys(PROF_STATS), got = 0; ACH.forEach(function(a){ if (achTier(a, s, e).t) got++; });
@@ -846,6 +844,8 @@
     }
     sec.appendChild(info); var gl = el('div', 'sq-h'); gl.appendChild(el('label', 'l', '🎁 ' + G.title)); gl.appendChild(el('span', 'tag', gTot)); sec.appendChild(gl);
     fo.insertBefore(sec, fh.nextSibling); box.appendChild(fo);
+    // Meine Mentorengruppe (nur im eigenen Profil nach Anmeldung) – unter den Auszeichnungen
+    var gc = own ? groupCard(n, el) : null; if (gc) box.appendChild(gc);
     var nc = notesCard(n); if (nc) box.appendChild(nc);
   }
 
