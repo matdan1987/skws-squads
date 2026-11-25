@@ -138,7 +138,7 @@
     $('gstage').value = e && e.gstage ? String(e.gstage) : '';
     $('gpower').value = e && e.gpower ? String(Math.round(e.gpower)) : '';
     $('email').value = '';
-    renderAuth();
+    renderAuth(); loadClaims();
     if (e && e.lang && DATA.i18n[e.lang] && !store('skws_lang_manual')) setLang(e.lang, false);
     showMeta(); setMsg('');
   }
@@ -530,7 +530,7 @@
     document.body.appendChild(o);
   }
   /* ---------- Geschenke ---------- */
-  var PROF_GIFT = {}, GIFT_PICK = null, GIFT_MSG = '', PROF_BADGE = {};
+  var PROF_GIFT = {}, GIFT_PICK = null, GIFT_MSG = '', PROF_BADGE = {}, PROF_PLQ = {};
   var BADGE_IC = { ds:'🏜️', cs:'🧪' };
   // Interne Notizen (nur Mentoren der Gruppe und R4/R5, nach Anmeldung)
   var PROF_NOTES = {};
@@ -547,11 +547,60 @@
       t.appendChild(el('span', '', new Date(x.t).toLocaleDateString(LANG) + (x.by ? ' · ' + x.by : ''))); it.appendChild(t); c.appendChild(it); });
     return c;
   }
+  // Plaketten: Jahrgang, Saison, Treue, Stufen je Event (mit Seltenheit), längste Serie
+  var TIER_N = [5, 10, 25, 50], TIER_IC = ['🥉','🥈','🥇','💎'], LOYAL_M = [1, 3, 6, 12, 24, 36];
+  function plaques(n, c, el, X, l){
+    var P = PROF_PLQ[n] || {}, m = P.member, items = [];
+    if (m && m.years) m.years.forEach(function(y){ items.push({ ic:'📅', t: X.year.replace('{y}', y), cls:'py' }); });
+    if (m && m.seasons) m.seasons.forEach(function(s){ items.push({ ic: s.icon || '🎄', t: s.label, cls:'ps' }); });
+    if (m && m.from) {
+      var mon = Math.floor((new Date(m.to) - new Date(m.from)) / (30.44 * 86400000)), hit = 0, nx = null;
+      LOYAL_M.forEach(function(x){ if (mon >= x) hit = x; else if (nx === null) nx = x; });
+      if (hit) items.push({ ic:'🏅', t: X.loyal + ' · ' + (hit >= 12 ? (hit === 12 ? X.yr1 : X.yrs.replace('{n}', hit / 12)) : X.mon.replace('{n}', hit)), sub: nx ? X.nextT.replace('{n}', nx >= 12 ? (nx === 12 ? X.yr1 : X.yrs.replace('{n}', nx / 12)) : X.mon.replace('{n}', nx)) : '', cls:'pl' });
+    }
+    ['ds','cs'].forEach(function(k){
+      var cnt = l.filter(function(b){ return b.k === k; }).length, t = -1; TIER_N.forEach(function(x, i){ if (cnt >= x) t = i; });
+      var S = PROF_STATS || {}, all = Object.keys(S), key = k === 'ds' ? 'pds' : 'pcs';
+      if (t >= 0) { var have = all.filter(function(x){ return (S[x][key] || 0) >= TIER_N[t]; }).length;
+        items.push({ ic: TIER_IC[t], t: X[k] + ' · ' + X.tiers[t] + ' (' + cnt + '×)', sub: (all.length ? X.rare.replace('{p}', Math.max(1, Math.round(have / all.length * 100))) : '') + (TIER_N[t + 1] ? ' · ' + X.nextT.replace('{n}', TIER_N[t + 1] + '×') : ''), cls:'pt' + t }); }
+      else if (cnt) items.push({ ic:'▫️', t: X[k] + ' · ' + cnt + '/' + TIER_N[0], sub: X.nextT.replace('{n}', TIER_N[0] + '×') + ': ' + X.tiers[0], cls:'pn' });
+      var st = (P.streak || {})[k] || 0; if (st >= 2) items.push({ ic:'🔥', t: X[k] + ' · ' + X.streak.replace('{n}', st), cls:'pf' });
+    });
+    if (!items.length) return;
+    c.appendChild(el('label', 'l', X.plTitle));
+    var g = el('div', 'plq-grid');
+    items.forEach(function(x){ var d = el('div', 'plq ' + x.cls); d.appendChild(el('i', '', x.ic)); var t = el('div'); t.appendChild(el('b', '', x.t)); if (x.sub) t.appendChild(el('small', '', x.sub)); d.appendChild(t); g.appendChild(d); });
+    c.appendChild(g);
+    if (l.length) c.appendChild(el('label', 'l', X.bTitle));
+  }
+  // Selbstmeldung „Ich war dabei“ (nach Anmeldung, auf der Eintragen-Seite)
+  var CLAIMS = null;
+  function loadClaims(){
+    var s = window.Funk && Funk.session(); if (!s || s.name !== $('name').value) { CLAIMS = null; renderClaims(); return; }
+    rpc('claim_list', { p_token: s.tok }).then(function(r){ CLAIMS = r && r.ok ? r.items : null; renderClaims(); }).catch(function(){ CLAIMS = null; renderClaims(); });
+  }
+  function renderClaims(){
+    var box = $('claimCards'); if (!box) return; box.innerHTML = '';
+    if (!CLAIMS || !CLAIMS.length) return;
+    var X = XTRA_I18N[LANG] || XTRA_I18N.en, s = Funk.session(), c = document.createElement('div'); c.className = 'card';
+    var h = document.createElement('div'); h.className = 'sq-h'; var b = document.createElement('b'); b.textContent = X.claimT; h.appendChild(b); c.appendChild(h);
+    CLAIMS.forEach(function(e){
+      var r = document.createElement('div'); r.className = 'claim-row';
+      var i = document.createElement('i'); i.textContent = e.icon || '🎖️'; r.appendChild(i);
+      var t = document.createElement('b'); t.textContent = e.label; r.appendChild(t);
+      if (e.status) { var st = document.createElement('span'); st.className = 'claim-st ' + e.status; st.textContent = e.status === 'ok' ? X.claimOk : e.status === 'no' ? X.claimNo : X.claimP; r.appendChild(st); }
+      else if (e.open) { var bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn claim-btn'; bt.textContent = '✋ ' + X.claimB;
+        bt.addEventListener('click', function(){ bt.disabled = true; rpc('claim_send', { p_token: s.tok, p_event: e.id }).then(loadClaims).catch(function(){ bt.disabled = false; }); }); r.appendChild(bt); }
+      c.appendChild(r);
+    });
+    box.appendChild(c);
+  }
   // Teilnehmermarken: automatisch je Wüstensturm/Schluchtsturm als Stammspieler, dazu eigene Marken von R4/R5
   function badgeCard(n){
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, l = PROF_BADGE[n] || [], c = document.createElement('div'); c.className = 'card';
     function el(tag, cls, txt){ var x = document.createElement(tag); if (cls) x.className = cls; if (txt !== undefined) x.textContent = txt; return x; }
     var hd = el('div', 'sq-h'); hd.appendChild(el('b', '', '🎖️ ' + X.bTitle)); hd.appendChild(el('span', 'tag', String(l.length))); c.appendChild(hd);
+    plaques(n, c, el, X, l);
     if (!l.length) { c.appendChild(el('div', 'hint', X.bNone)); return c; }
     var cnt = {}; l.forEach(function(b){ var k = b.k === 'x' ? 'x:' + (b.icon || '🎖️') + (b.label || '') : b.k; cnt[k] = cnt[k] || { n:0, b:b }; cnt[k].n++; });
     var shelf = el('div', 'gift-shelf');
@@ -676,7 +725,7 @@
     var n = PROF_VIEW || $('name').value;
     if (n) loadAvatars([n], renderProfile);
     if (!PROF_STATS && !PROF_BUSY) { PROF_BUSY = true; rpc('profile_stats').then(function(r){ PROF_STATS = r || {}; }).catch(function(){ PROF_STATS = {}; }).then(function(){ PROF_BUSY = false; renderProfile(); }); }
-    if (n && !PROF_STK[n]) rpc('player_profile', { p_name: n }).then(function(r){ PROF_STK[n] = (r && r.stickers) || []; PROF_GIFT[n] = { c: (r && r.gifts) || {}, l: (r && r.gift_list) || [] }; PROF_BADGE[n] = (r && r.badges) || [];
+    if (n && !PROF_STK[n]) rpc('player_profile', { p_name: n }).then(function(r){ PROF_STK[n] = (r && r.stickers) || []; PROF_GIFT[n] = { c: (r && r.gifts) || {}, l: (r && r.gift_list) || [] }; PROF_BADGE[n] = (r && r.badges) || []; PROF_PLQ[n] = { member: r && r.member, streak: (r && r.streak) || {} };
       loadAvatars(PROF_GIFT[n].l.map(function(x){ return x.from; }), renderProfile); renderProfile(); }).catch(function(){ PROF_STK[n] = []; renderProfile(); });
     renderProfile();
   }
@@ -835,7 +884,7 @@
     setupLinks();
     Funk.init({ data: function(){ return DATA; }, lang: function(){ return LANG; }, myName: function(){ return $('name').value; },
       avEl: avEl, loadAvatars: loadAvatars, openProfile: openProfile,
-      onAuth: function(){ MER_FOR = null; loadMerits(); renderAuth(); renderEv(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
+      onAuth: function(){ MER_FOR = null; loadMerits(); renderAuth(); renderEv(); loadClaims(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
     var last = store('skws_name');
     if (last && DATA.members.indexOf(last) >= 0){ $('name').value = last; loadMember(); }
     renderAuth();

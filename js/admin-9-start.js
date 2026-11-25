@@ -27,7 +27,7 @@ function showTab(name){
   if (name === 'msg') { fkRender(); fkLoad(); }
   if (name === 'arc') arcLoad(false);
   if (name === 'adm') ajRender();
-  if (name === 'bdg') { bdgRender(); bdgLoad(); }
+  if (name === 'bdg') { bdgRender(); bdgLoad(); clmRender(); clmLoad(); }
   if (name === 'acc') { accRender(); fkLoad().then(accLoad); }
   if (name === 'dev') renderDev();
   if (name === 'log') loadLog(false);

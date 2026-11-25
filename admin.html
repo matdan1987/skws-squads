@@ -6,7 +6,7 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=11">
+<link rel="stylesheet" href="css/admin.css?v=12">
 </head>
 <body>
 <div class="wrap">
@@ -386,6 +386,24 @@
         <button class="btn" id="bdgGive" style="margin-top:8px">🎖️ Marke vergeben</button>
         <div class="msg" id="bdgMsg"></div>
       </div>
+      <div class="card">
+        <h2>Selbstmeldung: „Ich war dabei“</h2>
+        <p class="small muted" style="margin-top:0">Für Events, bei denen ihr die Teilnahme nicht seht (z. B. Zombie-Belagerung). Die Spieler melden sich auf der Eintragen-Seite (mit PIN), ihr bestätigt hier – erst dann gibt es die Marke. Wer offensichtlich nicht dabei war, lehnt ihr ab.</p>
+        <input id="clmLabel" maxlength="60" placeholder="z. B. Zombie-Belagerung KW 48" style="width:100%;box-sizing:border-box">
+        <div id="clmIcons" class="bdg-icons"></div>
+        <button class="btn" id="clmCreate">✋ Selbstmeldung starten</button>
+        <div class="msg" id="clmMsg"></div>
+        <div id="clmList" style="margin-top:8px"></div>
+      </div>
+      <div class="card">
+        <h2>Saison-Plaketten</h2>
+        <p class="small muted" style="margin-top:0">Alle, die im Zeitraum Mitglied der Allianz waren (Allianzbeitritt bzw. Eintrag hier bis Austritt), bekommen die Plakette automatisch. Jahrgangs-Plaketten („Dabei 2026“), Treue (1, 3, 6 Monate, 1–3 Jahre), Stufen und Serien entstehen ganz von selbst.</p>
+        <div class="formrow"><div><label>Bezeichnung</label><input id="seaLabel" maxlength="60" placeholder="Weihnachten 2026"></div><div><label>Symbol</label><select id="seaIcon"><option>🎄</option><option>🎆</option><option>🐣</option><option>🎃</option><option>☀️</option><option>🍂</option><option>❄️</option><option>🎉</option></select></div>
+          <div><label>von</label><input id="seaFrom" type="date"></div><div><label>bis</label><input id="seaTo" type="date"></div></div>
+        <button class="btn2" id="seaAdd">Saison-Plakette anlegen</button>
+        <div class="msg" id="seaMsg"></div>
+        <div id="seaList" style="margin-top:8px"></div>
+      </div>
       <div class="card"><h2>Vergebene eigene Marken</h2><div id="bdgList"></div></div>
       <div class="card">
         <h2>Übersicht je Spieler</h2>
@@ -542,19 +560,19 @@
   </div>
 </div>
 
-<script src="js/admin-0-sprache.js?v=11"></script>
-<script src="js/admin-1-core.js?v=11"></script>
-<script src="js/admin-2-ansichten.js?v=11"></script>
-<script src="js/admin-3-wuestensturm.js?v=11"></script>
-<script src="js/admin-4-schluchtsturm.js?v=11"></script>
-<script src="js/admin-5-logbuch.js?v=11"></script>
-<script src="js/admin-6-anmeldung.js?v=11"></script>
-<script src="js/admin-7-bonusmalus.js?v=11"></script>
-<script src="js/admin-8-mentoren.js?v=11"></script>
-<script src="js/admin-8b-funk.js?v=11"></script>
-<script src="js/admin-8c-zugaenge.js?v=11"></script>
-<script src="js/admin-8d-marken.js?v=11"></script>
-<script src="js/admin-8e-archiv.js?v=11"></script>
-<script src="js/admin-9-start.js?v=11"></script>
+<script src="js/admin-0-sprache.js?v=12"></script>
+<script src="js/admin-1-core.js?v=12"></script>
+<script src="js/admin-2-ansichten.js?v=12"></script>
+<script src="js/admin-3-wuestensturm.js?v=12"></script>
+<script src="js/admin-4-schluchtsturm.js?v=12"></script>
+<script src="js/admin-5-logbuch.js?v=12"></script>
+<script src="js/admin-6-anmeldung.js?v=12"></script>
+<script src="js/admin-7-bonusmalus.js?v=12"></script>
+<script src="js/admin-8-mentoren.js?v=12"></script>
+<script src="js/admin-8b-funk.js?v=12"></script>
+<script src="js/admin-8c-zugaenge.js?v=12"></script>
+<script src="js/admin-8d-marken.js?v=12"></script>
+<script src="js/admin-8e-archiv.js?v=12"></script>
+<script src="js/admin-9-start.js?v=12"></script>
 </body>
 </html>
