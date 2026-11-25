@@ -271,3 +271,12 @@
 .card.zu > .klapp-h::after{transform:translateY(-50%) rotate(-90deg)}
 .card.zu > :not(.klapp-h){display:none !important}
 .card.zu > .klapp-h{margin-bottom:0}
+
+/* Übersicht: Namen nicht mitten im Wort umbrechen */
+.ovname .av{margin-right:10px}
+.ovn{overflow-wrap:break-word;word-break:normal;hyphens:manual;line-height:1.25}
+.ovcol .typ{line-height:1.3}
+#overviewView table{width:100%;table-layout:fixed}
+#overviewView th:nth-child(1){width:22px} #overviewView th:nth-child(3){width:88px} #overviewView th:nth-child(4){width:70px}
+#overviewView td:nth-child(2){overflow:hidden}
+#overviewView td.n .typ{white-space:normal;line-height:1.2}
