@@ -84,6 +84,23 @@
     document.title = DATA.alliance + ' · ' + t('title');
   }
 
+  /* ---------- Zeitzonen: Event-Zeiten gelten in deutscher Zeit, Spieler woanders sehen zusätzlich ihre Ortszeit ---------- */
+  var TZ_REF = 'Europe/Berlin', TZ_WD = { mo:1, di:2, mi:3, 'do':4, fr:5, sa:6, so:0, mon:1, tue:2, wed:3, thu:4, fri:5, sat:6, sun:0 };
+  function tzParts(d, tz){ var o = {}; new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', weekday: 'short' }).formatToParts(d).forEach(function(x){ o[x.type] = x.value; }); return o; }
+  function tzOff(d, tz){ var o = tzParts(d, tz); return Math.round((Date.UTC(+o.year, o.month - 1, +o.day, +o.hour % 24, +o.minute) - Math.floor(d.getTime() / 60000) * 60000) / 60000); }
+  // „Fr 21:00“ (deutsche Zeit) → Zeitpunkt in dieser oder der nächsten Woche; null, wenn nicht lesbar
+  function tzWhen(txt){
+    var m = String(txt || '').trim().match(/^(?:([A-Za-zÄÖÜäöü]+)\.?,?\s*)?(\d{1,2})[:.](\d{2})/); if (!m) return null;
+    var w = m[1] ? m[1].toLowerCase() : '', wd = w ? (TZ_WD.hasOwnProperty(w.slice(0, 3)) ? TZ_WD[w.slice(0, 3)] : TZ_WD.hasOwnProperty(w.slice(0, 2)) ? TZ_WD[w.slice(0, 2)] : undefined) : null; if (w && wd === undefined) return null;
+    var now = new Date(), b = tzParts(now, TZ_REF), dows = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 }, add = wd === null || wd === undefined ? 0 : (wd - dows[b.weekday] + 7) % 7;
+    var wall = Date.UTC(+b.year, b.month - 1, +b.day + add, +m[2], +m[3]);
+    return new Date(wall - tzOff(new Date(wall), TZ_REF) * 60000);
+  }
+  function tzDiff(d){ try { return !!d && tzOff(d, TZ_REF) !== -d.getTimezoneOffset(); } catch(e){ return false; } }
+  function tzFmt(d, lang){ return d.toLocaleString(lang || LANG, { weekday: 'short', hour: '2-digit', minute: '2-digit' }); }
+  // Text für die Anzeige: „(bei dir: …)“ nur, wenn der Spieler nicht in deutscher Zeit lebt
+  function tzLocal(txt){ try { var d = tzWhen(txt); return tzDiff(d) ? (XTRA_I18N[LANG] || XTRA_I18N.en).tzYou.replace('{t}', tzFmt(d)) : ''; } catch(e){ return ''; } }
+
   /* ---------- Wüstensturm-Einsatz ---------- */
   function renderDs(){ renderPlan('ds'); renderPlan('cs'); if ($('evIntro')) evLabels(); }
   function renderPlan(kind){
@@ -100,7 +117,8 @@
     function act(s){ var a = L.a[s[0]] || s[0]; return a.split('{b}').join(L.b[s[1]] || '').split('{t}').join((hit.T.open && hit.T.open[s[1]]) || ''); }
     $(kind + 'Title').textContent = L.title;
     $(kind + 'Team').textContent = L.team + ' ' + hit.t + ' · ' + (hit.sub ? L.ersatz : L.stamm);
-    $(kind + 'Meta').textContent = [hit.T.time, hit.T.opp ? L.vs + ' ' + hit.T.opp : ''].filter(Boolean).join(' · ');
+    var tl = tzLocal(hit.T.time);
+    $(kind + 'Meta').textContent = [hit.T.time ? hit.T.time + (tl ? ' (' + tl + ')' : '') : '', hit.T.opp ? L.vs + ' ' + hit.T.opp : ''].filter(Boolean).join(' · ');
     var ol = $(kind + 'Steps'); ol.innerHTML = '';
     if (hit.sub) {
       var li = document.createElement('li'); li.textContent = L.sub.replace('{n}', hit.sub); ol.appendChild(li);
@@ -132,7 +150,7 @@
   function planLib(cb){
     if (typeof dstDraw === 'function') return cb(true);
     if (PB_WAIT) { PB_WAIT.push(cb); return; }
-    PB_WAIT = [cb]; var sc = document.createElement('script'); sc.src = 'js/plan-bild.js?v=1';
+    PB_WAIT = [cb]; var sc = document.createElement('script'); sc.src = 'js/plan-bild.js?v=2';
     function fin(ok){ var l = PB_WAIT; PB_WAIT = null; if (!ok) sc.remove(); l.forEach(function(f){ f(ok); }); }
     sc.onload = function(){ fin(typeof dstDraw === 'function'); }; sc.onerror = function(){ fin(false); };
     document.head.appendChild(sc);
@@ -155,8 +173,9 @@
     planLib(function(ok){
       if (!ok) return done(null);
       try {
-        if (kind === 'ds') dstLoad(hit.t, function(){ try { done(DST_IMG ? dstDraw(hit.T, lang, me) : null); } catch(e){ done(null); } });
-        else csLoadTpl(hit.t, lang, function(im){ try { done(im ? csDraw(hit.T, hit.t, lang, im, me) : null); } catch(e){ done(null); } });
+        var wd = tzWhen(hit.T.time), loc = tzDiff(wd) ? (lang === 'de' ? 'Deine Ortszeit: ' : 'Your local time: ') + tzFmt(wd, lang === 'de' ? 'de-DE' : 'en-GB') : '';
+        if (kind === 'ds') dstLoad(hit.t, function(){ try { done(DST_IMG ? dstDraw(hit.T, lang, me, loc) : null); } catch(e){ done(null); } });
+        else csLoadTpl(hit.t, lang, function(im){ try { done(im ? csDraw(hit.T, hit.t, lang, im, me, loc) : null); } catch(e){ done(null); } });
       } catch(e){ done(null); }
     });
   }
@@ -259,6 +278,7 @@
       var meta = document.createElement('div'); meta.className = 'hint'; meta.style.marginTop = '0';
       meta.textContent = [r.open ? (r.deadline ? T.deadline + ': ' + new Date(r.deadline).toLocaleString(LANG, { weekday:'short', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '') : T.closed, cnt + ' ' + T.count].filter(Boolean).join(' · ');
       card.appendChild(meta);
+      if (r.time_a && tzLocal(r.time_a) || r.time_b && tzLocal(r.time_b)) { var tzh = document.createElement('div'); tzh.className = 'hint'; tzh.style.marginTop = '0'; tzh.textContent = (XTRA_I18N[LANG] || XTRA_I18N.en).tzRef; card.appendChild(tzh); }
       if (!n) { var pn = document.createElement('div'); pn.className = 'hint'; pn.textContent = T.pickName; card.appendChild(pn); box.appendChild(card); return; }
       var note = document.createElement('input'); note.type = 'text'; note.maxLength = 120; note.placeholder = T.note; note.style.marginTop = '8px';
       var ok = authed(n);
@@ -269,7 +289,8 @@
         if (grp[0]) { var gh = document.createElement('div'); gh.className = 'hint'; gh.style.margin = '10px 0 0'; gh.style.fontWeight = '700'; gh.textContent = T[grp[0]]; card.appendChild(gh); }
         grp[1].forEach(function(o){
           var bt = document.createElement('button'); bt.type = 'button'; bt.className = 'evopt' + (mine === o[0] ? ' on' : '');
-          bt.textContent = (mine === o[0] ? '✓ ' : '') + o[1] + (o[2] ? ' (' + o[2] + ')' : '');
+          var tl = o[2] ? tzLocal(o[2]) : '';
+          bt.textContent = (mine === o[0] ? '✓ ' : '') + o[1] + (o[2] ? ' (' + o[2] + (tl ? ' · ' + tl : '') + ')' : '');
           bt.disabled = !r.open || !ok;
           bt.addEventListener('click', function(){
             bt.disabled = true; msg.textContent = '…';

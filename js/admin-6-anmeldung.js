@@ -187,7 +187,7 @@ function evAbsent(kind, id){
 function evCall(kind){
   var r = evCur(kind), dl = evDl(r);
   var t = 'SKWS ' + EV_NAME[kind] + ' ' + r.label + ': Bitte bis ' + (dl ? fmtDateTime(dl) : 'bald') + ' auf der Squad-Seite anmelden – als Stamm oder nur als Ersatz, jeweils für Team A' + (r.time_a ? ' (' + r.time_a + ')' : '') + ', Team B' + (r.time_b ? ' (' + r.time_b + ')' : '') + ' oder beide Zeiten – oder diesmal nicht. Wir tragen euch dann im Spiel ein.\n' +
-    'Please sign up on the squad page: as starter or substitute, for Team A, Team B or both times – or not this time.\nhttps://matdan1987.github.io/skws-squads/';
+    'Please sign up on the squad page: as starter or substitute, for Team A, Team B or both times – or not this time. Times are German time; the squad page also shows them in your local time.\nhttps://matdan1987.github.io/skws-squads/';
   copyText(t, 'evMsg_' + kind);
 }
 function evNudge(kind){
