@@ -96,13 +96,15 @@
     db.badges.push({ id: ++db.id, key: 'demo-zombie', label: 'Zombie-Belagerung KW 47', icon: '🧟', name: 'Echo', t: iso(NOW - 6 * DAY), by: 'Nova' });
     db.claimEv.push({ id: ++db.id, label: 'Zombie-Belagerung KW 48', icon: '🧟', open: true, t: iso(NOW - DAY), claims: [{ name: 'Echo', status: 'pending' }, { name: 'Blaze', status: 'pending' }, { name: 'Raven', status: 'ok' }] });
     db.seasons.push({ id: ++db.id, label: 'Weihnachten 2026', icon: '🎄', from: '2026-12-20', to: '2026-12-31' });
+    db.notes.push({ id: ++db.id, name: ME, body: 'Super Einsatz beim letzten Wüstensturm – danke fürs Halten der Raffinerie!', vis: 'player', t: iso(NOW - 2 * DAY), by: 'Nova' });
+    db.notes.push({ id: ++db.id, name: ME, body: 'Kandidat für R4, im Blick behalten.', vis: 'lead', t: iso(NOW - 3 * DAY), by: 'Nova' });
     db.notes.push({ id: ++db.id, name: 'Frost', body: 'Zweimal unentschuldigt gefehlt – beim nächsten Mal ansprechen.', vis: 'lead', t: iso(NOW - 4 * DAY), by: 'Nova' });
     [['save','Echo',{ total_new: 150.2, t1_new: 45.1 },60],['ev_signup','Lyra',{ kind: 'ds', round: 'KW 48', choice: 'B' },100],['merit','Kestrel',{ what: 'add', kind: 'bonus', reason: 'Top-Punkte im Wüstensturm' },4320],['login','Kestrel',{},20]]
       .forEach(function(x){ log(db, x[0] === 'merit' ? 'Nova' : x[1], x[0], x[1], x[2], x[3]); });
     return db;
   }
   function log(db, actor, action, target, details, ago){ db.log.unshift({ id: ++db.id, at: iso(Date.now() - (ago || 0) * MIN), actor: actor, action: action, target: target || null, details: details || {} }); }
-  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 4) { DB = makeDB(); DB.v = 4; }
+  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 5) { DB = makeDB(); DB.v = 5; }
   function save(){ try { oS.call(SS, 'skws_demo_db', JSON.stringify(DB)); } catch(e){} }
   save();
 
@@ -184,8 +186,8 @@
         return { id: e.id, label: e.label, icon: e.icon, open: e.open, status: c ? c.status : null }; }) }; },
     claim_send: function(b){ var n = tokName(b.p_token); DB.claimEv.forEach(function(e){ if (e.id === b.p_event && !e.claims.some(function(c){ return c.name === n; })) e.claims.push({ name: n, status: 'pending' }); }); return { ok: true }; },
     set_avatar: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_LOGIN' }; if (b.p_data) DB.avatars[n] = { d: b.p_data, ts: Math.floor(Date.now() / 1000) }; else delete DB.avatars[n]; return { ok: true, name: n }; },
-    notes_for: function(b){ var n = tokName(b.p_token), lv = level(n), g = grpOf(b.p_name), mine = grpOf(n), ok = lv === 'lead' || (g && mine && g.i === mine.i && mine.role !== 'member');
-      return { ok: true, allowed: !!ok, notes: ok ? DB.notes.filter(function(x){ return x.name === b.p_name && (lv === 'lead' || x.vis === 'mentor'); }) : [] }; },
+    notes_for: function(b){ var n = tokName(b.p_token), lv = level(n), g = grpOf(b.p_name), mine = grpOf(n), grp = !!(g && mine && g.i === mine.i && mine.role !== 'member'), self = n === b.p_name, ok = lv === 'lead' || grp || self;
+      return { ok: true, allowed: !!ok, self: self, items: ok ? DB.notes.filter(function(x){ return x.name === b.p_name && (lv === 'lead' || (grp && x.vis !== 'lead') || (self && x.vis === 'player')); }) : [] }; },
     my_group: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var g = grpOf(n); if (!g) return { ok: true, g: null }; var G = DB.mg.groups[g.i];
       var o = { ok: true, g: g.i + 1, role: g.role, r4: G.r4, mentors: G.mentors, intensive: !!G.intensive };
       if (g.role === 'member' && level(n) !== 'lead') return o;

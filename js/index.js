@@ -646,16 +646,19 @@
   // Interne Notizen (nur Mentoren der Gruppe und R4/R5, nach Anmeldung)
   var PROF_NOTES = {};
   function notesCard(n){
-    var s = window.Funk && Funk.session(); if (!s || s.name === n) return null;
+    var s = window.Funk && Funk.session(); if (!s) return null;
     var key = s.name + '|' + n;
     if (PROF_NOTES[key] === undefined) { PROF_NOTES[key] = null; rpc('notes_for', { p_token: s.tok, p_name: n }).then(function(r){ PROF_NOTES[key] = r && r.ok ? r : false; if (PROF_NOTES[key] && PROF_NOTES[key].allowed) renderProfile(); }).catch(function(){ PROF_NOTES[key] = false; }); return null; }
     var r = PROF_NOTES[key]; if (!r || !r.allowed) return null;
+    // eigenes Profil: nur die für den Spieler freigegebenen Notizen, ohne Karte, wenn es keine gibt
+    var self = s.name === n, items = self ? (r.self ? (r.items || []).filter(function(x){ return x.vis === 'player'; }) : []) : (r.items || []);
+    if (self && !items.length) return null;
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, c = document.createElement('div'); c.className = 'card notes-card';
     function el(tag, cls, txt){ var x = document.createElement(tag); if (cls) x.className = cls; if (txt !== undefined) x.textContent = txt; return x; }
-    c.appendChild(el('div', 'sq-h')).appendChild(el('b', '', X.nTitle)); c.appendChild(el('div', 'hint', X.nHint));
-    if (!r.items.length) c.appendChild(el('div', 'hint', X.nNone));
-    r.items.forEach(function(x){ var it = el('div', 'gift-row'); var t = el('div', 'gift-tx'); t.appendChild(el('div', 'fk-body', x.body));
-      t.appendChild(el('span', '', new Date(x.t).toLocaleDateString(LANG) + (x.by ? ' · ' + x.by : ''))); it.appendChild(t); c.appendChild(it); });
+    c.appendChild(el('div', 'sq-h')).appendChild(el('b', '', self ? X.nSelf : X.nTitle)); c.appendChild(el('div', 'hint', self ? X.nSelfHint : X.nHint));
+    if (!items.length) c.appendChild(el('div', 'hint', X.nNone));
+    items.forEach(function(x){ var it = el('div', 'gift-row'); var t = el('div', 'gift-tx'); t.appendChild(el('div', 'fk-body', x.body));
+      t.appendChild(el('span', '', new Date(x.t).toLocaleDateString(LANG) + (x.by ? ' · ' + x.by : '') + (!self && x.vis === 'player' ? ' · ' + X.nPl : ''))); it.appendChild(t); c.appendChild(it); });
     return c;
   }
   // Plaketten: Jahrgang, Saison, Treue, Stufen je Event (mit Seltenheit), längste Serie
