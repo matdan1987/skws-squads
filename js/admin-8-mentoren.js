@@ -149,7 +149,7 @@ function mgRender(){
   var lead = D.players.filter(function(p){ return (p.rank === 'R4' || p.rank === 'R5') && !inGroups[p.name]; }).map(function(p){ return p.name + ' (' + p.rank + ')'; });
   $('mgLead').textContent = lead.length ? 'R4/R5 ohne eigene Gruppe (werden nicht verteilt): ' + lead.join(', ') : '';
   var miss = Object.keys(inGroups).filter(function(n){ return !by[n]; });
-  $('mgMissing').textContent = miss.length ? 'In einer Gruppe, aber nicht (mehr) als aktives Mitglied geführt: ' + miss.join(', ') : '';
+  $('mgMissing').innerHTML = miss.length ? 'In einer Gruppe, aber nicht (mehr) als aktives Mitglied geführt: ' + miss.map(esc).join(', ') + ' <button class="mini" id="mgClean">aus Gruppen nehmen</button>' : '';
 }
 function mgMentorRecs(st, by, withR1){
   var ment = []; st.groups.forEach(function(G){ ment = ment.concat(G.mentors); });
@@ -198,6 +198,19 @@ function mgJoinChat(list){
   var by = {}; list.forEach(function(x){ (by[x.g] = by[x.g] || []).push(x); });
   return Object.keys(by).map(function(g){ var l = by[g], G = l[0];
     return 'Mentorengruppe ' + (+g + 1) + ' (R4: ' + G.r4 + ') – bitte im Spiel beitreten / please join in the game: ' + l.map(function(x){ return '@' + x.n; }).join(' '); }).join('\n');
+}
+// Ausgeschiedene aus den Gruppen nehmen (R4 einer Gruppe bleibt stehen, bis ein neuer R4 gewählt ist)
+function mgLeave(n){
+  var st = mgState(), inG = false, r4 = null;
+  st.groups.forEach(function(G, i){ if (G.mentors.indexOf(n) >= 0 || G.members.indexOf(n) >= 0) inG = true; if (G.r4 === n) r4 = i + 1; });
+  if (inG) { mgMove(st, n, 'x'); mgSave(st); }
+  if (inG || r4) note(n + ' ist als ausgeschieden markiert' + (inG ? ' und aus der Mentorengruppe genommen' : '') + '.' + (r4 ? ' Achtung: ' + n + ' ist R4 von Gruppe ' + r4 + ' – bitte im Tab Mentoren einen neuen R4 wählen.' : ''), !r4);
+}
+function mgCleanup(){
+  var st = mgState(), by = mgPlayers(), gone = [];
+  st.groups.forEach(function(G){ G.mentors.concat(G.members).forEach(function(n){ if (!by[n]) gone.push(n); }); });
+  if (!gone.length || !confirm(gone.length + ' Spieler aus den Gruppen nehmen, die nicht (mehr) aktive Mitglieder sind?\n\n' + gone.join(', '))) return;
+  gone.forEach(function(n){ mgMove(st, n, 'x'); }); mgSave(st); mgRender();
 }
 function mgRename(o, nn){
   if (!D || !D.players.some(function(p){ return p.name === nn; })) return;
@@ -259,6 +272,7 @@ function mgChat(){
       .then(function(){ m.textContent = 'Gesendet an ' + l.length + ' Spieler.'; m.className = 'note ok'; })
       .catch(function(e){ m.textContent = 'Fehler: ' + e.message; m.className = 'note err'; });
   });
+  $('mgMissing').addEventListener('click', function(e){ if (e.target.closest('#mgClean')) mgCleanup(); });
   $('mgFree').addEventListener('change', function(e){
     var s = e.target.closest('select[data-mgpick]'); if (!s || !s.value) return;
     var st = mgState(); mgMove(st, s.dataset.mgpick, s.value); mgSave(st); mgRender(); renderMembers();

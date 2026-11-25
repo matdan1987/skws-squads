@@ -158,7 +158,7 @@ $('tab-adm').addEventListener('click', function(e){
   var b = e.target.closest('button[data-act]'); if (!b) return;
   var n = b.dataset.name, a = b.dataset.act;
   if (a === 'leave' && confirm(n + ' als ausgeschieden markieren?\nDer Spieler verschwindet von der Eintragsseite und bekommt keine Erinnerungen mehr. Sein Verlauf bleibt erhalten.'))
-    memberAction('leave', n, null, n + ' ist als ausgeschieden markiert.');
+    memberAction('leave', n, null, n + ' ist als ausgeschieden markiert.').then(function(){ mgLeave(n); });
   if (a === 'rejoin') memberAction('rejoin', n, null, n + ' ist wieder aktiv.');
   if (a === 'avdel' && confirm('Avatar von ' + n + ' entfernen?')) rpc('admin_avatar', { p_pw: PW, p_name: n, p_actor: ACTOR || null }).then(function(){ delete AVA[n]; renderAdmin(); note('Avatar von ' + n + ' entfernt.', true); }).catch(function(){ note('Fehler – ist die Datenbank-Erweiterung „avatar“ eingespielt?', false); });
   if (a === 'rename') { var nn = prompt('Neuer Name für ' + n + ':', n); if (nn && nn.trim() && nn.trim() !== n) { nn = nn.trim(); memberAction('rename', n, nn, n + ' heißt jetzt ' + nn + '.').then(function(){ mgRename(n, nn); }); } }
