@@ -391,3 +391,4 @@ textarea.arc-rem{min-height:0;height:auto}
 .act-top{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px}.act-top a{color:var(--text);font-weight:700}
 .act-top .act-last{margin-left:auto;font-size:13px}
 .vs-t input{width:110px}
+.sty-th{display:inline-block;width:44px;height:44px;border-radius:8px;background-size:cover;background-position:center;border:1px solid var(--line);flex:none}.sty-th.w{width:96px;height:32px}
