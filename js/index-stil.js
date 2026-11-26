@@ -56,6 +56,8 @@ var STIL_DESIGN = {
     { k:'honey', de:'Waben', en:'Honeycomb', lock:['bees', 10] }, { k:'nebula', de:'Nebel', en:'Nebula', lock:['year', 1] }
   ]
 };
+// Ausnahme: diese Spieler haben alle Designs freigeschaltet
+var STIL_ALL = ['xX Meister Proper Xx'];
 var Stil = (function(){
   var A = null, STY = null, IMG = {}, LIB = null, LIB_BUSY = false, ED = null, TAB = 'frame', MSG = '';
   function L(){ return STIL_I18N[A.lang()] || STIL_I18N.en; }
@@ -78,7 +80,7 @@ var Stil = (function(){
   // freigeschaltet?
   function lockText(d){ var T = L(), l = d.lock; if (!l) return '';
     return ({ ev: T.lockEv, ds: T.lockDs, cs: T.lockCs, bees: T.lockBees, year: T.lockYear, mentor: T.lockMentor, lead: T.lockLead }[l[0]] || '').replace('{n}', l[1]); }
-  function unlocked(d, n){ if (!d.lock) return true; var s = A.stats(n), l = d.lock;
+  function unlocked(d, n){ if (!d.lock || STIL_ALL.indexOf(n) >= 0) return true; var s = A.stats(n), l = d.lock;
     return l[0] === 'ev' ? s.ev >= l[1] : l[0] === 'ds' ? s.ds >= l[1] : l[0] === 'cs' ? s.cs >= l[1] : l[0] === 'bees' ? s.bees >= l[1] : l[0] === 'year' ? s.days >= 365 : l[0] === 'mentor' ? s.mentor : l[0] === 'lead' ? s.lead : false; }
 
   /* ---------- Anzeige im Profil ---------- */
@@ -105,20 +107,19 @@ var Stil = (function(){
     if (row.children.length) { var hn = card.querySelector('.prof-h > div:last-child'); (hn || card).appendChild(row); }
     applyBg(n, cur);
   }
+  // Hintergrund gilt für die ganze Seite, solange das Profil offen ist (kein Kasten um die Karten)
   function applyBg(n, cur){
-    var v = document.getElementById('profileView'); if (!v) return;
-    cur = cur || of(n); var b = cur.bg || '';
-    v.className = v.className.replace(/\bbg-\S+/g, '').trim();
-    v.style.backgroundImage = '';
+    clearBg();
+    cur = cur || of(n); var b = cur.bg || '', body = document.body;
     if (!b) return;
     if (b === 'own' || b.indexOf('lib:') === 0) {
       var u = b === 'own' ? img(n, 'bg', A.reProfile) : libImg(b);
-      if (u) { v.classList.add('bg-img'); v.style.backgroundImage = 'linear-gradient(rgba(6,10,20,.55),rgba(6,10,20,.75)), url("' + u + '")'; }
+      if (u) { body.classList.add('pbg-img'); body.style.backgroundImage = 'linear-gradient(rgba(6,10,20,.6),rgba(6,10,20,.8)), url("' + u + '")'; }
       return;
     }
-    v.classList.add('bg-' + b);
+    body.classList.add('pbg-' + b);
   }
-  function clearBg(){ var v = document.getElementById('profileView'); if (v) { v.className = v.className.replace(/\bbg-\S+/g, '').trim(); v.style.backgroundImage = ''; } }
+  function clearBg(){ var body = document.body; body.className = body.className.replace(/\bpbg-\S+/g, '').trim(); body.style.backgroundImage = ''; }
   // Rahmen-Klasse für Avatare in Listen (Übersicht, Funk …)
   function frameOf(n){ var D = A.data(); return (D && D.sty && D.sty[n]) || (STY && STY[n] && STY[n].frame) || ''; }
 
