@@ -59,7 +59,7 @@ var STIL_DESIGN = {
 // Ausnahme: diese Spieler haben alle Designs freigeschaltet
 var STIL_ALL = ['xX Meister Proper Xx'];
 var Stil = (function(){
-  var A = null, STY = null, IMG = {}, LIB = null, LIB_BUSY = false, ED = null, TAB = 'frame', MSG = '';
+  var A = null, OPEN = false, STY = null, IMG = {}, LIB = null, LIB_BUSY = false, ED = null, TAB = 'frame', MSG = '';
   function L(){ return STIL_I18N[A.lang()] || STIL_I18N.en; }
   function el(tag, cls, txt){ var x = document.createElement(tag); if (cls) x.className = cls; if (txt !== undefined && txt !== null) x.textContent = txt; return x; }
   function btn(cls, txt, fn){ var b = el('button', cls, txt); b.type = 'button'; b.addEventListener('click', fn); return b; }
@@ -135,8 +135,14 @@ var Stil = (function(){
     }; im.onerror = function(){ cb(null); }; im.src = rd.result; };
     rd.onerror = function(){ cb(null); }; rd.readAsDataURL(file);
   }
-  function editor(n){
+  // Knopf neben „Avatar ändern“: öffnet bzw. schließt den Editor (standardmäßig zu, damit man sein Profil so sieht wie andere)
+  function button(n){
     var s = sess(); if (!s || s.name !== n || STY === false) return null;
+    return btn('sty-btn' + (OPEN ? ' on' : ''), OPEN ? '✕ ' + L().t.replace(/^\S+\s/, '') : L().t, function(){
+      OPEN = !OPEN; A.reProfile(); if (OPEN) setTimeout(function(){ var e = document.querySelector('.sty-ed'); if (e) e.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80); });
+  }
+  function editor(n){
+    var s = sess(); if (!OPEN || !s || s.name !== n || STY === false) return null;
     if (STY === null) { load(); return null; }
     if (!ED || ED.n !== n) { var c0 = of(n); ED = { n: n, frame: c0.frame || '', header: c0.header || '', bg: c0.bg || '', show: (c0.show || []).slice(), hi: !!c0.hi, bi: !!c0.bi }; }
     var T = L(), card = el('div', 'card sty-ed'), h = el('div', 'sq-h'); h.appendChild(el('b', '', T.t)); card.appendChild(h);
@@ -186,7 +192,8 @@ var Stil = (function(){
         var D = A.data(); if (D) { D.sty = D.sty || {}; D.sty[n] = ED.frame; } A.reProfile(); }).catch(function(){ MSG = T.err; A.reProfile(); });
     }));
     card.appendChild(msg);
+    card.appendChild(btn('ghost sty-close', '✓ ' + (A.lang() === 'de' ? 'Fertig' : 'Done'), function(){ OPEN = false; A.reProfile(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
     return card;
   }
-  return { init: function(api){ A = api; load(); }, ready: function(){ return !!A; }, decorate: decorate, editor: editor, clearBg: clearBg, frameOf: frameOf, reset: function(){ ED = null; } };
+  return { init: function(api){ A = api; load(); }, ready: function(){ return !!A; }, decorate: decorate, editor: editor, button: button, clearBg: clearBg, frameOf: frameOf, reset: function(){ ED = null; } };
 })();

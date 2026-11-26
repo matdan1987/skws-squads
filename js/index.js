@@ -871,7 +871,9 @@
     var sub = []; if (s.jd || s.fe) sub.push(T.since.replace('{d}', fmtD(s.jd || s.fe))); if (s.role) sub.push(T.role[s.role]); if (window.Mehr && Mehr.ready() && Mehr.awayText(n)) sub.push(Mehr.awayText(n));
     hn.appendChild(el('div', 'hint', sub.join(' · '))); h.appendChild(hn); c.appendChild(h);
     // „Avatar ändern“ direkt unter Bild und Name
-    if (own) { var avu = avUploader(n, AT); avu.classList.add('av-under'); c.appendChild(avu); }
+    if (own) { var avu = avUploader(n, AT); avu.classList.add('av-under');
+      var sb = window.Stil && Stil.ready() ? Stil.button(n) : null; if (sb) { var tg0 = avu.querySelector('button'); var bw = document.createElement('div'); bw.className = 'av-btns'; tg0.parentNode.insertBefore(bw, tg0); bw.appendChild(tg0); bw.appendChild(sb); }
+      c.appendChild(avu); }
     var lv = el('div', 'lvl');
     function lvlBox(title, icon, count, idx, th, names, col){
       var d = el('div'); d.appendChild(el('div', 'hint', title)); var big = el('div', 'big'); big.appendChild(el('span', '', icon + ' ' + count)); d.appendChild(big);

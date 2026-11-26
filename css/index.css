@@ -442,3 +442,7 @@ body.pbg-img{background-size:cover!important;background-position:center!importan
 .sty-pv.pv-bg.bg-none{background:var(--bg);border:1px dashed var(--line)}
 .sty-bgrid{grid-template-columns:1fr 1fr}.sty-b{flex-direction:row;justify-content:center;padding:10px 6px}
 .sty-up{display:inline-block;cursor:pointer}
+.av-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.sty-btn{border:1px solid var(--line);background:var(--bg2);color:var(--text);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px;cursor:pointer}
+.sty-btn.on{border-color:var(--accent);color:var(--accent)}
+.sty-close{width:100%}
