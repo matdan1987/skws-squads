@@ -190,7 +190,8 @@ var Mehr = (function(){
     var r = ONB[n].st; if (!r) return null;
     var a = onbScore(r), young = !r.since || Date.now() - dLocal(r.since).getTime() < 90 * DAYMS;
     if (a === STEPS.length || !young) return null;
-    var T = L(), c = card(T.onbT); c.appendChild(el('div', 'hint', T.onbDone.replace('{a}', a).replace('{b}', STEPS.length) + ' · ' + T.onbHint));
+    var T = L(), c = card(T.onbT); c.classList.add('klapp-zu');   // standardmäßig zugeklappt
+    c.firstChild.appendChild(el('span', 'tag', a + '/' + STEPS.length)); c.appendChild(el('div', 'hint', T.onbDone.replace('{a}', a).replace('{b}', STEPS.length) + ' · ' + T.onbHint));
     var bar = el('div', 'bar'), i = el('i'); i.style.width = Math.round(a / STEPS.length * 100) + '%'; bar.appendChild(i); c.appendChild(bar);
     STEPS.forEach(function(k){ c.appendChild(el('div', 'mehr-step' + (r[k] ? ' ok' : ''), (r[k] ? '✅ ' : '⬜ ') + T.steps[k])); });
     return c;
