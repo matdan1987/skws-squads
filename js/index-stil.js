@@ -46,25 +46,36 @@ var STIL_DESIGN = {
     { k:'fire', de:'Feuer', en:'Fire', lock:['bees', 5] }, { k:'ice', de:'Eis', en:'Ice', lock:['year', 1] }, { k:'gold', de:'Gold', en:'Gold', lock:['ev', 10] },
     { k:'diamond', de:'Diamant', en:'Diamond', lock:['ev', 25] }, { k:'mentor', de:'Mentor', en:'Mentor', lock:['mentor', 1] }, { k:'legend', de:'Legende', en:'Legend', lock:['lead', 1] },
     { k:'neon', de:'Neon', en:'Neon', shop:100 }, { k:'emerald', de:'Smaragd', en:'Emerald', shop:150 }, { k:'sakura', de:'Kirschblüte', en:'Cherry blossom', shop:200 },
-    { k:'storm', de:'Gewitter', en:'Thunderstorm', shop:300 }, { k:'cosmic', de:'Kosmos', en:'Cosmos', shop:400 }
+    { k:'storm', de:'Gewitter', en:'Thunderstorm', shop:300 }, { k:'cosmic', de:'Kosmos', en:'Cosmos', shop:400 },
+    // animierte Premium-Rahmen
+    { k:'eq', de:'✨ Equalizer', en:'✨ Equalizer', shop:600 }, { k:'flame', de:'✨ Feuerkranz', en:'✨ Ring of fire', shop:600 }, { k:'bolt', de:'✨ Blitzring', en:'✨ Lightning ring', shop:550 },
+    { k:'orbit', de:'✨ Atom-Orbit', en:'✨ Atom orbit', shop:500 }, { k:'hex', de:'✨ Hex-Schild', en:'✨ Hex shield', shop:450 }, { k:'runes', de:'✨ Runenkreis', en:'✨ Rune circle', shop:650 },
+    { k:'glitch', de:'✨ Glitch', en:'✨ Glitch', shop:500 }, { k:'crown', de:'✨ Königskrone', en:'✨ Royal crown', shop:800 }
   ],
   header: [
     { k:'', de:'Nacht', en:'Night' }, { k:'ocean', de:'Ozean', en:'Ocean' }, { k:'forest', de:'Wald', en:'Forest' }, { k:'sunset', de:'Abendrot', en:'Sunset' }, { k:'aurora', de:'Polarlicht', en:'Aurora' },
     { k:'desert', de:'Wüste', en:'Desert', lock:['ds', 5] }, { k:'canyon', de:'Schlucht', en:'Canyon', lock:['cs', 5] }, { k:'galaxy', de:'Galaxie', en:'Galaxy', lock:['bees', 3] },
     { k:'royal', de:'Königlich', en:'Royal', lock:['ev', 25] }, { k:'leader', de:'Führung', en:'Command', lock:['lead', 1] },
     { k:'cherry', de:'Kirschblüte', en:'Cherry blossom', shop:150 }, { k:'cyber', de:'Cyber', en:'Cyber', shop:200 }, { k:'volcano', de:'Vulkan', en:'Volcano', shop:250 },
-    { k:'arctic', de:'Arktis', en:'Arctic', shop:250 }, { k:'skyline', de:'Skyline', en:'Skyline', shop:350 }
+    { k:'arctic', de:'Arktis', en:'Arctic', shop:250 }, { k:'skyline', de:'Skyline', en:'Skyline', shop:350 },
+    // animierte Premium-Header
+    { k:'hyper', de:'✨ Hyperraum', en:'✨ Hyperspace', shop:500 }, { k:'synth', de:'✨ Synthwave', en:'✨ Synthwave', shop:550 }, { k:'thunder', de:'✨ Gewitter', en:'✨ Thunderstorm', shop:500 },
+    { k:'lava', de:'✨ Lavalampe', en:'✨ Lava lamp', shop:450 }, { k:'vortex', de:'✨ Galaxie-Wirbel', en:'✨ Galaxy swirl', shop:600 }, { k:'deepsea', de:'✨ Tiefsee', en:'✨ Deep sea', shop:450 }
   ],
   anim: [
     { k:'', de:'Keine', en:'None' },
     { k:'pulse', de:'Pulsieren', en:'Pulse', shop:150 }, { k:'sparkle', de:'Funkeln', en:'Sparkle', shop:200 }, { k:'snow', de:'Schneefall', en:'Snowfall', shop:200 },
     { k:'petals', de:'Blütenregen', en:'Petal rain', shop:250 }, { k:'embers', de:'Funkenflug', en:'Rising embers', shop:250 }, { k:'aurora', de:'Wogendes Licht', en:'Flowing light', shop:300 },
-    { k:'spin', de:'Regenbogen-Ring', en:'Rainbow ring', shop:350 }, { k:'bees', de:'Bienenschwarm', en:'Bee swarm', lock:['bees', 15] }
+    { k:'spin', de:'Regenbogen-Ring', en:'Rainbow ring', shop:350 }, { k:'bees', de:'Bienenschwarm', en:'Bee swarm', lock:['bees', 15] },
+    { k:'confetti', de:'Konfetti', en:'Confetti', shop:300 }, { k:'meteor', de:'Sternschnuppen', en:'Shooting stars', shop:350 }, { k:'hearts', de:'Herzen', en:'Hearts', shop:250 }
   ],
   bg: [
     { k:'', de:'Keiner', en:'None' }, { k:'stars', de:'Sterne', en:'Stars' }, { k:'grid', de:'Raster', en:'Grid' }, { k:'waves', de:'Wellen', en:'Waves' }, { k:'dunes', de:'Dünen', en:'Dunes' },
     { k:'honey', de:'Waben', en:'Honeycomb', lock:['bees', 10] }, { k:'nebula', de:'Nebel', en:'Nebula', lock:['year', 1] },
-    { k:'snow', de:'Schnee', en:'Snow', shop:120 }, { k:'matrix', de:'Matrix', en:'Matrix', shop:180 }, { k:'embers', de:'Glut', en:'Embers', shop:220 }, { k:'circuits', de:'Schaltkreise', en:'Circuits', shop:300 }
+    { k:'snow', de:'Schnee', en:'Snow', shop:120 }, { k:'matrix', de:'Matrix', en:'Matrix', shop:180 }, { k:'embers', de:'Glut', en:'Embers', shop:220 }, { k:'circuits', de:'Schaltkreise', en:'Circuits', shop:300 },
+    // animierte Premium-Hintergründe
+    { k:'northern', de:'✨ Nordlicht', en:'✨ Northern lights', shop:400 }, { k:'coderain', de:'✨ Code-Regen', en:'✨ Code rain', shop:450 }, { k:'warp', de:'✨ Sternenflug', en:'✨ Star flight', shop:400 },
+    { k:'fireflies', de:'✨ Glühwürmchen', en:'✨ Fireflies', shop:350 }, { k:'neongrid', de:'✨ Retro-Raster', en:'✨ Retro grid', shop:450 }
   ]
 };
 // Ausnahme: diese Spieler haben alle Designs freigeschaltet
@@ -103,25 +114,32 @@ var Stil = (function(){
     return null;
   }
   // Animationen: Teilchen (Schnee, Blüten, Funken, Sterne, Bienen) als Ebene über der Karte, Ring/Puls am Avatar
-  var FX_N = { sparkle: 28, snow: 42, petals: 28, embers: 34, bees: 11 }, FX_CH = { sparkle: '✦', snow: '❄', petals: '❀', embers: '●', bees: '🐝' };
+  var FX_N = { sparkle: 28, snow: 42, petals: 28, embers: 34, bees: 11, confetti: 40, meteor: 6, hearts: 20 }, FX_CH = { sparkle: '✦', snow: '❄', petals: '❀', embers: '●', bees: '🐝', confetti: '', meteor: '', hearts: '❤' };
   function fx(box, k, small){
     box.classList.add('an-' + k); var n = FX_N[k]; if (!n) return;
     var layer = el('div', 'sty-fx'); if (small) n = Math.ceil(n / 2.5);
     for (var i = 0; i < n; i++) { var p = el('span', 'fx-p', FX_CH[k]); var r = (i * 37) % 100;
       p.style.left = r + '%'; p.style.animationDelay = (-((i * 0.73) % 6)).toFixed(2) + 's'; p.style.animationDuration = (3 + (i * 1.3) % 4).toFixed(2) + 's';
-      p.style.fontSize = (k === 'bees' ? 18 + (i % 3) * 6 : k === 'embers' ? 5 + (i % 4) * 2 : 11 + (i % 4) * 5) + 'px'; if (k === 'sparkle') p.style.top = ((i * 53) % 90) + '%'; layer.appendChild(p); }
+      p.style.fontSize = (k === 'bees' ? 18 + (i % 3) * 6 : k === 'embers' ? 5 + (i % 4) * 2 : 11 + (i % 4) * 5) + 'px'; if (k === 'sparkle') p.style.top = ((i * 53) % 90) + '%';
+      if (k === 'confetti') p.style.background = 'hsl(' + ((i * 47) % 360) + ',95%,60%)';
+      if (k === 'meteor') { p.style.top = ((i * 29) % 55) + '%'; p.style.left = (45 + (i * 23) % 60) + '%'; p.style.animationDuration = (2.6 + (i % 3) * .9) + 's'; p.style.animationDelay = (-i * .8) + 's'; }
+      layer.appendChild(p); }
     box.insertBefore(layer, box.firstChild.nextSibling);
   }
+  function wrapAv(av){ var p = av.parentNode; if (p && p.classList.contains('av-wrap')) return p; var w = el('span', 'av-wrap'); p.insertBefore(w, av); w.appendChild(av); return w; }
   function decorate(card, n, av){
     var cur = ED && ED.n === n ? ED : of(n), T = L();
     card.classList.add('sty-card');
-    var ban = el('div', 'sty-banner hb-' + ((cur.header && cur.header.indexOf(':') < 0 && cur.header !== 'own') ? cur.header : 'night'));
-    var bi = headerBg(n, cur, A.reProfile); if (bi) { ban.style.backgroundImage = bi; ban.classList.add('hb-img'); }
+    var hk = (cur.header && cur.header.indexOf(':') < 0 && cur.header !== 'own') ? cur.header : 'night', FX = window.StilFX;
+    var ban = el('div', 'sty-banner hb-' + hk);
+    var bi = headerBg(n, cur, A.reProfile); if (bi) { ban.style.backgroundImage = bi; ban.classList.add('hb-img'); } else if (FX && FX.isHeader(hk)) FX.header(ban, hk);
     card.insertBefore(ban, card.firstChild);
-    if (av) { av.classList.add('sty-av'); if (cur.frame) av.classList.add('fr-' + cur.frame); }
+    if (av) { av.classList.add('sty-av'); if (cur.frame) av.classList.add('fr-' + cur.frame);
+      // animierte Rahmen: Ebenen vor und hinter dem Avatar, dazu mehr Platz oben in der Karte
+      if (FX && FX.isFrame(cur.frame)) { FX.frame(wrapAv(av), cur.frame); card.classList.add(cur.frame === 'crown' ? 'fx-crown' : 'fx-roomy'); } }
     if (cur.anim) { fx(card, cur.anim); if (av && (cur.anim === 'pulse' || cur.anim === 'spin')) { av.classList.add('av-' + cur.anim);
       // Ring als eigene Ebene über dem Avatar, damit ihn auch breite Rahmen nicht verdecken
-      if (cur.anim === 'spin' && av.parentNode) { var wr = el('span', 'av-wrap'); av.parentNode.insertBefore(wr, av); wr.appendChild(av); wr.appendChild(el('span', 'av-ring glow')); wr.appendChild(el('span', 'av-ring')); } } }
+      if (cur.anim === 'spin' && av.parentNode) { var wr = wrapAv(av); wr.appendChild(el('span', 'av-ring glow')); wr.appendChild(el('span', 'av-ring')); } } }
     // Rang-/Rollen-Badges und Vorzeige-Badges unter dem Namen
     var s = A.stats(n), row = el('div', 'sty-badges');
     if (s.rank === 'R5') row.appendChild(el('span', 'sty-role r5', '👑 ' + T.roleR5)); else if (s.rank === 'R4') row.appendChild(el('span', 'sty-role r4', '⭐ ' + T.roleR4));
@@ -136,8 +154,9 @@ var Stil = (function(){
   }
   // Hintergrund gilt für die ganze Seite, solange das Profil offen ist (kein Kasten um die Karten)
   function applyBg(n, cur){
-    clearBg();
+    clearBg(true);
     cur = cur || of(n); var b = cur.bg || '', body = document.body;
+    if (window.StilFX) StilFX.bg(StilFX.isBg(b) ? b : null);
     if (!b) return;
     if (b === 'own' || b.indexOf('lib:') === 0) {
       var u = b === 'own' ? img(n, 'bg', A.reProfile) : libImg(b);
@@ -146,7 +165,7 @@ var Stil = (function(){
     }
     body.classList.add('pbg-' + b);
   }
-  function clearBg(){ var body = document.body; body.className = body.className.replace(/\bpbg-\S+/g, '').trim(); body.style.backgroundImage = ''; }
+  function clearBg(keep){ if (!keep && window.StilFX) StilFX.bg(null); var body = document.body; body.className = body.className.replace(/\bpbg-\S+/g, '').trim(); body.style.backgroundImage = ''; }
   // Rahmen-Klasse für Avatare in Listen (Übersicht, Funk …)
   function frameOf(n){ var D = A.data(); return (D && D.sty && D.sty[n]) || (STY && STY[n] && STY[n].frame) || ''; }
 
@@ -216,8 +235,12 @@ var Stil = (function(){
         var ok = unlocked(d, n, TAB), on = ED[TAB] === d.k, o = el('button', 'sty-opt' + (on ? ' on' : '') + (ok ? '' : ' lock')); o.type = 'button';
         var pv = el('span', 'sty-pv ' + (TAB === 'frame' ? 'pv-frame fr-' + (d.k || 'none') : TAB === 'header' ? 'hb-' + (d.k || 'night') : TAB === 'anim' ? 'pv-anim hb-night' : 'pv-bg bg-' + (d.k || 'none')));
         if (TAB === 'frame') pv.appendChild(el('i', '', '🙂'));
+        var FXe = window.StilFX, pvo = pv;
+        if (FXe && TAB === 'frame' && FXe.isFrame(d.k)) { pvo = el('span', 'pv-wrap'); pvo.appendChild(pv); FXe.frame(pvo, d.k, true); }
+        if (FXe && TAB === 'header' && FXe.isHeader(d.k)) FXe.header(pv, d.k, true);
+        if (FXe && TAB === 'bg' && FXe.isBg(d.k)) FXe.bg(d.k, pv);
         if (TAB === 'anim') { var dot = el('i', 'pv-dot' + (d.k === 'pulse' || d.k === 'spin' ? ' av-' + d.k : ''), '🙂'); if (d.k === 'spin') dot.appendChild(el('span', 'av-ring')); pv.appendChild(dot); if (d.k) fx(pv, d.k, true); }
-        o.appendChild(pv); o.appendChild(el('b', '', (ok ? '' : d.shop ? '🛒 ' : '🔒 ') + dname(d)));
+        o.appendChild(pvo); o.appendChild(el('b', '', (ok ? '' : d.shop ? '🛒 ' : '🔒 ') + dname(d)));
         if (!ok) o.appendChild(el('small', '', d.shop ? d.shop + ' 🪙' : lockText(d))); else if (d.shop) o.appendChild(el('small', '', '🛒 ✓'));
         if (ok) o.addEventListener('click', function(){ ED[TAB] = d.k; A.reProfile(); });
         else if (d.shop) { o.classList.add('shop'); o.addEventListener('click', function(){ buy(TAB, d, n); }); }
