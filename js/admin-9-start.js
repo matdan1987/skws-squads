@@ -170,7 +170,12 @@ document.addEventListener('click', function(e){
   if (a === 'rename') { var nn = prompt('Neuer Name für ' + n + ':', n); if (nn && nn.trim() && nn.trim() !== n) { nn = nn.trim(); memberAction('rename', n, nn, n + ' heißt jetzt ' + nn + '.').then(function(ok){ if (ok) { mgRename(n, nn); if (curPlayer === n) { curPlayer = nn; if (store('skws_admin_tab') === 'pl') { fillPlayerSelect(); renderPlayer(); } } } }); } }
 });
 
-var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (!D) return; var t = store('skws_admin_tab') || 'ov'; showTab(t); }, 200); });
+// Bei Größenänderung neu zeichnen – aber nur, wenn sich die Breite ändert (Drehen), nicht wenn die Handy-Tastatur aufgeht
+// (die ändert nur die Höhe; ein Neuzeichnen würde das Eingabefeld ersetzen und die Tastatur sofort wieder schließen)
+var rt, rw = window.innerWidth; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){
+  if (!D || window.innerWidth === rw) return; rw = window.innerWidth;
+  var a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.nodeName)) return;
+  showTab(store('skws_admin_tab') || 'ov'); }, 200); });
 var saved = savedPw();
 if (saved) load(saved, true);
 
