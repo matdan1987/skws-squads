@@ -513,3 +513,12 @@ body.pbg-circuits{background:linear-gradient(90deg,rgba(34,211,238,.12) 2px,tran
 .pv-anim{position:relative;overflow:hidden;display:grid!important;place-items:center}
 .pv-dot{font-style:normal;font-size:18px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));position:relative;z-index:2}
 @media (prefers-reduced-motion: reduce){.fx-p,.av-pulse,.av-ring,.sty-card.an-aurora,.an-aurora .sty-banner,.pv-anim.an-aurora{animation:none!important}.fx-p{opacity:.5}}
+  .errbox{margin-top:8px;padding:10px 12px;border:1px dashed rgba(255,92,122,.45);border-radius:12px;background:rgba(255,92,122,.06);font-size:13px}
+  .errbox-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px}
+  .errbox-nr{font-weight:700;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--err)}
+  .errbox-stat{display:block;margin-top:4px;font-weight:600}.errbox-stat:empty{display:none}.errbox-stat.ok{color:var(--ok)}.errbox-stat.err{color:var(--err)}
+  .errbox-tg{margin-top:6px}
+  .errbox-ta{width:100%;box-sizing:border-box;margin-top:8px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--text);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px;resize:vertical}
+  .errbox-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}
+  .errbox .linkbtn{margin-top:6px;padding:8px 10px}
+  .errbox-top .linkbtn,.errbox-row .linkbtn{width:auto;flex:1 1 auto}

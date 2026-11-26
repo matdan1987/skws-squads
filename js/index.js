@@ -522,10 +522,93 @@
     try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(e){ el.scrollIntoView(); }
     setTimeout(function(){ try { el.focus({ preventScroll: true }); } catch(e){ el.focus(); } }, 350);
   }
-  // Fehlversuch fürs Logbuch melden (fire-and-forget, Fehler hier nie anzeigen)
-  function logFail(code, name, isNew){
+  /* ---------- Fehlerprotokoll ----------
+     Jeder Fehlversuch bekommt eine Nr. (z. B. F-7K3Q). Der Spieler sieht sie unter der Meldung und kann einen
+     Fehlerbericht kopieren; dieselbe Nr. steht im Admin-Logbuch (log_form_fail), so lässt sich beides zuordnen. */
+  var ERRLOG_I18N = {
+    de: { nr:'Fehler-Nr.', copy:'📋 Fehlerbericht kopieren', copied:'Kopiert – schick ihn R4/R5 im Allianz-Chat.', copyFail:'Kopieren ging nicht – bitte den Text unten markieren und kopieren.', show:'Fehlerprotokoll ({n})', hide:'Fehlerprotokoll ausblenden', clear:'Liste leeren', copyAll:'📋 Alles kopieren', hint:'R4/R5 sehen diese Fehler ebenfalls. Wenn du nicht weiterkommst, schick ihnen den Bericht.', title:'SKWS Fehlerbericht', time:'Zeit', name:'Name', act:'Aktion', actNew:'Neu eintragen', actSave:'Speichern', err:'Fehler', dev:'Gerät', none:'–' },
+    en: { nr:'Error no.', copy:'📋 Copy error report', copied:'Copied – send it to R4/R5 in the alliance chat.', copyFail:'Copying didn’t work – please select the text below and copy it.', show:'Error log ({n})', hide:'Hide error log', clear:'Clear list', copyAll:'📋 Copy all', hint:'R4/R5 see these errors too. If you’re stuck, send them the report.', title:'SKWS error report', time:'Time', name:'Name', act:'Action', actNew:'Register as new', actSave:'Save', err:'Error', dev:'Device', none:'–' },
+    fr: { nr:'Erreur n°', copy:'📋 Copier le rapport d’erreur', copied:'Copié – envoie-le aux R4/R5 dans le chat d’alliance.', copyFail:'La copie n’a pas marché – sélectionne le texte ci-dessous et copie-le.', show:'Journal des erreurs ({n})', hide:'Masquer le journal', clear:'Vider la liste', copyAll:'📋 Tout copier', hint:'Les R4/R5 voient aussi ces erreurs. Si tu es bloqué, envoie-leur le rapport.', title:'Rapport d’erreur SKWS', time:'Heure', name:'Nom', act:'Action', actNew:'Nouvelle inscription', actSave:'Enregistrer', err:'Erreur', dev:'Appareil', none:'–' },
+    es: { nr:'Error n.º', copy:'📋 Copiar informe de error', copied:'Copiado – envíalo a R4/R5 en el chat de la alianza.', copyFail:'No se pudo copiar – selecciona el texto de abajo y cópialo.', show:'Registro de errores ({n})', hide:'Ocultar registro', clear:'Vaciar lista', copyAll:'📋 Copiar todo', hint:'R4/R5 también ven estos errores. Si no avanzas, envíales el informe.', title:'Informe de error SKWS', time:'Hora', name:'Nombre', act:'Acción', actNew:'Registro nuevo', actSave:'Guardar', err:'Error', dev:'Dispositivo', none:'–' },
+    pt: { nr:'Erro n.º', copy:'📋 Copiar relatório de erro', copied:'Copiado – envie para R4/R5 no chat da aliança.', copyFail:'Não foi possível copiar – selecione o texto abaixo e copie.', show:'Registro de erros ({n})', hide:'Ocultar registro', clear:'Limpar lista', copyAll:'📋 Copiar tudo', hint:'R4/R5 também veem esses erros. Se travar, envie o relatório para eles.', title:'Relatório de erro SKWS', time:'Hora', name:'Nome', act:'Ação', actNew:'Novo cadastro', actSave:'Salvar', err:'Erro', dev:'Dispositivo', none:'–' },
+    it: { nr:'Errore n.', copy:'📋 Copia segnalazione errore', copied:'Copiato – mandalo a R4/R5 nella chat dell’alleanza.', copyFail:'Copia non riuscita – seleziona il testo qui sotto e copialo.', show:'Registro errori ({n})', hide:'Nascondi registro', clear:'Svuota elenco', copyAll:'📋 Copia tutto', hint:'Anche R4/R5 vedono questi errori. Se sei bloccato, manda loro la segnalazione.', title:'Segnalazione errore SKWS', time:'Ora', name:'Nome', act:'Azione', actNew:'Nuova iscrizione', actSave:'Salva', err:'Errore', dev:'Dispositivo', none:'–' },
+    tr: { nr:'Hata no', copy:'📋 Hata raporunu kopyala', copied:'Kopyalandı – ittifak sohbetinde R4/R5’e gönder.', copyFail:'Kopyalanamadı – lütfen aşağıdaki metni seçip kopyala.', show:'Hata kaydı ({n})', hide:'Hata kaydını gizle', clear:'Listeyi temizle', copyAll:'📋 Tümünü kopyala', hint:'R4/R5 de bu hataları görür. Takılırsan raporu onlara gönder.', title:'SKWS hata raporu', time:'Zaman', name:'Ad', act:'İşlem', actNew:'Yeni kayıt', actSave:'Kaydet', err:'Hata', dev:'Cihaz', none:'–' },
+    ru: { nr:'Ошибка №', copy:'📋 Скопировать отчёт об ошибке', copied:'Скопировано – отправь его R4/R5 в чат альянса.', copyFail:'Не удалось скопировать – выдели текст ниже и скопируй его.', show:'Журнал ошибок ({n})', hide:'Скрыть журнал', clear:'Очистить список', copyAll:'📋 Скопировать всё', hint:'R4/R5 тоже видят эти ошибки. Если не получается, отправь им отчёт.', title:'Отчёт об ошибке SKWS', time:'Время', name:'Имя', act:'Действие', actNew:'Новая регистрация', actSave:'Сохранение', err:'Ошибка', dev:'Устройство', none:'–' },
+    pl: { nr:'Błąd nr', copy:'📋 Kopiuj raport błędu', copied:'Skopiowano – wyślij go R4/R5 na czacie sojuszu.', copyFail:'Kopiowanie nie zadziałało – zaznacz tekst poniżej i skopiuj go.', show:'Dziennik błędów ({n})', hide:'Ukryj dziennik', clear:'Wyczyść listę', copyAll:'📋 Kopiuj wszystko', hint:'R4/R5 też widzą te błędy. Jeśli utkniesz, wyślij im raport.', title:'Raport błędu SKWS', time:'Czas', name:'Imię', act:'Akcja', actNew:'Nowa rejestracja', actSave:'Zapis', err:'Błąd', dev:'Urządzenie', none:'–' }
+  };
+  function EL(){ return ERRLOG_I18N[LANG] || ERRLOG_I18N.en; }
+  var ERRLOG_KEY = 'skws_errlog', ERRLOG_MAX = 20, errOpen = false;
+  function errLoad(){ try { var a = JSON.parse(store(ERRLOG_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
+  function errSaveList(a){ try { store(ERRLOG_KEY, JSON.stringify(a.slice(-ERRLOG_MAX))); } catch(e){} }
+  function errRef(){
+    var abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = 'F-', b = null;
+    try { b = crypto.getRandomValues(new Uint8Array(5)); } catch(e){}
+    for (var i = 0; i < 5; i++) s += abc.charAt((b ? b[i] : Math.floor(Math.random() * 256)) % abc.length);
+    return s;
+  }
+  // kurze Geräteangabe ohne persönliche Daten, z. B. „Android 10 · Chrome 157“
+  function devInfo(){
+    var u = navigator.userAgent || '', os = /Android ([\d.]+)/.exec(u) ? 'Android ' + /Android ([\d.]+)/.exec(u)[1] : /iPhone|iPad/.test(u) ? 'iOS' : /Windows/.test(u) ? 'Windows' : /Mac OS X/.test(u) ? 'macOS' : /Linux/.test(u) ? 'Linux' : '?';
+    var br = /Edg\/(\d+)/.exec(u) ? 'Edge ' + /Edg\/(\d+)/.exec(u)[1] : /OPR\/(\d+)/.exec(u) ? 'Opera ' + /OPR\/(\d+)/.exec(u)[1] : /Firefox\/(\d+)/.exec(u) ? 'Firefox ' + /Firefox\/(\d+)/.exec(u)[1]
+           : /Chrome\/(\d+)/.exec(u) ? 'Chrome ' + /Chrome\/(\d+)/.exec(u)[1] : /Version\/(\d+).*Safari/.exec(u) ? 'Safari ' + /Version\/(\d+).*Safari/.exec(u)[1] : '';
+    return (window.SKWSAndroid ? 'App · ' : '') + os + (br ? ' · ' + br : '');
+  }
+  function errReport(list){
+    var L = EL();
+    return list.map(function(x){
+      var d = new Date(x.at), tz = -d.getTimezoneOffset() / 60;
+      return [L.title, L.nr + ' ' + x.ref,
+        L.time + ': ' + d.toLocaleString(LANG, { dateStyle: 'short', timeStyle: 'short' }) + ' (UTC' + (tz >= 0 ? '+' : '') + tz + ')',
+        L.name + ': ' + (x.name || L.none), L.act + ': ' + (x.isNew ? L.actNew : L.actSave),
+        L.err + ': ' + x.code + ' – ' + x.text, L.dev + ': ' + x.dev + ' · ' + x.lang].join('\n');
+    }).join('\n\n');
+  }
+  function copyText(txt, done){
+    function fallback(){
+      var ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); var ok = false; try { ok = document.execCommand('copy'); } catch(e){} ta.remove(); done(ok);
+    }
+    try { if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(txt).then(function(){ done(true); }, fallback); return; } } catch(e){}
+    fallback();
+  }
+  // Kasten unter der Meldung: letzte Fehler-Nr., Kopieren, aufklappbares Protokoll
+  function errRender(highlight){
+    var box = $('errBox'), list = errLoad(), L = EL();
+    if (!box) { box = document.createElement('div'); box.id = 'errBox'; box.className = 'errbox'; var m = $('msg'); m.parentNode.insertBefore(box, m.nextSibling); }
+    if (!list.length) { box.innerHTML = ''; box.classList.add('hide'); return; }
+    box.classList.remove('hide'); box.innerHTML = '';
+    var last = list[list.length - 1];
+    if (highlight) {
+      var top = document.createElement('div'); top.className = 'errbox-top';
+      var nr = document.createElement('span'); nr.className = 'errbox-nr'; nr.textContent = L.nr + ' ' + last.ref;
+      var cp = document.createElement('button'); cp.type = 'button'; cp.className = 'linkbtn'; cp.textContent = L.copy;
+      cp.addEventListener('click', function(){ copyText(errReport([last]), function(ok){ stat.textContent = ok ? L.copied : L.copyFail; stat.className = 'errbox-stat ' + (ok ? 'ok' : 'err'); if (!ok) { errOpen = true; errRender(true); } }); });
+      top.appendChild(nr); top.appendChild(cp); box.appendChild(top);
+      var stat = document.createElement('div'); stat.className = 'errbox-stat'; box.appendChild(stat);
+    }
+    var tg = document.createElement('button'); tg.type = 'button'; tg.className = 'linkbtn errbox-tg'; tg.textContent = errOpen ? L.hide : L.show.replace('{n}', list.length);
+    tg.addEventListener('click', function(){ errOpen = !errOpen; errRender(highlight); });
+    box.appendChild(tg);
+    if (errOpen) {
+      var hint = document.createElement('div'); hint.className = 'hint'; hint.textContent = L.hint; box.appendChild(hint);
+      var ta = document.createElement('textarea'); ta.className = 'errbox-ta'; ta.readOnly = true; ta.rows = Math.min(14, list.length * 8); ta.value = errReport(list.slice().reverse());
+      ta.addEventListener('focus', function(){ ta.select(); }); box.appendChild(ta);
+      var row = document.createElement('div'); row.className = 'errbox-row';
+      var all = document.createElement('button'); all.type = 'button'; all.className = 'linkbtn'; all.textContent = L.copyAll;
+      var st2 = document.createElement('span'); st2.className = 'errbox-stat';
+      all.addEventListener('click', function(){ copyText(ta.value, function(ok){ st2.textContent = ok ? L.copied : L.copyFail; st2.className = 'errbox-stat ' + (ok ? 'ok' : 'err'); if (!ok) { ta.focus(); ta.select(); } }); });
+      var clr = document.createElement('button'); clr.type = 'button'; clr.className = 'linkbtn'; clr.textContent = L.clear;
+      clr.addEventListener('click', function(){ errSaveList([]); errOpen = false; errRender(false); });
+      row.appendChild(all); row.appendChild(clr); box.appendChild(row); box.appendChild(st2);
+    }
+  }
+  // Fehlversuch merken (Gerät) und fürs Logbuch melden (fire-and-forget, Fehler hier nie anzeigen)
+  function logFail(code, name, isNew, text){
+    code = String(code || 'UNKNOWN').slice(0, 30);
+    var x = { ref: errRef(), at: new Date().toISOString(), code: code, text: String(text || ''), name: name || '', isNew: !!isNew, lang: LANG, dev: devInfo() };
+    var list = errLoad(); list.push(x); errSaveList(list); errRender(true);
     try {
-      rpc('log_form_fail', { p_name: name || null, p_code: String(code || 'UNKNOWN').slice(0, 30), p_new: !!isNew, p_lang: LANG, p_app: !!window.SKWSAndroid }).catch(function(){});
+      rpc('log_form_fail', { p_name: name || null, p_code: code, p_new: !!isNew, p_lang: LANG, p_app: !!window.SKWSAndroid, p_ref: x.ref, p_dev: x.dev.slice(0, 60) }).catch(function(){});
     } catch(e){}
   }
   function formName(){ return NEW_MODE ? $('newName').value.trim().replace(/\s+/g, ' ') : $('name').value; }
@@ -534,8 +617,8 @@
     if (busy) return;
     if (!NEW_MODE && $('name').value && !authed($('name').value)) { openAuth(); setMsg(F_().loginFirst, 'err'); return; }
     var r = collect();
-    if (r.err) { setMsg(r.err, 'err'); markBad(r.f, r.err); logFail(r.code, formName(), NEW_MODE); return; }
-    clearBad();
+    if (r.err) { setMsg(r.err, 'err'); markBad(r.f, r.err); logFail(r.code, formName(), NEW_MODE, r.err); return; }
+    clearBad(); errRender(false);
     // Heldenkraft wirkt zu klein (z. B. 6,1 statt 106,1 Mio.) → einmal nachfragen
     var t1p = r.data.squads[0] && r.data.squads[0].power;
     if (r.data.hero && r.data.hero < 20 && t1p && t1p > 15) { var XH = XTRA_I18N[LANG] || XTRA_I18N.en; if (!confirm(XH.heroLow.replace('{v}', fmtPow(r.data.hero)))) { $('hero').focus(); return; } }
@@ -565,7 +648,7 @@
         if (em.indexOf('ERR_LOGIN') >= 0 && authed(r.data.name)) Funk.expired();
         var txt = errText(em); setMsg(txt, 'err'); markBad(errField(em), txt);
         var code = (em.match(/ERR_[A-Z_0-9:]+/) || [''])[0].replace(/^ERR_/, 'SRV_') || 'SRV_' + (/fetch|network|Failed/i.test(em) ? 'NETWORK' : 'UNKNOWN');
-        logFail(code, r.data.name, isNew);
+        logFail(code, r.data.name, isNew, txt);
       });
     function done(){ busy = false; $('save').disabled = false; $('save').textContent = t('save'); }
   }
@@ -1053,6 +1136,7 @@
     LANG = l; $('lang').value = l; store('skws_lang', l);
     if (manual) store('skws_lang_manual', '1');
     applyLang();
+    if ($('errBox')) errRender(!!$('errBox').querySelector('.errbox-nr'));
   }
 
   function pickLang(){
@@ -1117,6 +1201,7 @@
     $('search').addEventListener('input', fillNames);
     $('name').addEventListener('change', function(){ store('skws_name', this.value); if (window.SKWSAndroid && window.SKWSAndroid.setName) { try { window.SKWSAndroid.setName(this.value); } catch(e){} } loadMember(); });
     $('save').addEventListener('click', save);
+    errRender(false); // vorhandenes Fehlerprotokoll (nur als Link) anzeigen
     $('newBtn').addEventListener('click', function(){ setNewMode(true); });
     $('backBtn').addEventListener('click', function(){ setNewMode(false); });
     $('tabForm').addEventListener('click', function(){ showTab('form'); });

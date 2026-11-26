@@ -35,7 +35,8 @@ function logText(r){
   }
   if (a === 'self_join') return { tag:'adm', label:'Beitritt', text: who(r.target) + (d.returned ? ' ist zurück und hat sich selbst wieder eingetragen' : ' hat sich selbst neu eingetragen'), sub: 'Rang ' + (d.rank || 'R1') + ' · bei Bedarf im Tab Mitglieder anpassen' };
   if (a === 'form_fail') return { tag:'warn', label:'Fehlversuch', text: (r.target ? esc(r.target) : 'Jemand ohne Namen') + (d.new ? ' wollte sich neu eintragen' : ' wollte speichern') + ' – ' + esc(FAIL_TXT[String(d.code || '').replace(/:T\d$/, '')] || d.code || '?') + ((String(d.code || '').match(/:T(\d)$/) || [])[1] ? ' (T' + String(d.code).match(/:T(\d)$/)[1] + ')' : ''),
-    sub: 'nicht gespeichert' + (d.app ? ' · Android-App' : ' · Browser') + (d.lang ? ' · ' + esc(d.lang) : '') };
+    sub: (d.ref ? 'Fehler-Nr. ' + esc((d.refs && d.refs.length ? d.refs : [d.ref]).join(', ')) + ' · ' : '') + 'nicht gespeichert' + (d.count > 1 ? ' · ' + d.count + '× versucht' : '') +
+      (d.app ? ' · Android-App' : ' · Browser') + (d.dev ? ' (' + esc(String(d.dev).replace(/^App · /, '')) + ')' : '') + (d.lang ? ' · ' + esc(d.lang) : '') };
   if (a === 'unsub') return { tag:'warn', label:'Abgemeldet', text: who(r.target) + ' hat sich von der Mail-Erinnerung abgemeldet', sub: '' };
   if (a === 'avatar_fail') return { tag:'warn', label:'Avatar', text: 'Falsche E-Mail beim Avatar-Ändern für ' + (r.target || ''), sub: 'nach 5 Fehlversuchen pro Stunde gesperrt' };
   if (a === 'avatar') return { tag: d.what === 'admin_remove' ? 'warn' : '', label:'Avatar', text: d.what === 'admin_remove' ? who(r.actor) + ' hat den Avatar von ' + (r.target || '') + ' entfernt' : who(r.actor) + (d.what === 'remove' ? ' hat seinen Avatar entfernt' : ' hat einen neuen Avatar hochgeladen'), sub: '' };
