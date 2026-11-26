@@ -254,14 +254,18 @@
   // Reiter „Events“: Beschriftung, Hinweis wenn nichts offen ist, Punkt bei offener Anmeldung ohne Antwort
   function evLabels(){
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, n = $('name').value, ev = DATA && DATA.ev || {};
-    var open = n && ['ds','cs'].some(function(k){ var r = ev[k]; return r && r.open && !(r.signups && r.signups[n]); });
+    var open = n && ['ds','cs'].some(function(k){ var r = ev[k]; return r && r.open && !(r.signups && r.signups[n]); }) || (window.Umfragen && Umfragen.ready() && Umfragen.pending() > 0);
     $('tabEvents').textContent = X.evTab; if (open) { var d = document.createElement('span'); d.className = 'fk-badge'; d.textContent = '•'; $('tabEvents').appendChild(d); }
     $('evIntro').textContent = X.evIntro.replace('{tab}', t('form'));
-    var any = ['evCards','claimCards'].some(function(id){ return $(id).children.length; }) || !$('dsCard').classList.contains('hide') || !$('csCard').classList.contains('hide');
+    var any = ['pollBox','evCards','claimCards'].some(function(id){ return $(id).children.length; }) || !$('dsCard').classList.contains('hide') || !$('csCard').classList.contains('hide');
     $('evEmptyTxt').textContent = n ? X.evEmpty : X.evPick.replace('{tab}', t('form'));
     $('evEmpty').classList.toggle('hide', any);
   }
-  function renderEv(){ renderEvCards(); evLabels(); }
+  function renderEv(){
+    renderEvCards();
+    if (window.Umfragen && Umfragen.ready()) { var me = $('name').value; if (Umfragen.who() !== (me && authed(me) ? me : null)) Umfragen.load(); else Umfragen.render(); }
+    evLabels();
+  }
   function renderEvCards(){
     var box = $('evCards'); box.innerHTML = '';
     var ev = DATA && DATA.ev; if (!ev) return;
@@ -1065,8 +1069,11 @@
       onSettled: function(c){ if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }); },
       onNews: function(c){ if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }, true); },
       onAuth: function(){ MER_FOR = null; GRP = null; GRP_FOR = null; loadMerits(); renderAuth(); renderEv(); loadClaims(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
+    if (window.Umfragen) Umfragen.init({ lang: function(){ return LANG; }, tok: tok, me: function(){ var n = $('name').value; return n && authed(n) ? n : null; },
+      changed: evLabels, expired: function(){ Funk.expired(); } });
     // Karten auf- und zuklappen: Profil, Übersicht, Funk und die Info-Karten auf „Eintragen“ (nicht das Eingabeformular)
     if (window.Klapp) Klapp.init({ key: 'skws_zu', ok: function(c){
+      if (c.closest('#pollBox')) return false;
       if (c.closest('.fk-overlay, #fkModal') || c.classList.contains('fk-head') || c.classList.contains('sq') || c.classList.contains('fk-modal')) return false;
       var v = c.closest('section'), id = v && v.id;
       if (id === 'profileView' || id === 'overviewView' || id === 'funkView' || id === 'eventsView') return true;
