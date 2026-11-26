@@ -1,7 +1,7 @@
 /* SKWS Squads – Admin: start (gemeinsamer globaler Bereich, Reihenfolge der Dateien beachten) */
 /* ---------- Steuerung ---------- */
 // Bereiche der Navigation: jeder Reiter gehört zu genau einem Bereich
-var NAV = { mi:['mlist','pl','acc'], st:['ov','mem','dev','hist','exp'], ev:['ds','cs','arc'], al:['msg','mg','mer','bdg'], sy:['log','adm'] };
+var NAV = { mi:['mlist','pl','acc'], st:['ov','mem','dev','hist','exp'], ev:['ds','cs','arc'], al:['msg','mg','mer','bdg','umf'], sy:['log','adm'] };
 function navGroupOf(t){ for (var g in NAV) if (NAV[g].indexOf(t) >= 0) return g; return 'mi'; }
 function navRender(name){
   var g = navGroupOf(name);
@@ -13,7 +13,7 @@ function showTab(name){
   navRender(name);
   var bs = document.querySelectorAll('#tabs button');
   for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-  ['mlist','ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','msg','adm','acc','log','bdg','arc'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+  ['mlist','ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','msg','adm','acc','log','bdg','arc','umf'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
   store('skws_admin_tab', name); store('skws_admin_tab_' + navGroupOf(name), name);
   if (name === 'hist') renderHistory();
   if (name === 'ov') renderOverview();
@@ -26,6 +26,7 @@ function showTab(name){
   if (name === 'mer') merRender();
   if (name === 'msg') { fkRender(); fkLoad(); }
   if (name === 'arc') arcLoad(false);
+  if (name === 'umf') { umfRender(); umfLoad(); }
   if (name === 'bdg') { bdgRender(); bdgLoad(); clmRender(); clmLoad(); }
   if (name === 'acc') { accRender(); fkRender(); fkLoad().then(accLoad); }
   if (name === 'dev') renderDev();

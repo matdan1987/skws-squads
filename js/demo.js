@@ -41,7 +41,7 @@
                'Raven','Ember','Pixel','Comet','Nebula','Quasar','Titan','Aurora','Phoenix','Draco','Solara','Luna','Onyx','Cobalt','Indigo','Saffron'];
   function makeDB(){
     var TYPES = ['tank','tank','tank','aircraft','missile','mixed'], db = { id: 1000, members: [], entries: {}, history: [], rounds: [], ds: null, cs: null, merits: [], meritcfg: null, evcfg: {},
-      msgs: [], shouts: [], gifts: [], badges: [], claimEv: [], seasons: [], notes: [], log: [], avatars: {}, pins: {}, mg: null };
+      msgs: [], shouts: [], gifts: [], badges: [], claimEv: [], seasons: [], notes: [], polls: [], pvotes: [], log: [], avatars: {}, pins: {}, mg: null };
     NAMES.forEach(function(n, i){
       var rank = i === 0 ? 'R5' : i < 5 ? 'R4' : ['R3','R3','R2','R1','R2','R3','R1'][i % 7];
       var aj = i % 5 === 3 ? null : iso(NOW - (20 + Math.floor(rnd() * 600)) * DAY).slice(0, 10);
@@ -96,6 +96,14 @@
     db.badges.push({ id: ++db.id, key: 'demo-zombie', label: 'Zombie-Belagerung KW 47', icon: '🧟', name: 'Echo', t: iso(NOW - 6 * DAY), by: 'Nova' });
     db.claimEv.push({ id: ++db.id, label: 'Zombie-Belagerung KW 48', icon: '🧟', open: true, t: iso(NOW - DAY), claims: [{ name: 'Echo', status: 'pending' }, { name: 'Blaze', status: 'pending' }, { name: 'Raven', status: 'ok' }] });
     db.seasons.push({ id: ++db.id, label: 'Weihnachten 2026', icon: '🎄', from: '2026-12-20', to: '2026-12-31' });
+    // Umfragen
+    function poll(o){ o.id = ++db.id; o.at = iso(NOW - (o.ago || 1) * DAY); delete o.ago; db.polls.push(o); return o.id; }
+    var p1 = poll({ q: 'Welches Event sollen wir als Nächstes gemeinsam üben?', opts: ['Wüstensturm', 'Schluchtsturm', 'Zombie-Belagerung'], multi: false, other: true, results: 'live', anon: false, ranks: null, grp: null, closes_at: iso(NOW + 3 * DAY), closed_at: null, by: 'Nova', ago: 1 });
+    var p2 = poll({ q: 'Wann passt euch das nächste Gruppentreffen?', opts: ['Mo 20:00', 'Mi 20:00', 'Sa 18:00'], multi: true, other: false, results: 'end', anon: true, ranks: null, grp: 0, closes_at: iso(NOW + 2 * DAY), closed_at: null, by: ME, ago: 0.5 });
+    var p3 = poll({ q: 'Neues Allianz-Logo – welches gefällt euch?', opts: ['Variante A (blau)', 'Variante B (gold)'], multi: false, other: false, results: 'live', anon: false, ranks: null, grp: null, closes_at: null, closed_at: iso(NOW - 2 * DAY), by: 'Nova', ago: 6 });
+    [['Orion',[0]],['Lyra',[0]],['Vega',[1]],['Atlas',[0]],['Juno',[],'Bärenjagd']].forEach(function(v){ db.pvotes.push({ id: p1, name: v[0], c: v[1], o: v[2] || null, t: iso(NOW - DAY / 2) }); });
+    [['Orion',[1,2]],['Lyra',[1]]].forEach(function(v){ db.pvotes.push({ id: p2, name: v[0], c: v[1], o: null, t: iso(NOW - DAY / 3) }); });
+    [['Orion',[1]],['Lyra',[0]],['Vega',[1]],['Atlas',[1]],[ME,[1]]].forEach(function(v){ db.pvotes.push({ id: p3, name: v[0], c: v[1], o: null, t: iso(NOW - 4 * DAY) }); });
     db.notes.push({ id: ++db.id, name: ME, body: 'Super Einsatz beim letzten Wüstensturm – danke fürs Halten der Raffinerie!', vis: 'player', t: iso(NOW - 2 * DAY), by: 'Nova' });
     db.notes.push({ id: ++db.id, name: ME, body: 'Kandidat für R4, im Blick behalten.', vis: 'lead', t: iso(NOW - 3 * DAY), by: 'Nova' });
     db.notes.push({ id: ++db.id, name: 'Frost', body: 'Zweimal unentschuldigt gefehlt – beim nächsten Mal ansprechen.', vis: 'lead', t: iso(NOW - 4 * DAY), by: 'Nova' });
@@ -104,7 +112,7 @@
     return db;
   }
   function log(db, actor, action, target, details, ago){ db.log.unshift({ id: ++db.id, at: iso(Date.now() - (ago || 0) * MIN), actor: actor, action: action, target: target || null, details: details || {} }); }
-  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 5) { DB = makeDB(); DB.v = 5; }
+  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 6) { DB = makeDB(); DB.v = 6; }
   function save(){ try { oS.call(SS, 'skws_demo_db', JSON.stringify(DB)); } catch(e){} }
   save();
 
@@ -113,6 +121,19 @@
   function active(){ return DB.members.filter(function(m){ return m.active; }); }
   function tokName(t){ return t && String(t).indexOf('demo-') === 0 && mem_(String(t).slice(5)) ? String(t).slice(5) : null; }
   function grpOf(n){ var out = null; DB.mg.groups.forEach(function(G, i){ if (G.r4 === n) out = { i: i, role: 'r4' }; else if (G.mentors.indexOf(n) >= 0) out = out || { i: i, role: 'mentor' }; else if (G.members.indexOf(n) >= 0) out = out || { i: i, role: 'member' }; }); return out; }
+  function pollOpen(p){ return !p.closed_at && (!p.closes_at || new Date(p.closes_at) > new Date()); }
+  function pollIn(p, n){ var m = mem_(n); if (!m || !m.active || (p.ranks && p.ranks.indexOf(m.rank) < 0)) return false; if (p.grp === null || p.grp === undefined) return true; var G = DB.mg.groups[p.grp]; return !!G && (G.r4 === n || G.mentors.indexOf(n) >= 0 || G.members.indexOf(n) >= 0); }
+  function pollOut(p, me, res, names){ var vs = DB.pvotes.filter(function(v){ return v.id === p.id; }), mine = vs.filter(function(v){ return v.name === me; })[0];
+    return { id: p.id, q: p.q, opts: p.opts, multi: p.multi, other: p.other, results: p.results, anon: p.anon, ranks: p.ranks, grp: p.grp, closes_at: p.closes_at, closed_at: p.closed_at, open: pollOpen(p), by: p.by, at: p.at,
+      mine: mine ? { c: mine.c, o: mine.o } : null, n: vs.length,
+      res: res ? { counts: p.opts.map(function(x, i){ return vs.filter(function(v){ return v.c.indexOf(i) >= 0; }).length; }),
+        other: vs.filter(function(v){ return v.o; }).map(function(v){ return names && !p.anon ? { t: v.o, n: v.name } : { t: v.o }; }),
+        voters: names && !p.anon ? vs.map(function(v){ return { n: v.name, c: v.c }; }) : null } : null }; }
+  function pollAdd(d, by, grp){ var opts = (d.opts || []).map(function(x){ return String(x).trim(); }).filter(Boolean); if (!String(d.q || '').trim() || !opts.length) throw new Error('ERR_EMPTY');
+    var id = ++DB.id; DB.polls.push({ id: id, q: String(d.q).trim(), opts: opts, multi: !!d.multi, other: !!d.other, results: d.results || 'live', anon: !!d.anon, ranks: d.ranks && d.ranks.length ? d.ranks : null, grp: grp, closes_at: d.closes_at || null, closed_at: null, by: by, at: iso(Date.now()) }); return id; }
+  function pollAct(id, a){ var p = DB.polls.filter(function(x){ return x.id === id; })[0]; if (!p) throw new Error('ERR_POLL');
+    if (a === 'close') p.closed_at = iso(Date.now()); else if (a === 'reopen') { p.closed_at = null; if (p.closes_at && new Date(p.closes_at) < new Date()) p.closes_at = null; }
+    else if (a === 'delete') { DB.polls = DB.polls.filter(function(x){ return x.id !== id; }); DB.pvotes = DB.pvotes.filter(function(v){ return v.id !== id; }); } return { ok: true }; }
   function level(n){ var m = mem_(n); if (!m) return null; if (m.rank === 'R4' || m.rank === 'R5') return 'lead'; var g = grpOf(n); return g && g.role !== 'member' ? 'mentor' : 'member'; }
   function entryOut(e){ return e ? { squads: e.squads, hasEmail: !!e.email, lang: e.lang, updated: e.updated, hero: e.hero, gorilla: e.gorilla, gstage: e.gstage, gpower: e.gpower } : null; }
   function meritActive(m){ return !m.revoked_at && (!m.until || new Date(m.until) > new Date()); }
@@ -188,6 +209,26 @@
     set_avatar: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_LOGIN' }; if (b.p_data) DB.avatars[n] = { d: b.p_data, ts: Math.floor(Date.now() / 1000) }; else delete DB.avatars[n]; return { ok: true, name: n }; },
     notes_for: function(b){ var n = tokName(b.p_token), lv = level(n), g = grpOf(b.p_name), mine = grpOf(n), grp = !!(g && mine && g.i === mine.i && mine.role !== 'member'), self = n === b.p_name, ok = lv === 'lead' || grp || self;
       return { ok: true, allowed: !!ok, self: self, items: ok ? DB.notes.filter(function(x){ return x.name === b.p_name && (lv === 'lead' || (grp && x.vis !== 'lead') || (self && x.vis === 'player')); }) : [] }; },
+    polls_list: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var lv = level(n), g = grpOf(n);
+      return { ok: true, lv: lv, grp: g && g.role !== 'member' ? g.i : null, items: DB.polls.filter(function(p){ return pollIn(p, n) || lv === 'lead' || p.by === n; })
+        .filter(function(p){ return pollOpen(p) || Date.now() - new Date(p.closed_at || p.closes_at) < 30 * DAY; })
+        .sort(function(a, b){ return (pollOpen(b) - pollOpen(a)) || (new Date(b.at) - new Date(a.at)); })
+        .map(function(p){ var voted = DB.pvotes.some(function(v){ return v.id === p.id && v.name === n; }), op = pollOpen(p);
+          var see = lv === 'lead' || p.by === n || (p.results === 'live' && (!op || voted)) || (p.results === 'end' && !op);
+          var o = pollOut(p, n, see, lv === 'lead' || p.by === n || p.results !== 'lead'); o.can = pollIn(p, n); return o; }) }; },
+    poll_vote: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var p = DB.polls.filter(function(x){ return x.id === b.p_id; })[0];
+      if (!p || !pollOpen(p) || !pollIn(p, n)) throw new Error('ERR_CLOSED');
+      var c = (b.p_choices || []).filter(function(i){ return i >= 0 && i < p.opts.length; }), o = p.other && b.p_other && String(b.p_other).trim() ? String(b.p_other).trim().slice(0, 120) : null;
+      if (!p.multi && c.length + (o ? 1 : 0) > 1) throw new Error('ERR_MULTI');
+      DB.pvotes = DB.pvotes.filter(function(v){ return !(v.id === p.id && v.name === n); });
+      if (c.length || o) DB.pvotes.push({ id: p.id, name: n, c: c, o: o, t: iso(Date.now()) }); return { ok: true }; },
+    poll_create: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var lv = level(n), g = grpOf(n); if (lv === 'member') throw new Error('ERR_RIGHTS');
+      return { ok: true, id: pollAdd(b.p_data || {}, n, lv === 'lead' ? null : g.i) }; },
+    poll_manage: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; return pollAct(b.p_id, b.p_action); },
+    admin_poll: function(b){ var d = b.p_data || {};
+      if (b.p_action === 'list') return { ok: true, items: DB.polls.slice().sort(function(a, c){ return new Date(c.at) - new Date(a.at); }).map(function(p){ return pollOut(p, null, true, true); }) };
+      if (b.p_action === 'add') return { ok: true, id: pollAdd(d, 'Demo', /^\d+$/.test(String(d.grp)) ? +d.grp : null) };
+      return pollAct(+d.id, b.p_action); },
     my_group: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var g = grpOf(n); if (!g) return { ok: true, g: null }; var G = DB.mg.groups[g.i];
       var o = { ok: true, g: g.i + 1, role: g.role, r4: G.r4, mentors: G.mentors, intensive: !!G.intensive };
       if (g.role === 'member' && level(n) !== 'lead') return o;
