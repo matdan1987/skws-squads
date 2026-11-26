@@ -372,11 +372,11 @@ function csGroupsOf(T){
   TC.groups.forEach(function(g){ var names = T.m.filter(function(x){ return x[1] === g.k; }).map(function(x){ return x[0]; }); if (names.length) out.push({ g: g, names: names }); });
   return out;
 }
-function csLoadTpl(t, lang, cb){
+function csLoadMapTpl(t, lang, cb){
   var key = t + lang; if (CS_IMGS[key]) return cb(CS_IMGS[key]);
   var im = new Image(); im.onload = function(){ CS_IMGS[key] = im; cb(im); }; im.onerror = function(){ cb(null); }; im.src = 'cs-vorlage-' + t.toLowerCase() + '-' + lang + '.jpg?v=2';
 }
-function csDraw(T, t, lang, IMG, me, loc){
+function csDrawMap(T, t, lang, IMG, me, loc){
   var DE = lang === 'de', L = DE ? 'de' : 'en', CT = CST_T[t] || CST_T.A, TC = CS_TACTICS[T.tac] || CS_TACTICS.lab, T = Object.assign({ s: [], m: [], ph: TC.ph }, T), groups = csGroupsOf(T);
   var S = 1920 / 1672, W = 1920, H = Math.round(941 * S), c = document.createElement('canvas'); c.width = W; c.height = H;
   var g = c.getContext('2d'); g.lineJoin = 'round'; g.miterLimit = 2; g.drawImage(IMG, 0, 0, W, H);
@@ -459,5 +459,104 @@ function csDraw(T, t, lang, IMG, me, loc){
   g.fillStyle = '#7dd3fc'; g.font = '800 ' + (fs + 4) + 'px system-ui, sans-serif'; g.fillText(head, bx + 18, by + 18 + fs + 4);
   g.fillStyle = '#e6f1ff'; g.font = '500 ' + fs + 'px system-ui, sans-serif';
   lines.forEach(function(l, i){ g.fillText(l, bx + 18, by + 18 + (fs + 4) * 1.6 + (i + 1) * fs * 1.32); });
+  return c.toDataURL(me ? 'image/jpeg' : 'image/png', .88);
+}
+
+/* ---------- Schluchtsturm: „Battle Plan“-Tafel (Hauptvariante) ----------
+   Vorschlag von Meister Proper: je Gebäude ein Kasten, Namen direkt hinein, Briefing darunter.
+   Zurück zur alten Karte mit Pfeilen: CS_PLAN_STYLE = 'map' (csDrawMap/csLoadMapTpl bleiben unverändert erhalten). */
+var CS_PLAN_STYLE = 'board';
+// Vorlage cs-battleplan.jpg (1437×802): Textfeld [x1,y1,x2,y2] und dunkles Namensschild je Gebäude
+var CSB = {
+  box: { dc1:[239,86,541,168], dc2:[1024,88,1341,168], sf1:[209,252,502,346], ds2:[1075,252,1370,346], tower:[582,354,855,399],
+         ds1:[186,447,493,543], sf2:[1084,449,1385,542], lab:[583,577,855,611], sw1:[146,677,344,738], sw2:[496,677,676,738], sw3:[849,677,1037,738], sw4:[1186,677,1358,738] },
+  tag: { dc1:[262,59,504,84], dc2:[1041,59,1307,84], tower:[622,206,816,231], sf1:[233,227,468,252], ds2:[1080,222,1350,247], ds1:[203,425,452,450],
+         sf2:[1096,425,1350,450], lab:[612,430,824,457], sw1:[150,639,354,662], sw2:[490,639,692,662], sw3:[846,639,1050,662], sw4:[1184,639,1386,662] }
+};
+function csLoadBoard(cb){
+  if (CS_IMGS.board) return cb(CS_IMGS.board);
+  var im = new Image(); im.onload = function(){ im._board = true; CS_IMGS.board = im; cb(im); }; im.onerror = function(){ cb(null); }; im.src = 'cs-battleplan.jpg?v=1';
+}
+function csLoadTpl(t, lang, cb){ if (CS_PLAN_STYLE === 'board') csLoadBoard(cb); else csLoadMapTpl(t, lang, cb); }
+function csDraw(T, t, lang, IMG, me, loc){ return IMG && IMG._board ? csDrawBoard(T, t, lang, IMG, me, loc) : csDrawMap(T, t, lang, IMG, me, loc); }
+function csWhen(k, ph, L, phs){ return CS_OPEN[k] ? (L === 'de' ? 'ab ' + CS_OPEN[k] + ' Min.' : 'from min ' + CS_OPEN[k]) : CS_PHL[L][phs[ph]]; }
+function csDrawBoard(T, t, lang, IMG, me, loc){
+  var DE = lang === 'de', L = DE ? 'de' : 'en', TC = CS_TACTICS[T.tac] || CS_TACTICS.lab, T = Object.assign({ s: [], m: [], ph: TC.ph }, T), groups = csGroupsOf(T);
+  var S = 1920 / 1437, W = 1920, HB = Math.round(802 * S);
+  // Inhalt je Gebäude: wer dort startet, wer später dazukommt
+  var cont = {}, atBase = [], stay = [], unplaced = [];
+  function add(k, o){ (cont[k] = cont[k] || []).push(o); }
+  groups.forEach(function(x){
+    var b0 = x.g.steps[0][1], prev = b0, mv = [];
+    x.g.steps.forEach(function(s, i){ if (!i) return; var b = s[1]; if (!b || b === prev) return; mv.push({ to: b, ph: i }); prev = b; });
+    if (CSB.box[b0]) add(b0, { k: 'n', names: x.names, out: mv.length ? mv : null });
+    else if (mv.length) atBase.push(x.names.join(', ') + ' → ' + mv.map(function(m){ return CS_B[L][m.to] + ' (' + csWhen(m.to, m.ph, L, T.ph) + ')'; }).join(' → '));
+    else stay.push(x.names.join(', '));
+    mv.forEach(function(m){ if (CSB.box[m.to]) add(m.to, { k: 'in', names: x.names, when: csWhen(m.to, m.ph, L, T.ph), ph: m.ph }); else unplaced.push(x.names.join(', ') + ' → ' + CS_B[L][m.to]); });
+  });
+  // Briefing-Text vorbereiten (Höhe der Leiste unten richtet sich danach)
+  var parts = [];
+  if (loc) parts.push(loc);
+  parts.push(DE ? TC.desc : TC.en);
+  if (atBase.length) parts.push((DE ? 'Start an der Basis: ' : 'Start at the base: ') + atBase.join(' · '));
+  if (stay.length) parts.push((DE ? 'Basis & Unterstützung: ' : 'Base & support: ') + stay.join(', '));
+  if (unplaced.length) parts.push(unplaced.join('; '));
+  if (T.note) parts.push(T.note);
+  if (T.s.length) parts.push((DE ? 'Ersatz: ' : 'Substitutes: ') + T.s.join(', '));
+  parts.push(DE ? 'Grün: ab 7–10 Min. (sobald das Gebäude öffnet) · Orange: ab 14 Min. · → wechselt später' : 'Green: from min 7–10 (as soon as the building opens) · Orange: from min 14 · → moves later');
+  var mc = document.createElement('canvas').getContext('2d'), fs = 26, PADX = 40, lines = [];
+  function wrapAll(){ lines = []; mc.font = '500 ' + fs + 'px system-ui, sans-serif'; parts.forEach(function(p, i){ if (i) lines.push(''); dsmWrap(mc, p, W - PADX * 2).forEach(function(l){ lines.push(l); }); }); }
+  wrapAll(); while (lines.length > 16 && fs > 18) { fs -= 1; wrapAll(); }
+  function lh(l){ return l ? fs * 1.34 : fs * .55; }
+  var HS = Math.round(30 + (fs + 8) * 1.7 + lines.reduce(function(a, l){ return a + lh(l); }, 0) + 26), H = HB + HS;
+  var c = document.createElement('canvas'); c.width = W; c.height = H;
+  var g = c.getContext('2d'); g.drawImage(IMG, 0, 0, W, HB);
+  function R(a){ return [a[0] * S, a[1] * S, (a[2] - a[0]) * S, (a[3] - a[1]) * S]; }
+  function rr(x, y, w, h, r){ g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, r); else g.rect(x, y, w, h); }
+  // Schilder neu beschriften: Sprache und Öffnungszeiten aus dem Skript
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  Object.keys(CSB.tag).forEach(function(k){
+    var r = R(CSB.tag[k]), x = r[0] + 14 * S, y = r[1] + 2 * S, w = r[2] - 28 * S, h = r[3] - 4 * S;
+    var gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, '#363a42'); gr.addColorStop(1, '#1d2027'); g.fillStyle = gr; rr(x, y, w, h, 4); g.fill();
+    var txt = CS_B[L][k] + (CS_OPEN[k] ? (DE ? ' (ab ' + CS_OPEN[k] + ' Min.)' : ' (from min ' + CS_OPEN[k] + ')') : ''), f = 24;
+    do { g.font = '700 ' + f + 'px system-ui, sans-serif'; f -= 1; } while (g.measureText(txt).width > w - 10 && f > 12);
+    g.fillStyle = '#fff'; g.fillText(txt, x + w / 2, y + h / 2 + 1);
+  });
+  // Namen in die Kästen: Schrift so groß wie möglich, notfalls kleiner
+  Object.keys(cont).forEach(function(k){
+    var r = R(CSB.box[k]), pad = 10, bw = r[2] - pad * 2, bh = r[3] - 8, f = 26, rows;
+    function build(){
+      rows = [];
+      cont[k].forEach(function(it){
+        var pre = it.k === 'in' ? it.when + ': ' : '', col = it.k === 'in' ? (it.ph === 2 ? '#b45309' : '#15803d') : '#0b0f19';
+        g.font = (it.k === 'in' ? '700 ' + Math.round(f * .86) : '800 ' + f) + 'px system-ui, sans-serif';
+        var cur = pre, fsz = it.k === 'in' ? Math.round(f * .86) : f;
+        it.names.forEach(function(nm, i){ var add = (i ? ', ' : '') + nm, tst = cur + add; if (i && g.measureText(tst).width > bw) { rows.push({ s: cur.replace(/^.*?: /, function(m){ return m; }), col: col, f: fsz, w: it.k }); cur = nm; } else cur = tst; });
+        rows.push({ s: cur, col: col, f: fsz, w: it.k });
+        if (it.out) { var o = '→ ' + it.out.map(function(m){ return CS_B[L][m.to] + ' ' + csWhen(m.to, m.ph, L, T.ph); }).join(' → '); var fo = Math.round(f * .72); g.font = '600 ' + fo + 'px system-ui, sans-serif';
+          dsmWrap(g, o, bw).forEach(function(l){ rows.push({ s: l, col: '#475569', f: fo, w: 'out' }); }); }
+      });
+      return rows.reduce(function(a, b){ return a + b.f * 1.18; }, 0);
+    }
+    while (build() > bh && f > 11) f -= 1;
+    var tot = rows.reduce(function(a, b){ return a + b.f * 1.18; }, 0), y = r[1] + 4 + (bh - tot) / 2, cx = r[0] + r[2] / 2;
+    g.textBaseline = 'top';
+    rows.forEach(function(o){
+      g.font = (o.w === 'n' ? '800 ' : o.w === 'in' ? '700 ' : '600 ') + o.f + 'px system-ui, sans-serif';
+      if (me && o.w !== 'out') { var q = { s: o.s.replace(/^[^:]*: /, ''), x: cx + g.measureText(o.s).width / 2 - g.measureText(o.s.replace(/^[^:]*: /, '')).width / 2, y: y }; planMe(g, q, me, o.f); }
+      g.fillStyle = o.col; g.fillText(o.s, cx, y + o.f * .09); y += o.f * 1.18;
+    });
+  });
+  // freie Gebäude dezent kennzeichnen
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'italic 600 20px system-ui, sans-serif'; g.fillStyle = 'rgba(71,85,105,.55)';
+  Object.keys(CSB.box).forEach(function(k){ if (cont[k]) return; var r = R(CSB.box[k]); g.fillText(DE ? '– nicht besetzt –' : '– not assigned –', r[0] + r[2] / 2, r[1] + r[3] / 2); });
+  // Leiste unten: Kopf mit Team, Zeit, Gegner und das Briefing
+  var y0 = HB, gb = g.createLinearGradient(0, y0, 0, H); gb.addColorStop(0, '#111827'); gb.addColorStop(1, '#0b1120'); g.fillStyle = gb; g.fillRect(0, y0, W, HS);
+  g.fillStyle = '#d4a017'; g.fillRect(0, y0, W, 5);
+  g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+  var head = 'BRIEFING · Team ' + t + (T.time ? ' · ' + T.time : '') + (T.opp ? (DE ? ' · gegen ' : ' · vs ') + T.opp : '');
+  g.fillStyle = '#facc15'; g.font = '800 ' + (fs + 8) + 'px system-ui, sans-serif'; g.fillText(head, PADX, y0 + 30 + fs + 8);
+  g.fillStyle = '#e6f1ff'; g.font = '500 ' + fs + 'px system-ui, sans-serif';
+  var yy = y0 + 30 + (fs + 8) * 1.7; lines.forEach(function(l){ yy += lh(l); if (l) g.fillText(l, PADX, yy); });
   return c.toDataURL(me ? 'image/jpeg' : 'image/png', .88);
 }
