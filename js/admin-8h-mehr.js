@@ -58,11 +58,11 @@ function actRender(){
   b.innerHTML = '<div class="formrow" style="grid-template-columns:auto 1fr;align-items:center;margin:0 0 8px"><label for="actF" style="margin:0">Zeigen:</label><select id="actF">' +
     [['7','seit 7 Tagen oder länger nicht aktiv'],['14','seit 14 Tagen oder länger nicht aktiv'],['30','seit 30 Tagen oder länger nicht aktiv'],['all','alle Spieler']].map(function(o){ return '<option value="' + o[0] + '"' + (ACT_F === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>' +
     '<div class="small muted" style="margin-bottom:6px">' + list.length + ' von ' + rows.length + ' Spielern · „Aktiv“ = zuletzt angemeldet, Werte gemeldet, bei einem Event geantwortet, abgestimmt oder im Funk geschrieben.</div>' +
-    (list.length ? '<div class="tablewrap"><table class="act-t"><thead><tr><th>Spieler</th><th>Zuletzt aktiv</th><th>Angemeldet</th><th>Werte</th><th>Events (5 Wo.)</th><th>PIN</th></tr></thead><tbody>' +
-    list.map(function(r){ var x = r.x;
-      return '<tr class="' + (r.age === null || r.age >= 30 ? 'act-red' : r.age >= 14 ? 'act-amb' : '') + '"><td><a href="#" data-mlopen="' + esc(r.p.name) + '">' + esc(r.p.name) + '</a> <span class="muted">' + r.p.rank + '</span>' + absBadge(r.p.name) + '</td>' +
-        '<td><b>' + cell(r.last) + '</b></td><td>' + cell(x.seen) + '</td><td>' + cell(x.entry) + '</td><td>' + (x.rounds ? (x.answered || 0) + ' von ' + x.rounds + ' beantwortet' : '–') + '</td><td>' + (x.pin ? '🔑' : '<span class="muted">–</span>') + '</td></tr>'; }).join('') +
-    '</tbody></table></div>' : '<div class="empty">Niemand in dieser Auswahl – sehr gut!</div>');
+    (list.length ? list.map(function(r){ var x = r.x;
+      return '<div class="act-row ' + (r.age === null || r.age >= 30 ? 'act-red' : r.age >= 14 ? 'act-amb' : '') + '">' +
+        '<div class="act-top"><a href="#" data-mlopen="' + esc(r.p.name) + '">' + esc(r.p.name) + '</a> <span class="muted">' + r.p.rank + '</span>' + absBadge(r.p.name) +
+        '<b class="act-last">' + (r.last ? cell(r.last) : 'noch nie aktiv') + '</b></div>' +
+        '<div class="small muted">Angemeldet: ' + cell(x.seen) + ' · Werte: ' + cell(x.entry) + ' · Events (5 Wo.): ' + (x.rounds ? (x.answered || 0) + '/' + x.rounds : '–') + ' · ' + (x.pin ? '🔑 PIN' : 'keine PIN') + '</div></div>'; }).join('') : '<div class="empty">Niemand in dieser Auswahl – sehr gut!</div>');
 }
 document.addEventListener('change', function(e){ if (e.target.id === 'actF') { ACT_F = e.target.value; actRender(); } });
 document.addEventListener('click', function(e){ var o = e.target.closest('#actBox [data-mlopen]'); if (o) { e.preventDefault(); mlOpen(o.dataset.mlopen); } });
@@ -121,7 +121,7 @@ function vsRender(){
   b.innerHTML = '<div class="card"><h2>Allianz-Duell eintragen</h2><p class="small muted" style="margin-top:0">Tagespunkte je Spieler. Spieler können ihre Punkte auch selbst im Profil eintragen (✍️) – was ihr hier speichert, gilt und kann der Spieler nicht mehr ändern. Leeres Feld = keine Punkte.</p>' +
     '<div class="formrow"><div><label for="vsWk">Woche ab Montag</label><select id="vsWk">' + weeks.sort().reverse().map(function(w){ return '<option value="' + w + '"' + (w === VS_MON ? ' selected' : '') + '>' + fmtDayL(w) + (w === vsMonday() ? ' (diese Woche)' : '') + '</option>'; }).join('') + '</select></div>' +
     '<div><label>Tag</label><div class="vs-days">' + VS_DAYS.map(function(d, i){ return '<button class="mini' + (i === VS_DAY ? ' on' : '') + '" data-vsday="' + i + '">' + d + '</button>'; }).join('') + '</div></div></div>' +
-    '<div class="tablewrap"><table class="act-t vs-t"><thead><tr><th>Spieler</th><th>' + VS_DAYS[VS_DAY] + ' ' + fmtDayL(day).replace(/^\S+ /, '') + '</th><th>Woche</th></tr></thead><tbody>' +
+    '<div class="tw"><table class="act-t vs-t"><thead><tr><th>Spieler</th><th>' + VS_DAYS[VS_DAY] + ' ' + fmtDayL(day).replace(/^\S+ /, '') + '</th><th>Woche</th></tr></thead><tbody>' +
     pl.map(function(x){ var v = x.r[String(VS_DAY)]; return '<tr><td>' + esc(x.p.name) + ' <span class="muted">' + x.p.rank + '</span>' + absBadge(x.p.name) + '</td><td><input type="number" min="0" inputmode="numeric" data-vsn="' + esc(x.p.name) + '" data-was="' + (v === undefined ? '' : v) + '" value="' + (v === undefined ? '' : v) + '"> ' + (self[x.p.name] ? '<span title="vom Spieler selbst eingetragen">✍️</span>' : '') + '</td><td>' + (x.t ? fmt(x.t, 0) : '–') + '</td></tr>'; }).join('') +
     '</tbody></table></div><div class="btnrow"><button class="btn" id="vsSave">Tag speichern</button></div>' +
     (withPts.length ? '<p class="small muted">Wochensumme: ' + withPts.length + ' Spieler mit Punkten · Durchschnitt ' + fmt(withPts.reduce(function(a, x){ return a + x.t; }, 0) / withPts.length, 0) + ' · ohne Punkte: ' + (pl.length - withPts.length) + '</p>' : '') + '</div>';

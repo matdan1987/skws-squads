@@ -386,3 +386,8 @@ textarea.arc-rem{min-height:0;height:auto}
 .act-t tr.act-amb td:first-child{border-left:3px solid #f5b942}.act-t tr.act-red td:first-child{border-left:3px solid var(--err)}
 .vs-t input{width:140px;margin:0;padding:6px 8px}
 .vs-days{display:flex;gap:4px;flex-wrap:wrap}.vs-days .mini.on{border-color:var(--accent);color:var(--accent)}
+.act-row{padding:9px 0 9px 10px;border-bottom:1px solid var(--line);border-left:3px solid transparent}
+.act-row.act-amb{border-left-color:#f5b942}.act-row.act-red{border-left-color:var(--err)}
+.act-top{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px}.act-top a{color:var(--text);font-weight:700}
+.act-top .act-last{margin-left:auto;font-size:13px}
+.vs-t input{width:110px}
