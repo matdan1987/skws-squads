@@ -127,9 +127,8 @@ var Stil = (function(){
   function shrink(file, kind, cb){
     var rd = new FileReader();
     rd.onload = function(){ var im = new Image(); im.onload = function(){
-      var W = kind === 'header' ? 1200 : 1080, H = kind === 'header' ? 400 : Math.round(1080 * im.height / im.width), sx = 0, sy = 0, sw = im.width, sh = im.height;
-      if (kind === 'header') { var r = 3; if (im.width / im.height > r) { sw = im.height * r; sx = (im.width - sw) / 2; } else { sh = im.width / r; sy = (im.height - sh) / 2; } }
-      else if (H > 1600) { H = 1600; W = Math.round(1600 * im.width / im.height); }
+      var W = 1080, H = Math.round(1080 * im.height / im.width), sx = 0, sy = 0, sw = im.width, sh = im.height;
+      if (H > 1600) { H = 1600; W = Math.round(1600 * im.width / im.height); }
       var c = document.createElement('canvas'); c.width = W; c.height = H; c.getContext('2d').drawImage(im, sx, sy, sw, sh, 0, 0, W, H);
       var q = .82, u = c.toDataURL('image/jpeg', q); while (u.length > 380000 && q > .35) { q -= .08; u = c.toDataURL('image/jpeg', q); }
       cb(u.length <= 380000 ? u : null);
