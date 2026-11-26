@@ -608,7 +608,7 @@
     var x = { ref: errRef(), at: new Date().toISOString(), code: code, text: String(text || ''), name: name || '', isNew: !!isNew, lang: LANG, dev: devInfo() };
     var list = errLoad(); list.push(x); errSaveList(list); errRender(true);
     try {
-      rpc('log_form_fail', { p_name: name || null, p_code: code, p_new: !!isNew, p_lang: LANG, p_app: !!window.SKWSAndroid, p_ref: x.ref, p_dev: x.dev.slice(0, 60) }).catch(function(){});
+      rpc('log_form_fail', { p_name: name || null, p_code: code, p_new: !!isNew, p_lang: LANG, p_app: !!window.SKWSAndroid, p_ref: x.ref, p_dev: x.dev.replace(/ · /g, ' / ').slice(0, 60) }).catch(function(){});
     } catch(e){}
   }
   function formName(){ return NEW_MODE ? $('newName').value.trim().replace(/\s+/g, ' ') : $('name').value; }
