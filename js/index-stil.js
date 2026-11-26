@@ -103,13 +103,13 @@ var Stil = (function(){
     return null;
   }
   // Animationen: Teilchen (Schnee, Blüten, Funken, Sterne, Bienen) als Ebene über der Karte, Ring/Puls am Avatar
-  var FX_N = { sparkle: 16, snow: 22, petals: 16, embers: 18, bees: 7 }, FX_CH = { sparkle: '✦', snow: '•', petals: '❀', embers: '•', bees: '🐝' };
+  var FX_N = { sparkle: 28, snow: 42, petals: 28, embers: 34, bees: 11 }, FX_CH = { sparkle: '✦', snow: '❄', petals: '❀', embers: '●', bees: '🐝' };
   function fx(box, k, small){
     box.classList.add('an-' + k); var n = FX_N[k]; if (!n) return;
     var layer = el('div', 'sty-fx'); if (small) n = Math.ceil(n / 2.5);
     for (var i = 0; i < n; i++) { var p = el('span', 'fx-p', FX_CH[k]); var r = (i * 37) % 100;
-      p.style.left = r + '%'; p.style.animationDelay = (-((i * 0.73) % 6)).toFixed(2) + 's'; p.style.animationDuration = (4 + (i * 1.3) % 5).toFixed(2) + 's';
-      p.style.fontSize = (k === 'bees' ? 14 + (i % 3) * 4 : 8 + (i % 4) * 3) + 'px'; if (k === 'sparkle') p.style.top = ((i * 53) % 90) + '%'; layer.appendChild(p); }
+      p.style.left = r + '%'; p.style.animationDelay = (-((i * 0.73) % 6)).toFixed(2) + 's'; p.style.animationDuration = (3 + (i * 1.3) % 4).toFixed(2) + 's';
+      p.style.fontSize = (k === 'bees' ? 18 + (i % 3) * 6 : k === 'embers' ? 5 + (i % 4) * 2 : 11 + (i % 4) * 5) + 'px'; if (k === 'sparkle') p.style.top = ((i * 53) % 90) + '%'; layer.appendChild(p); }
     box.insertBefore(layer, box.firstChild.nextSibling);
   }
   function decorate(card, n, av){
@@ -119,7 +119,9 @@ var Stil = (function(){
     var bi = headerBg(n, cur, A.reProfile); if (bi) { ban.style.backgroundImage = bi; ban.classList.add('hb-img'); }
     card.insertBefore(ban, card.firstChild);
     if (av) { av.classList.add('sty-av'); if (cur.frame) av.classList.add('fr-' + cur.frame); }
-    if (cur.anim) { fx(card, cur.anim); if (av && (cur.anim === 'pulse' || cur.anim === 'spin')) av.classList.add('av-' + cur.anim); }
+    if (cur.anim) { fx(card, cur.anim); if (av && (cur.anim === 'pulse' || cur.anim === 'spin')) { av.classList.add('av-' + cur.anim);
+      // Ring als eigene Ebene über dem Avatar, damit ihn auch breite Rahmen nicht verdecken
+      if (cur.anim === 'spin' && av.parentNode) { var wr = el('span', 'av-wrap'); av.parentNode.insertBefore(wr, av); wr.appendChild(av); wr.appendChild(el('span', 'av-ring glow')); wr.appendChild(el('span', 'av-ring')); } } }
     // Rang-/Rollen-Badges und Vorzeige-Badges unter dem Namen
     var s = A.stats(n), row = el('div', 'sty-badges');
     if (s.rank === 'R5') row.appendChild(el('span', 'sty-role r5', '👑 ' + T.roleR5)); else if (s.rank === 'R4') row.appendChild(el('span', 'sty-role r4', '⭐ ' + T.roleR4));
@@ -214,7 +216,7 @@ var Stil = (function(){
         var ok = unlocked(d, n, TAB), on = ED[TAB] === d.k, o = el('button', 'sty-opt' + (on ? ' on' : '') + (ok ? '' : ' lock')); o.type = 'button';
         var pv = el('span', 'sty-pv ' + (TAB === 'frame' ? 'pv-frame fr-' + (d.k || 'none') : TAB === 'header' ? 'hb-' + (d.k || 'night') : TAB === 'anim' ? 'pv-anim hb-night' : 'pv-bg bg-' + (d.k || 'none')));
         if (TAB === 'frame') pv.appendChild(el('i', '', '🙂'));
-        if (TAB === 'anim') { var dot = el('i', 'pv-dot' + (d.k === 'pulse' || d.k === 'spin' ? ' av-' + d.k : ''), '🙂'); pv.appendChild(dot); if (d.k) fx(pv, d.k, true); }
+        if (TAB === 'anim') { var dot = el('i', 'pv-dot' + (d.k === 'pulse' || d.k === 'spin' ? ' av-' + d.k : ''), '🙂'); if (d.k === 'spin') dot.appendChild(el('span', 'av-ring')); pv.appendChild(dot); if (d.k) fx(pv, d.k, true); }
         o.appendChild(pv); o.appendChild(el('b', '', (ok ? '' : d.shop ? '🛒 ' : '🔒 ') + dname(d)));
         if (!ok) o.appendChild(el('small', '', d.shop ? d.shop + ' 🪙' : lockText(d))); else if (d.shop) o.appendChild(el('small', '', '🛒 ✓'));
         if (ok) o.addEventListener('click', function(){ ED[TAB] = d.k; A.reProfile(); });

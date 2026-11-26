@@ -477,30 +477,35 @@ body.pbg-embers{background:radial-gradient(2px 2px at 30% 80%,#fb923c,transparen
 body.pbg-circuits{background:linear-gradient(90deg,rgba(34,211,238,.12) 2px,transparent 2px) 0 0/40px 40px,linear-gradient(rgba(34,211,238,.12) 2px,transparent 2px) 0 0/40px 40px,radial-gradient(circle,rgba(34,211,238,.35) 2px,transparent 3px) 0 0/40px 40px,#04121a!important;background-attachment:fixed!important}
 /* ---------- Profil-Animationen ---------- */
 .sty-fx{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
-.sty-card>.sty-fx.sty-fx{position:absolute;z-index:0}
+.sty-card>.sty-fx.sty-fx{position:absolute;z-index:3}
 .fx-p{position:absolute;top:-10%;line-height:1;opacity:0;will-change:transform,opacity}
-.an-snow .fx-p{color:#fff;animation:fxFall linear infinite;text-shadow:0 0 4px rgba(255,255,255,.8)}
-.an-petals .fx-p{color:#f9a8d4;animation:fxSway linear infinite}
-.an-embers .fx-p{top:auto;bottom:-10%;color:#fb923c;text-shadow:0 0 6px #f97316;animation:fxRise linear infinite}
-.an-sparkle .fx-p{color:#fde68a;text-shadow:0 0 8px #facc15;animation:fxTwinkle ease-in-out infinite}
-.an-bees .fx-p{animation:fxBee linear infinite}
-@keyframes fxFall{0%{top:-5%;opacity:0}10%{opacity:.9}90%{opacity:.8}100%{top:102%;opacity:0}}
-@keyframes fxSway{0%{top:-5%;transform:translateX(0) rotate(0);opacity:0}10%{opacity:.95}50%{transform:translateX(30px) rotate(180deg)}100%{top:102%;transform:translateX(-10px) rotate(360deg);opacity:0}}
-@keyframes fxRise{0%{bottom:-5%;transform:translateX(0);opacity:0}15%{opacity:1}100%{bottom:102%;transform:translateX(14px);opacity:0}}
-@keyframes fxTwinkle{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1.2)}}
-@keyframes fxBee{0%{top:70%;transform:translateX(-40px);opacity:0}10%{opacity:1}50%{top:25%;transform:translateX(50px) rotate(8deg)}90%{opacity:1}100%{top:60%;transform:translateX(140px) rotate(-6deg);opacity:0}}
+.an-snow .fx-p{color:#fff;animation:fxFall linear infinite;text-shadow:0 0 6px #fff,0 0 12px rgba(186,230,253,.9)}
+.an-petals .fx-p{color:#f9a8d4;animation:fxSway linear infinite;text-shadow:0 0 8px rgba(236,72,153,.8)}
+.an-embers .fx-p{top:auto;bottom:-10%;color:#fdba74;text-shadow:0 0 6px #f97316,0 0 14px #ea580c,0 0 22px rgba(250,204,21,.7);animation:fxRise linear infinite}
+.an-sparkle .fx-p{color:#fef08a;text-shadow:0 0 8px #facc15,0 0 18px #f59e0b;animation:fxTwinkle ease-in-out infinite}
+.an-bees .fx-p{animation:fxBee linear infinite;filter:drop-shadow(0 0 4px rgba(250,204,21,.8))}
+@keyframes fxFall{0%{top:-5%;transform:translateX(0);opacity:0}8%{opacity:1}50%{transform:translateX(18px)}92%{opacity:1}100%{top:102%;transform:translateX(-6px);opacity:0}}
+@keyframes fxSway{0%{top:-5%;transform:translateX(0) rotate(0);opacity:0}8%{opacity:1}50%{transform:translateX(45px) rotate(200deg)}100%{top:102%;transform:translateX(-15px) rotate(420deg);opacity:0}}
+@keyframes fxRise{0%{bottom:-5%;transform:translateX(0) scale(1);opacity:0}10%{opacity:1}60%{transform:translateX(22px) scale(.9)}100%{bottom:102%;transform:translateX(-8px) scale(.4);opacity:0}}
+@keyframes fxTwinkle{0%,100%{opacity:0;transform:scale(.3) rotate(0)}50%{opacity:1;transform:scale(1.6) rotate(90deg)}}
+@keyframes fxBee{0%{top:75%;transform:translateX(-40px) rotate(0);opacity:0}8%{opacity:1}30%{top:20%;transform:translateX(40px) rotate(12deg)}60%{top:55%;transform:translateX(110px) rotate(-10deg)}92%{opacity:1}100%{top:30%;transform:translateX(200px) rotate(6deg);opacity:0}}
 .an-bees .fx-p:nth-child(odd){animation-direction:reverse}
-/* wogendes Licht: Header bewegt sich langsam */
-.an-aurora .sty-banner,.pv-anim.an-aurora{background:linear-gradient(115deg,#00c9a7,#845ec2,#2c73d2,#00c9a7,#845ec2)!important;background-size:300% 300%!important;animation:fxFlow 9s ease-in-out infinite}
+/* wogendes Licht: Header wogt in kräftigen Farben, Karte leuchtet im Wechsel */
+.an-aurora .sty-banner,.pv-anim.an-aurora{background:linear-gradient(115deg,#00f5c4,#a855f7,#2563eb,#ec4899,#00f5c4,#a855f7)!important;background-size:400% 400%!important;animation:fxFlow 6s ease-in-out infinite}
+.sty-card.an-aurora{animation:fxGlow 6s ease-in-out infinite}
 @keyframes fxFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes fxGlow{0%,100%{box-shadow:0 0 0 1px rgba(0,245,196,.6),0 0 28px rgba(0,245,196,.45)}33%{box-shadow:0 0 0 1px rgba(168,85,247,.7),0 0 32px rgba(168,85,247,.55)}66%{box-shadow:0 0 0 1px rgba(236,72,153,.7),0 0 32px rgba(236,72,153,.5)}}
 /* Avatar: Puls und Regenbogen-Ring */
-.av-pulse{animation:fxPulse 2.4s ease-in-out infinite}
-@keyframes fxPulse{0%,100%{filter:drop-shadow(0 0 0 rgba(92,200,255,0))}50%{filter:drop-shadow(0 0 18px rgba(92,200,255,.95))}}
-.av-spin{position:relative}
-.av-spin::before{content:'';position:absolute;inset:-9px;border-radius:50%;background:conic-gradient(#f43f5e,#f59e0b,#84cc16,#06b6d4,#8b5cf6,#f43f5e);animation:fxSpin 4s linear infinite;z-index:-1}
-.sty-av.av-spin{overflow:visible}
-.sty-av.av-spin img{border-radius:50%}
+.av-pulse{animation:fxPulse 1.8s ease-in-out infinite}
+@keyframes fxPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 2px rgba(92,200,255,.4))}50%{transform:scale(1.06);filter:drop-shadow(0 0 16px rgba(92,200,255,1)) drop-shadow(0 0 34px rgba(92,200,255,.8))}}
+.av-wrap{position:relative;display:inline-grid;place-items:center}
+.av-ring{position:absolute;inset:-22px;border-radius:50%;pointer-events:none;z-index:2;
+  background:conic-gradient(#f43f5e,#f59e0b,#facc15,#84cc16,#06b6d4,#3b82f6,#8b5cf6,#ec4899,#f43f5e);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 8px),#000 calc(100% - 7px));mask:radial-gradient(farthest-side,transparent calc(100% - 8px),#000 calc(100% - 7px));
+  animation:fxSpin 2.4s linear infinite}
+.av-ring.glow{inset:-30px;filter:blur(9px);opacity:.85;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 26px),#000 calc(100% - 18px),#000 calc(100% - 6px),transparent);mask:radial-gradient(farthest-side,transparent calc(100% - 26px),#000 calc(100% - 18px),#000 calc(100% - 6px),transparent);animation-direction:reverse;animation-duration:3.6s}
+.pv-dot .av-ring{inset:-6px;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation-duration:1.6s}
 @keyframes fxSpin{to{transform:rotate(360deg)}}
 .pv-anim{position:relative;overflow:hidden;display:grid!important;place-items:center}
 .pv-dot{font-style:normal;font-size:18px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));position:relative;z-index:2}
-@media (prefers-reduced-motion: reduce){.fx-p,.av-pulse,.av-spin::before,.an-aurora .sty-banner,.pv-anim.an-aurora{animation:none!important}.fx-p{opacity:.5}}
+@media (prefers-reduced-motion: reduce){.fx-p,.av-pulse,.av-ring,.sty-card.an-aurora,.an-aurora .sty-banner,.pv-anim.an-aurora{animation:none!important}.fx-p{opacity:.5}}
