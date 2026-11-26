@@ -897,6 +897,8 @@
     // Auszeichnungen: Plaketten, Teilnehmermarken und Erfolge in einer Karte
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, aw = badgeCard(n);
     var all = Object.keys(PROF_STATS), got = 0; ACH.forEach(function(a){ if (achTier(a, s, e).t) got++; });
+    // Zähler oben: alle Auszeichnungen zusammen (Plaketten + Marken + freigeschaltete Erfolge), nicht nur die Marken
+    var awTag = aw.querySelector('.sq-h .tag'); if (awTag) awTag.textContent = String(aw.querySelectorAll('.plq').length + (PROF_BADGE[n] || []).length + got);
     var ah = el('div', 'sq-h ach-h'); ah.appendChild(el('label', 'l', T.ach)); ah.appendChild(el('span', 'tag req', T.unlocked.replace('{a}', got).replace('{b}', ACH.length))); aw.appendChild(ah);
     var g = el('div', 'achs');
     ACH.slice().sort(function(a, b){ return achTier(b, s, e).t - achTier(a, s, e).t; }).forEach(function(a){
