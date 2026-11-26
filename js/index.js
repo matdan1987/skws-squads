@@ -602,6 +602,7 @@
     $('profileView').classList.toggle('hide', which !== 'profile');
     $('tabFunk').classList.toggle('on', which === 'funk');
     $('funkView').classList.toggle('hide', which !== 'funk');
+    if (which === 'overview') renderOverview();   // frisch zeichnen (z. B. inzwischen geladene Profilbilder)
     if (which === 'profile') loadProfile(); else if (window.Stil && Stil.ready()) Stil.clearBg();
     if (which === 'funk') { Funk.show(); if (window.Mehr && Mehr.ready()) Mehr.renderHelp(); }
   }
@@ -611,14 +612,17 @@
   (function(){ try { var c = JSON.parse(localStorage.getItem('skws_av') || '{}'); Object.keys(c).forEach(function(n){ AV[n] = c[n]; }); } catch(e){} })();
   function avStore(){ try { localStorage.setItem('skws_av', JSON.stringify(AV)); } catch(e){} }
   // Bilder für die Namen laden, die einen neueren Stand haben als im Zwischenspeicher
+  var AV_WAIT = [];
   function loadAvatars(names, cb){
     var ver = (DATA && DATA.av) || {}, need = names.filter(function(n){ return ver[n] && (!AV[n] || AV[n].v !== ver[n]) && !AV_LOADING[n]; });
     Object.keys(AV).forEach(function(n){ if (!ver[n]) delete AV[n]; });
+    // Bilder, die gerade schon von einem anderen Aufruf geladen werden: danach trotzdem neu zeichnen
+    if (cb && names.some(function(n){ return AV_LOADING[n]; })) AV_WAIT.push(cb);
     if (!need.length) return;
     need.forEach(function(n){ AV_LOADING[n] = 1; });
     var chunks = []; for (var i = 0; i < need.length; i += 100) chunks.push(need.slice(i, i + 100));
     Promise.all(chunks.map(function(c){ return rpc('get_avatars', { p_names: c }).then(function(r){ Object.keys(r || {}).forEach(function(n){ AV[n] = r[n]; }); }); }))
-      .catch(function(){}).then(function(){ need.forEach(function(n){ delete AV_LOADING[n]; }); avStore(); if (cb) cb(); });
+      .catch(function(){}).then(function(){ need.forEach(function(n){ delete AV_LOADING[n]; }); avStore(); var w = AV_WAIT; AV_WAIT = []; if (cb) cb(); w.forEach(function(f){ if (f !== cb) try { f(); } catch(e){} }); });
   }
   function avEl(name, size){
     var d = document.createElement('span'); d.className = 'av'; d.style.width = d.style.height = size + 'px'; d.style.fontSize = Math.round(size * .45) + 'px';
