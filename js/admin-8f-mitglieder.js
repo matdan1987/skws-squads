@@ -55,6 +55,7 @@ function stammHtml(p){
     h += row('Allianzbeitritt', EX ? ajInputs(p.name) : '<span class="small muted">lädt …</span>');
     h += row('Auf dieser Seite', p.joinedAt ? fmtDate(p.joinedAt) : '–');
     if (typeof absRowHtml === 'function') h += row('Abwesenheit', absRowHtml(p.name));
+    if (typeof walletRowHtml === 'function') h += row('Taler', walletRowHtml(p.name));
     h += row('Profilbild', '<label class="mini av-up">📷 ' + (AVA[p.name] ? 'Neues Bild hochladen' : 'Bild hochladen') + '<input type="file" accept="image/*" data-avup="' + esc(p.name) + '" hidden></label>' +
       (AVA[p.name] ? '<button class="mini" data-act="avdel" data-name="' + esc(p.name) + '">Entfernen</button>' : ''));
     h += row('Status', '<span>aktiv</span> <button class="mini danger" data-act="leave" data-name="' + esc(p.name) + '">Ausgeschieden …</button>');

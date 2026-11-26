@@ -181,3 +181,14 @@ document.addEventListener('click', function(e){
   if (d && confirm('Bild löschen? Spieler, die es gewählt haben, sehen wieder das Standard-Design.')) rpc('admin_style', { p_pw: PW, p_action: 'del', p_data: { id: +d.dataset.stydel }, p_actor: ACTOR || null }).then(styLoad);
   if (c && confirm('Bild von ' + c.dataset.styclr + ' entfernen?')) rpc('admin_style', { p_pw: PW, p_action: 'clear', p_data: { name: c.dataset.styclr, kind: c.dataset.kind }, p_actor: ACTOR || null }).then(function(){ toast('Entfernt.', true); return styLoad(); });
 });
+
+/* ---------- Taler gutschreiben (Spielerakte) ---------- */
+function walletRowHtml(n){
+  return '<span class="abs-add"><input type="number" id="walN" step="10" placeholder="z. B. 50 oder -20" style="max-width:140px"><button class="mini" data-walgive="' + esc(n) + '">🪙 Taler gutschreiben</button></span>';
+}
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-walgive]'); if (!b) return;
+  var v = parseInt($('walN').value, 10); if (!v) { toast('Bitte eine Zahl eingeben (negativ zum Abziehen).', false); return; }
+  rpc('admin_wallet', { p_pw: PW, p_name: b.dataset.walgive, p_coins: v, p_actor: ACTOR || null }).then(function(r){ $('walN').value = ''; toast(b.dataset.walgive + ' hat jetzt ' + r.coins + ' Taler.', true); })
+    .catch(function(){ toast('Fehler – ist die Datenbank-Erweiterung „taler“ eingespielt?', false); });
+});

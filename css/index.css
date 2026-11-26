@@ -446,3 +446,32 @@ body.pbg-img{background-size:cover!important;background-position:center!importan
 .sty-btn{border:1px solid var(--line);background:var(--bg2);color:var(--text);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px;cursor:pointer}
 .sty-btn.on{border-color:var(--accent);color:var(--accent)}
 .sty-close{width:100%}
+/* ---------- Taler, XP, Shop-Designs ---------- */
+.sty-wallet{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0 6px;font-size:14px}.sty-wallet b{font-size:16px;color:#fde68a}
+.sty-role.lv{background:rgba(250,204,21,.1);border-color:rgba(250,204,21,.4)}.sty-role.coin{background:rgba(253,230,138,.12);border-color:rgba(253,230,138,.45);color:#fde68a}
+.sty-opt.shop{opacity:.85;cursor:pointer}.sty-opt.shop small{color:#fde68a;font-weight:700}
+.sty-toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,30px);opacity:0;z-index:1200;background:linear-gradient(135deg,#3a2a05,#8a6512);color:#fff;border:1px solid rgba(253,230,138,.6);border-radius:14px;padding:12px 16px;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:all .35s;max-width:90vw;text-align:center}
+.sty-toast.on{opacity:1;transform:translate(-50%,0)}
+/* Shop-Rahmen */
+.fr-neon{box-shadow:0 0 0 3px #ff2bd6,0 0 14px #ff2bd6,0 0 30px rgba(255,43,214,.7)!important}
+.fr-emerald{box-shadow:0 0 0 3px #a7f3d0,0 0 0 6px #059669,0 0 0 8px #064e3b,0 0 24px rgba(16,185,129,.7)!important}
+.fr-sakura{box-shadow:0 0 0 3px #fff,0 0 0 6px #f9a8d4,0 0 0 9px #ec4899,0 0 26px rgba(249,168,212,.85)!important}
+.fr-storm{box-shadow:0 0 0 2px #e0f2fe,0 0 0 5px #0ea5e9,0 0 0 7px #1e3a8a,0 0 0 9px #facc15,0 0 28px rgba(14,165,233,.9)!important}
+.fr-cosmic{box-shadow:0 0 0 3px #f0abfc,0 0 0 6px #7c3aed,0 0 0 9px #1e1b4b,0 0 0 11px #22d3ee,0 0 34px rgba(124,58,237,.95)!important}
+.fr-s.fr-neon{box-shadow:0 0 0 2px #ff2bd6,0 0 8px #ff2bd6!important}.fr-s.fr-emerald{box-shadow:0 0 0 2px #059669!important}.fr-s.fr-sakura{box-shadow:0 0 0 2px #f9a8d4!important}
+.fr-s.fr-storm{box-shadow:0 0 0 2px #0ea5e9,0 0 0 4px #facc15!important}.fr-s.fr-cosmic{box-shadow:0 0 0 2px #7c3aed,0 0 0 4px #22d3ee!important}
+/* Shop-Header */
+.hb-cherry{background:radial-gradient(circle at 15% 20%,rgba(255,255,255,.55) 0 3px,transparent 4px),radial-gradient(circle at 70% 35%,rgba(255,255,255,.5) 0 2px,transparent 3px),radial-gradient(circle at 40% 60%,rgba(255,240,245,.6) 0 3px,transparent 4px),radial-gradient(circle at 85% 15%,rgba(255,240,245,.6) 0 2px,transparent 3px),linear-gradient(160deg,#fbcfe8,#f472b6 45%,#831843)}
+.hb-cyber{background:linear-gradient(rgba(34,211,238,.18) 1px,transparent 1px) 0 0/100% 22px,linear-gradient(90deg,rgba(236,72,153,.18) 1px,transparent 1px) 0 0/22px 100%,linear-gradient(160deg,#0f0a2e,#3b0764 50%,#0e7490)}
+.hb-volcano{background:radial-gradient(ellipse at 50% 100%,rgba(251,146,60,.85),transparent 55%),radial-gradient(circle at 30% 30%,rgba(239,68,68,.4),transparent 40%),linear-gradient(180deg,#1c0a05,#450a0a 60%,#7c2d12)}
+.hb-arctic{background:radial-gradient(ellipse at 30% 0,rgba(255,255,255,.7),transparent 50%),linear-gradient(170deg,#e0f2fe,#7dd3fc 40%,#0c4a6e)}
+.hb-skyline{background:linear-gradient(to top,#0b1020 0 18%,transparent 18%) 0 0/100% 100%,repeating-linear-gradient(90deg,#111827 0 26px,#1f2937 26px 40px,transparent 40px 52px) bottom/100% 34% no-repeat,linear-gradient(180deg,#f97316,#db2777 45%,#312e81)}
+/* Shop-Hintergründe (Vorschau und ganze Seite) */
+.bg-snow{background:radial-gradient(2px 2px at 20% 30%,#fff,transparent),radial-gradient(1.5px 1.5px at 70% 60%,#fff,transparent),radial-gradient(2px 2px at 45% 85%,#fff,transparent),#0b1a2e!important;background-size:120px 120px!important}
+.bg-matrix{background:repeating-linear-gradient(90deg,rgba(34,197,94,.12) 0 2px,transparent 2px 18px),linear-gradient(rgba(34,197,94,.06),rgba(0,0,0,.4)),#020a04!important}
+.bg-embers{background:radial-gradient(2px 2px at 30% 80%,#fb923c,transparent),radial-gradient(1.5px 1.5px at 75% 40%,#f97316,transparent),radial-gradient(2px 2px at 55% 20%,#fbbf24,transparent),#140805!important;background-size:140px 140px!important}
+.bg-circuits{background:linear-gradient(90deg,rgba(34,211,238,.12) 2px,transparent 2px) 0 0/40px 40px,linear-gradient(rgba(34,211,238,.12) 2px,transparent 2px) 0 0/40px 40px,radial-gradient(circle,rgba(34,211,238,.35) 2px,transparent 3px) 0 0/40px 40px,#04121a!important}
+body.pbg-snow{background:radial-gradient(2px 2px at 20% 30%,#fff,transparent),radial-gradient(1.5px 1.5px at 70% 60%,#fff,transparent),radial-gradient(2px 2px at 45% 85%,#fff,transparent),#0b1a2e!important;background-size:120px 120px!important;background-attachment:fixed!important}
+body.pbg-matrix{background:repeating-linear-gradient(90deg,rgba(34,197,94,.12) 0 2px,transparent 2px 18px),#020a04!important;background-attachment:fixed!important}
+body.pbg-embers{background:radial-gradient(2px 2px at 30% 80%,#fb923c,transparent),radial-gradient(1.5px 1.5px at 75% 40%,#f97316,transparent),radial-gradient(2px 2px at 55% 20%,#fbbf24,transparent),#140805!important;background-size:140px 140px!important;background-attachment:fixed!important}
+body.pbg-circuits{background:linear-gradient(90deg,rgba(34,211,238,.12) 2px,transparent 2px) 0 0/40px 40px,linear-gradient(rgba(34,211,238,.12) 2px,transparent 2px) 0 0/40px 40px,radial-gradient(circle,rgba(34,211,238,.35) 2px,transparent 3px) 0 0/40px 40px,#04121a!important;background-attachment:fixed!important}
