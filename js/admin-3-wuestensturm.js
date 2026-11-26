@@ -9,12 +9,11 @@ var DS_TIPS = [
 ];
 var DS_KEY = 'skws_ds', DS_ONLYSEL = false, DS_LAST = null, DS_PUB = null;
 function dsState(){
-  var st = null; try { st = JSON.parse(ls(DS_KEY) || 'null'); } catch(e){}
-  st = st || {}; st.assign = st.assign || {}; st.time = st.time || {A:'',B:''}; st.opp = st.opp || {A:'',B:''};
+  var st = kvGet('ds_state'); st = st ? JSON.parse(JSON.stringify(st)) : {}; st.assign = st.assign || {}; st.time = st.time || {A:'',B:''}; st.opp = st.opp || {A:'',B:''};
   st.note = st.note || {A:'',B:''}; st.tac = st.tac || {A:'std',B:'std'}; st.metric = st.metric || 't1';
   return st;
 }
-function dsSave(st){ try { ls(DS_KEY, JSON.stringify(st)); } catch(e){} }
+function dsSave(st){ kvSet('ds_state', st); }
 function dsMetricVal(p, m){
   if (!p.entry) return 0;
   if (m === 'hero') return Number(p.entry.hero || 0);
@@ -57,7 +56,7 @@ function dsRenderList(){
     return !q || p.name.toLowerCase().indexOf(q) >= 0;
   }).map(function(p){
     var v = st.assign[p.name] || '';
-    return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + av(p.name, 30) + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'ds') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
+    return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + av(p.name, 30) + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'ds') + (typeof absBadge === 'function' ? absBadge(p.name) : '') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
       '<select data-ds="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
   }).join('') || '<div class="empty">Keine Treffer.</div>';
 }
@@ -259,13 +258,15 @@ function dsPublish(plan){
 var DSM_DEF = { info:[32,7], ref1:[13,30], hosp1:[13,57], hosp2:[32,86], arsenal:[51,18], silo:[51,45], merc:[50,72], hosp3:[72,6], hosp4:[89,34], ref2:[89,60], sci:[72,86], wells:[24,44], base:[4,48], react:[36,60] };
 var DSM_LBL = { ref1:'Raff. I', ref2:'Raff. II', hosp1:'Laz. I', hosp2:'Laz. II', hosp3:'Laz. III', hosp4:'Laz. IV', sci:'Wiss.', info:'Info', arsenal:'Waffenl.', merc:'Söldner', silo:'Atomsilo', wells:'Ölquellen', base:'Basis', react:'Eingreif.' };
 var DSM_KEY = 'skws_ds_map', DSM_POS_KEY = 'skws_ds_pos2', DSM_BG = null, DSM_LASTURL = null;
-function dsmPos(){ var p = null; try { p = JSON.parse(ls(DSM_POS_KEY) || 'null'); } catch(e){} var o = {}; Object.keys(DSM_DEF).forEach(function(k){ o[k] = (p && p[k]) || DSM_DEF[k].slice(); }); return o; }
+function dsmMap(){ return kvGet('ds_map') || {}; }
+function dsmPut(o){ var m = dsmMap(), n = { bg: 'bg' in o ? o.bg : m.bg || null, pos: 'pos' in o ? o.pos : m.pos || null }; kvSet('ds_map', n.bg || n.pos ? n : null, true); }
+function dsmPos(){ var p = dsmMap().pos || null; var o = {}; Object.keys(DSM_DEF).forEach(function(k){ o[k] = (p && p[k]) || DSM_DEF[k].slice(); }); return o; }
 function dsmLoadBg(cb){
-  var src = ls(DSM_KEY); if (!src) { DSM_BG = null; cb && cb(); return; }
+  var src = dsmMap().bg; if (!src) { DSM_BG = null; cb && cb(); return; }
   var im = new Image(); im.onload = function(){ DSM_BG = im; cb && cb(); }; im.onerror = function(){ DSM_BG = null; cb && cb(); }; im.src = src;
 }
 function dsmEditor(){
-  var box = $('dsmEdit'), pos = dsmPos(), src = ls(DSM_KEY);
+  var box = $('dsmEdit'), pos = dsmPos(), src = dsmMap().bg;
   box.style.backgroundImage = src ? 'url(' + src + ')' : '';
   box.classList.toggle('schem', !src);
   if (DSM_BG) box.style.aspectRatio = DSM_BG.naturalWidth + ' / ' + DSM_BG.naturalHeight; else box.style.aspectRatio = '1 / 1';
@@ -281,7 +282,7 @@ function dsmEditor(){
   });
   $('dsmEdit').addEventListener('pointerup', function(){
     if (!drag) return; var pos = dsmPos(); pos[drag.dataset.k] = [parseFloat(drag.style.left), parseFloat(drag.style.top)];
-    ls(DSM_POS_KEY, JSON.stringify(pos)); drag = null;
+    dsmPut({ pos: pos }); drag = null;
   });
   $('dsmFile').addEventListener('change', function(){
     var f = this.files && this.files[0]; if (!f) return;
@@ -289,15 +290,15 @@ function dsmEditor(){
       var im = new Image(); im.onload = function(){
         var sc = Math.min(1, 1400 / Math.max(im.width, im.height)), c = document.createElement('canvas');
         c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-        try { ls(DSM_KEY, c.toDataURL('image/jpeg', .85)); } catch(e){ $('dsmNote').textContent = 'Bild zu groß zum Speichern.'; return; }
+        dsmPut({ bg: c.toDataURL('image/jpeg', .8) });
         dsmLoadBg(dsmEditor); $('dsmNote').textContent = 'Kartenbild gespeichert. Zieh jetzt die Schilder auf die passenden Gebäude.'; $('dsmNote').className = 'note ok';
       }; im.src = fr.result;
     }; fr.readAsDataURL(f);
   });
-  $('dsmClearBg').addEventListener('click', function(){ ls(DSM_KEY, null); dsmLoadBg(dsmEditor); });
-  $('dsmReset').addEventListener('click', function(){ ls(DSM_POS_KEY, null); dsmEditor(); });
+  $('dsmClearBg').addEventListener('click', function(){ dsmPut({ bg: null }); dsmLoadBg(dsmEditor); });
+  $('dsmReset').addEventListener('click', function(){ dsmPut({ pos: null }); dsmEditor(); });
   $('dsmToggle').addEventListener('click', function(){ var w = $('dsmWrap'); w.classList.toggle('hide'); if (!w.classList.contains('hide')) dsmLoadBg(dsmEditor); });
-  ['A','B'].forEach(function(t){ ['', 'de'].forEach(function(sfx){ $('dsPic' + t + sfx).addEventListener('click', function(){ var lang = this.dataset.lang; if (!DS_LAST || !DS_LAST.plan.teams[t]) return; if (ls(DSM_KEY)) dsmLoadBg(function(){ dsmRender(t); }); else dstLoad(t, function(){ if (DST_IMG) dstRender(t, lang); else dsmLoadBg(function(){ dsmRender(t); }); }); }); }); });
+  ['A','B'].forEach(function(t){ ['', 'de'].forEach(function(sfx){ $('dsPic' + t + sfx).addEventListener('click', function(){ var lang = this.dataset.lang; if (!DS_LAST || !DS_LAST.plan.teams[t]) return; if (dsmMap().bg) dsmLoadBg(function(){ dsmRender(t); }); else dstLoad(t, function(){ if (DST_IMG) dstRender(t, lang); else dsmLoadBg(function(){ dsmRender(t); }); }); }); }); });
 })();
 function dsmRender(t){
   var T = DS_LAST.plan.teams[t], TC = DS_TACTICS[T.tac], groups = dsGroupsOf(T), pos = dsmPos();

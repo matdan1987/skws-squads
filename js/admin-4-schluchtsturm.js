@@ -2,12 +2,11 @@
 /* ---------- Schluchtsturm (Canyon Storm, 2 gegen 1) ---------- */
 var CS_KEY = 'skws_cs', CS_ONLYSEL = false, CS_LAST = null;
 function csState(){
-  var st = null; try { st = JSON.parse(ls(CS_KEY) || 'null'); } catch(e){}
-  st = st || {}; st.assign = st.assign || {}; st.time = st.time || {A:'',B:''}; st.opp = st.opp || {A:'',B:''};
+  var st = kvGet('cs_state'); st = st ? JSON.parse(JSON.stringify(st)) : {}; st.assign = st.assign || {}; st.time = st.time || {A:'',B:''}; st.opp = st.opp || {A:'',B:''};
   st.note = st.note || {A:'',B:''}; st.tac = st.tac || {A:'lab',B:'mid'}; st.metric = st.metric || 't1';
   return st;
 }
-function csSave(st){ try { ls(CS_KEY, JSON.stringify(st)); } catch(e){} }
+function csSave(st){ kvSet('cs_state', st); }
 function csAct(step, lang){ var t = CS_A[lang || 'de'][step[0]] || step[0]; return t.split('{b}').join(CS_B[lang || 'de'][step[1]] || '').split('{t}').join(CS_OPEN[step[1]] || ''); }
 function csTacInfo(t){
   var T = CS_TACTICS[$('csTac' + t).value] || CS_TACTICS.lab;
@@ -36,7 +35,7 @@ function csRenderList(){
   var opts = [['','–'],['AS','A Stamm'],['AE','A Ersatz'],['BS','B Stamm'],['BE','B Ersatz']];
   $('csList').innerHTML = list.filter(function(p){ if (CS_ONLYSEL && !st.assign[p.name]) return false; return !q || p.name.toLowerCase().indexOf(q) >= 0; }).map(function(p){
     var v = st.assign[p.name] || '';
-    return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + av(p.name, 30) + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'cs') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
+    return '<label class="' + (v ? (v[0] === 'A' ? 'as' : 'bs') : '') + (p.entry ? '' : ' nodata') + '"><span class="nm">' + av(p.name, 30) + esc(p.name) + mgBadge(p.name) + merBadge(p.name, 'cs') + (typeof absBadge === 'function' ? absBadge(p.name) : '') + '</span><span class="meta">' + p.rank + ' · ' + dsMetricTxt(p, m) + '</span>' +
       '<select data-cs="' + esc(p.name) + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
   }).join('') || '<div class="empty">Keine Treffer.</div>';
 }

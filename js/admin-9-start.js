@@ -1,7 +1,7 @@
 /* SKWS Squads – Admin: start (gemeinsamer globaler Bereich, Reihenfolge der Dateien beachten) */
 /* ---------- Steuerung ---------- */
 // Bereiche der Navigation: jeder Reiter gehört zu genau einem Bereich
-var NAV = { mi:['mlist','pl','acc'], st:['ov','mem','dev','hist','exp'], ev:['ds','cs','arc'], al:['msg','mg','mer','bdg','umf'], sy:['log','adm'] };
+var NAV = { mi:['mlist','pl','acc','akt'], st:['ov','mem','dev','hist','exp','vs'], ev:['ds','cs','arc'], al:['msg','mg','mer','bdg','umf','kal'], sy:['log','adm'] };
 function navGroupOf(t){ for (var g in NAV) if (NAV[g].indexOf(t) >= 0) return g; return 'mi'; }
 function navRender(name){
   var g = navGroupOf(name);
@@ -13,20 +13,23 @@ function showTab(name){
   navRender(name);
   var bs = document.querySelectorAll('#tabs button');
   for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i].dataset.tab === name);
-  ['mlist','ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','msg','adm','acc','log','bdg','arc','umf'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
+  ['mlist','ov','mem','hist','pl','dev','exp','ds','cs','mg','mer','msg','adm','acc','log','bdg','arc','umf','kal','vs','akt'].forEach(function(t){ $('tab-' + t).classList.toggle('hide', t !== name); });
   store('skws_admin_tab', name); store('skws_admin_tab_' + navGroupOf(name), name);
   if (name === 'hist') renderHistory();
   if (name === 'ov') renderOverview();
   if (name === 'pl') renderPlayer();
-  if (name === 'mlist') { mlRender(); renderAdmin(); }
+  if (name === 'mlist') { mlRender(); renderAdmin(); absCard(); }
   if (name === 'exp') renderExport();
-  if (name === 'ds') dsRender();
-  if (name === 'cs') csRender();
+  if (name === 'ds') { dsRender(); if (PW) kvLoad().then(function(){ if (store('skws_admin_tab') === 'ds') dsRender(); }); }
+  if (name === 'cs') { csRender(); if (PW) kvLoad().then(function(){ if (store('skws_admin_tab') === 'cs') csRender(); }); }
   if (name === 'mg') mgRender();
   if (name === 'mer') merRender();
   if (name === 'msg') { fkRender(); fkLoad(); }
   if (name === 'arc') arcLoad(false);
   if (name === 'umf') { umfRender(); umfLoad(); }
+  if (name === 'kal') { calRender(); calLoad(); }
+  if (name === 'vs') vsLoad();
+  if (name === 'akt') actLoad();
   if (name === 'bdg') { bdgRender(); bdgLoad(); clmRender(); clmLoad(); }
   if (name === 'acc') { accRender(); fkRender(); fkLoad().then(accLoad); }
   if (name === 'dev') renderDev();
@@ -47,7 +50,7 @@ function load(pw, silent){
     if (first) rpc('admin_login', { p_pw: pw, p_actor: ACTOR || null }).catch(function(){});
     $('loginView').classList.add('hide'); $('app').classList.remove('hide');
     $('reload').classList.remove('hide'); $('logout').classList.remove('hide');
-    renderAll(); avLoad(); psLoad(); fkLoad(); exLoad();
+    Promise.all([kvLoad(), absLoad()]).then(function(){ renderAll(); avLoad(); psLoad(); fkLoad(); exLoad(); });
   }).catch(function(err){
     if (String(err && err.message).indexOf('ERR_AUTH') >= 0) forgetPw();
     if (!silent) $('loginMsg').textContent = String(err && err.message).indexOf('ERR_AUTH') >= 0 ? 'Kennwort falsch.' : 'Laden fehlgeschlagen – bitte erneut versuchen.';

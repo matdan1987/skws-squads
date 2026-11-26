@@ -32,7 +32,7 @@ function mlRender(){
       (EX ? (miss ? '<span class="aj-miss">' + miss + ' ohne Beitrittsdatum</span>' : '<span class="aj-full">✓ Beitrittsdaten vollständig</span>') : '') + '</summary>' +
       l.map(function(p){
         if (quick) return '<div class="mgrow ml-q"><span class="nm"><a href="#" data-mlopen="' + esc(p.name) + '">' + av(p.name, 28) + esc(p.name) + '</a></span>' + rankSelect(p) + (EX ? ajInputs(p.name) : '') + '</div>';
-        return '<div class="mlrow" data-mlopen="' + esc(p.name) + '">' + av(p.name, 36) + '<div class="ml-tx"><b>' + esc(p.name) + '</b>' + mgBadge(p.name) + '<div class="small muted">' + mlInfo(p) + '</div></div><span class="ml-go">›</span></div>';
+        return '<div class="mlrow" data-mlopen="' + esc(p.name) + '">' + av(p.name, 36) + '<div class="ml-tx"><b>' + esc(p.name) + '</b>' + mgBadge(p.name) + (typeof absBadge === 'function' ? absBadge(p.name) : '') + '<div class="small muted">' + mlInfo(p) + '</div></div><span class="ml-go">›</span></div>';
       }).join('') + '</details>';
   }).join('') || '<div class="empty">Keine Treffer.</div>';
 }
@@ -54,6 +54,7 @@ function stammHtml(p){
     h += row('Name', '<b>' + esc(p.name) + '</b><button class="mini" data-act="rename" data-name="' + esc(p.name) + '">Umbenennen</button>');
     h += row('Allianzbeitritt', EX ? ajInputs(p.name) : '<span class="small muted">lädt …</span>');
     h += row('Auf dieser Seite', p.joinedAt ? fmtDate(p.joinedAt) : '–');
+    if (typeof absRowHtml === 'function') h += row('Abwesenheit', absRowHtml(p.name));
     h += row('Profilbild', '<label class="mini av-up">📷 ' + (AVA[p.name] ? 'Neues Bild hochladen' : 'Bild hochladen') + '<input type="file" accept="image/*" data-avup="' + esc(p.name) + '" hidden></label>' +
       (AVA[p.name] ? '<button class="mini" data-act="avdel" data-name="' + esc(p.name) + '">Entfernen</button>' : ''));
     h += row('Status', '<span>aktiv</span> <button class="mini danger" data-act="leave" data-name="' + esc(p.name) + '">Ausgeschieden …</button>');

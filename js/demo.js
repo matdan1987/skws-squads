@@ -41,7 +41,7 @@
                'Raven','Ember','Pixel','Comet','Nebula','Quasar','Titan','Aurora','Phoenix','Draco','Solara','Luna','Onyx','Cobalt','Indigo','Saffron'];
   function makeDB(){
     var TYPES = ['tank','tank','tank','aircraft','missile','mixed'], db = { id: 1000, members: [], entries: {}, history: [], rounds: [], ds: null, cs: null, merits: [], meritcfg: null, evcfg: {},
-      msgs: [], shouts: [], gifts: [], badges: [], claimEv: [], seasons: [], notes: [], polls: [], pvotes: [], log: [], avatars: {}, pins: {}, mg: null };
+      msgs: [], shouts: [], gifts: [], badges: [], claimEv: [], seasons: [], notes: [], polls: [], pvotes: [], kv: {}, pstate: {}, absences: [], cal: [], vs: [], help: [], log: [], avatars: {}, pins: {}, mg: null };
     NAMES.forEach(function(n, i){
       var rank = i === 0 ? 'R5' : i < 5 ? 'R4' : ['R3','R3','R2','R1','R2','R3','R1'][i % 7];
       var aj = i % 5 === 3 ? null : iso(NOW - (20 + Math.floor(rnd() * 600)) * DAY).slice(0, 10);
@@ -96,6 +96,18 @@
     db.badges.push({ id: ++db.id, key: 'demo-zombie', label: 'Zombie-Belagerung KW 47', icon: '🧟', name: 'Echo', t: iso(NOW - 6 * DAY), by: 'Nova' });
     db.claimEv.push({ id: ++db.id, label: 'Zombie-Belagerung KW 48', icon: '🧟', open: true, t: iso(NOW - DAY), claims: [{ name: 'Echo', status: 'pending' }, { name: 'Blaze', status: 'pending' }, { name: 'Raven', status: 'ok' }] });
     db.seasons.push({ id: ++db.id, label: 'Weihnachten 2026', icon: '🎄', from: '2026-12-20', to: '2026-12-31' });
+    // Abwesenheit, Kalender, Allianz-Duell, Hilfe & Fragen
+    function dstr(off){ var d = new Date(NOW + off * DAY); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+    db.absences.push({ id: ++db.id, name: 'Vega', from: dstr(-1), to: dstr(6), note: 'Urlaub', by: 'Vega', t: iso(NOW - 2 * DAY) });
+    db.absences.push({ id: ++db.id, name: 'Rigel', from: dstr(4), to: dstr(9), note: null, by: 'Nova', t: iso(NOW - DAY) });
+    db.cal.push({ id: ++db.id, title: 'Zombie-Belagerung', kind: 'zombie', weekly: true, day: null, wd: 2, tm: '20:30', dur: 30, note: null });
+    db.cal.push({ id: ++db.id, title: 'Allianz-Treffen im Chat', kind: 'meet', weekly: false, day: dstr(3), wd: null, tm: '19:00', dur: 60, note: 'Planung für Dezember' });
+    var mon = new Date(NOW); mon.setHours(12, 0, 0, 0); mon.setDate(mon.getDate() - (mon.getDay() + 6) % 7);
+    db.members.forEach(function(m, i){ if (!m.active || i > 24) return; for (var d = 0; d < 6; d++) { var day = new Date(mon.getTime() + d * DAY); if (day.getTime() > NOW) break;
+      db.vs.push({ name: m.name, day: day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0'), pts: Math.round((2 + rnd() * 9) * 1e6), self: rnd() > .5 }); } });
+    db.help.push({ id: ++db.id, name: 'Juno', kind: 'ask', body: 'Welche Helden lohnen sich am Anfang für Panzer am meisten?', t: iso(NOW - DAY / 2), done: null, replies: [{ id: ++db.id, name: 'Orion', body: 'Schau dir die Kombination aus dem Allianz-Guide an – ich erklär’s dir gern im Chat.', t: iso(NOW - DAY / 3) }] });
+    db.help.push({ id: ++db.id, name: 'Atlas', kind: 'team', body: 'Suche 2 Leute für Rallyes auf Level-8-Zombies heute ab 21 Uhr.', t: iso(NOW - DAY / 5), done: null, replies: [] });
+    db.help.push({ id: ++db.id, name: 'Nova', kind: 'tip', body: 'Vor dem Wüstensturm die Lazarett-Truppen abholen – das spart später viel Zeit.', t: iso(NOW - 2 * DAY), done: iso(NOW - DAY), replies: [] });
     // Umfragen
     function poll(o){ o.id = ++db.id; o.at = iso(NOW - (o.ago || 1) * DAY); delete o.ago; db.polls.push(o); return o.id; }
     var p1 = poll({ q: 'Welches Event sollen wir als Nächstes gemeinsam üben?', opts: ['Wüstensturm', 'Schluchtsturm', 'Zombie-Belagerung'], multi: false, other: true, results: 'live', anon: false, ranks: null, grp: null, closes_at: iso(NOW + 3 * DAY), closed_at: null, by: 'Nova', ago: 1 });
@@ -112,7 +124,7 @@
     return db;
   }
   function log(db, actor, action, target, details, ago){ db.log.unshift({ id: ++db.id, at: iso(Date.now() - (ago || 0) * MIN), actor: actor, action: action, target: target || null, details: details || {} }); }
-  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 6) { DB = makeDB(); DB.v = 6; }
+  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 7) { DB = makeDB(); DB.v = 7; }
   function save(){ try { oS.call(SS, 'skws_demo_db', JSON.stringify(DB)); } catch(e){} }
   save();
 
@@ -134,6 +146,10 @@
   function pollAct(id, a){ var p = DB.polls.filter(function(x){ return x.id === id; })[0]; if (!p) throw new Error('ERR_POLL');
     if (a === 'close') p.closed_at = iso(Date.now()); else if (a === 'reopen') { p.closed_at = null; if (p.closes_at && new Date(p.closes_at) < new Date()) p.closes_at = null; }
     else if (a === 'delete') { DB.polls = DB.polls.filter(function(x){ return x.id !== id; }); DB.pvotes = DB.pvotes.filter(function(v){ return v.id !== id; }); } return { ok: true }; }
+  function today(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function awayMap(){ var o = {}; DB.absences.filter(function(a){ return a.to >= today(); }).forEach(function(a){ (o[a.name] = o[a.name] || []).push({ from: a.from, to: a.to }); }); return o; }
+  function monday(){ var d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function dayIdx(day, mon){ return Math.round((new Date(day + 'T12:00:00') - new Date(mon + 'T12:00:00')) / 86400000); }
   function level(n){ var m = mem_(n); if (!m) return null; if (m.rank === 'R4' || m.rank === 'R5') return 'lead'; var g = grpOf(n); return g && g.role !== 'member' ? 'mentor' : 'member'; }
   function entryOut(e){ return e ? { squads: e.squads, hasEmail: !!e.email, lang: e.lang, updated: e.updated, hero: e.hero, gorilla: e.gorilla, gstage: e.gstage, gpower: e.gpower } : null; }
   function meritActive(m){ return !m.revoked_at && (!m.until || new Date(m.until) > new Date()); }
@@ -150,7 +166,7 @@
         ev[k] = { id: r.id, label: r.label, time_a: r.time_a, time_b: r.time_b, deadline: r.deadline, open: r.open && (!r.deadline || new Date(r.deadline) > new Date()), signups: su }; });
       var en = {}, av = {}; active().forEach(function(m){ if (DB.entries[m.name]) en[m.name] = entryOut(DB.entries[m.name]); if (DB.avatars[m.name]) av[m.name] = DB.avatars[m.name].ts; });
       return { members: active().map(function(m){ return m.name; }), leaders: active().filter(function(m){ return m.rank === 'R4' || m.rank === 'R5'; }).map(function(m){ return m.name; }),
-        entries: en, ds: DB.ds, cs: DB.cs, ev: ev, av: av }; },
+        entries: en, ds: DB.ds, cs: DB.cs, ev: ev, av: av, away: awayMap(), cal: DB.cal }; },
     profile_stats: function(){ var out = {}; active().forEach(function(m){ var n = m.name, ms = DB.merits.filter(function(x){ return x.name === n && !x.revoked_at && x.vis === 'public'; }), g = grpOf(n);
         var h = DB.history.filter(function(x){ return x.name === n; }), tot = function(x){ return x.squads.reduce(function(a, s){ return a + (s.power || 0); }, 0); };
         out[n] = { b: ms.filter(function(x){ return x.kind === 'bonus'; }).length, d: ms.filter(function(x){ return x.kind === 'malus'; }).length, d90: ms.filter(function(x){ return x.kind === 'malus'; }).length,
@@ -209,6 +225,51 @@
     set_avatar: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_LOGIN' }; if (b.p_data) DB.avatars[n] = { d: b.p_data, ts: Math.floor(Date.now() / 1000) }; else delete DB.avatars[n]; return { ok: true, name: n }; },
     notes_for: function(b){ var n = tokName(b.p_token), lv = level(n), g = grpOf(b.p_name), mine = grpOf(n), grp = !!(g && mine && g.i === mine.i && mine.role !== 'member'), self = n === b.p_name, ok = lv === 'lead' || grp || self;
       return { ok: true, allowed: !!ok, self: self, items: ok ? DB.notes.filter(function(x){ return x.name === b.p_name && (lv === 'lead' || (grp && x.vis !== 'lead') || (self && x.vis === 'player')); }) : [] }; },
+    my_state: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; return { ok: true, items: DB.pstate[n] || {} }; },
+    my_state_set: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; (DB.pstate[n] = DB.pstate[n] || {})[b.p_key] = b.p_data; return { ok: true }; },
+    admin_kv: function(b){ if (b.p_action === 'get') { var o = {}; Object.keys(DB.kv).forEach(function(k){ o[k] = DB.kv[k]; }); return { ok: true, items: o }; }
+      if (b.p_data === null || b.p_data === undefined) delete DB.kv[b.p_key]; else DB.kv[b.p_key] = { data: b.p_data, at: iso(Date.now()), by: b.p_actor || 'Demo' }; return { ok: true }; },
+    absence_mine: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; return { ok: true, items: DB.absences.filter(function(a){ return a.name === n && a.to >= today(); }) }; },
+    absence_add: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; if (!b.p_from || !b.p_to || b.p_to < b.p_from || b.p_to < today()) throw new Error('ERR_DATE');
+      DB.absences.push({ id: ++DB.id, name: n, from: b.p_from, to: b.p_to, note: b.p_note || null, by: n, t: iso(Date.now()) }); return { ok: true }; },
+    absence_del: function(b){ var n = tokName(b.p_token); DB.absences = DB.absences.filter(function(a){ return !(a.id === b.p_id && (a.name === n || level(n) === 'lead')); }); return { ok: true }; },
+    admin_absence: function(b){ var d = b.p_data || {}; if (b.p_action === 'list') return { ok: true, items: DB.absences.slice().sort(function(a, c){ return a.from < c.from ? -1 : 1; }) };
+      if (b.p_action === 'add') { DB.absences.push({ id: ++DB.id, name: d.name, from: d.from, to: d.to, note: d.note || null, by: b.p_actor || 'Demo', t: iso(Date.now()) }); return { ok: true }; }
+      DB.absences = DB.absences.filter(function(a){ return a.id !== +d.id; }); return { ok: true }; },
+    admin_activity: function(){ var o = {}, k = 0; active().forEach(function(m){ k++; var e = DB.entries[m.name];
+      if (k % 5 === 0) { o[m.name] = { seen: k % 10 ? iso(Date.now() - (16 + k) * 86400000) : null, entry: iso(Date.now() - (20 + k) * 86400000), signup: null, vote: null, chat: null, pin: k % 10 !== 0, rounds: 4, answered: 0 }; return; }
+      o[m.name] = { seen: k % 5 ? iso(Date.now() - (k % 9) * 86400000) : (k % 2 ? iso(Date.now() - (18 + k) * 86400000) : null), entry: e ? e.updated : null, signup: k % 4 ? iso(Date.now() - (k % 11) * 86400000) : null,
+        vote: k % 3 ? iso(Date.now() - (k % 6) * 86400000) : null, chat: k % 6 ? null : iso(Date.now() - 86400000), pin: k % 7 !== 0, rounds: 4, answered: k % 4 ? 3 : 0 }; }); return { ok: true, items: o }; },
+    admin_cal: function(b){ var d = b.p_data || {};
+      if (b.p_action === 'del') { DB.cal = DB.cal.filter(function(c){ return c.id !== +d.id; }); return { ok: true }; }
+      if (b.p_action === 'edit') DB.cal = DB.cal.filter(function(c){ return c.id !== +d.id; });
+      DB.cal.push({ id: ++DB.id, title: d.title, kind: d.kind || 'other', weekly: !!d.weekly, day: d.day || null, wd: d.wd === '' || d.wd === undefined ? null : +d.wd, tm: d.tm, dur: +d.dur || 60, note: d.note || null }); return { ok: true }; },
+    vs_week: function(b){ var mon = b.p_monday || monday(), rows = {}, wk = {};
+      DB.vs.forEach(function(v){ var i = dayIdx(v.day, mon); var m2 = new Date(v.day + 'T12:00:00'); m2.setDate(m2.getDate() - (m2.getDay() + 6) % 7); wk[m2.toISOString().slice(0, 10)] = 1;
+        if (i < 0 || i > 6 || !(mem_(v.name) || {}).active) return; (rows[v.name] = rows[v.name] || {})[i] = v.pts; });
+      return { monday: mon, rows: rows, weeks: Object.keys(wk).sort().reverse() }; },
+    vs_set: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var ex = DB.vs.filter(function(v){ return v.name === n && v.day === b.p_day; })[0];
+      if (ex && !ex.self) throw new Error('ERR_LOCKED'); DB.vs = DB.vs.filter(function(v){ return !(v.name === n && v.day === b.p_day); });
+      if (b.p_pts !== null && b.p_pts !== undefined) DB.vs.push({ name: n, day: b.p_day, pts: +b.p_pts, self: true }); return { ok: true }; },
+    admin_vs: function(b){ var d = b.p_data || {};
+      if (b.p_action === 'week') return { ok: true, self: DB.vs.filter(function(v){ var i = dayIdx(v.day, d.monday); return v.self && i >= 0 && i <= 6; }).map(function(v){ return { n: v.name, d: v.day }; }) };
+      (d.rows || []).forEach(function(r){ DB.vs = DB.vs.filter(function(v){ return !(v.name === r.name && v.day === d.day); }); if (r.pts !== '' && r.pts !== null && r.pts !== undefined) DB.vs.push({ name: r.name, day: d.day, pts: +r.pts, self: false }); });
+      return { ok: true, n: (d.rows || []).length }; },
+    player_history: function(b){ var by = {}; DB.history.filter(function(h){ return h.name === b.p_name; }).forEach(function(h){ by[h.t.slice(0, 10)] = h; });
+      return Object.keys(by).sort().map(function(k){ return { t: k, v: Math.round(by[k].squads.reduce(function(a, s2){ return a + (+s2.power || 0); }, 0) * 100) / 100 }; }); },
+    onboarding: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var g = grpOf(b.p_name), mine = grpOf(n);
+      var ok = n === b.p_name || level(n) === 'lead' || (g && mine && g.i === mine.i && mine.role !== 'member'); if (!ok) return { ok: true, allowed: false };
+      var h = b.p_name.length; return { ok: true, allowed: true, since: null, pin: true, entry: !!DB.entries[b.p_name], group: !!g, joined: !!(DB.mg.join[b.p_name] && DB.mg.join[b.p_name].ok), avatar: !!DB.avatars[b.p_name], signup: h % 2 === 0, played: h % 3 === 0 }; },
+    help_list: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' };
+      return { ok: true, lead: level(n) === 'lead', items: DB.help.slice().sort(function(a, c){ return (!!a.done - !!c.done) || (c.id - a.id); }) }; },
+    help_post: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; if (!String(b.p_body || '').trim()) throw new Error('ERR_EMPTY');
+      DB.help.push({ id: ++DB.id, name: n, kind: b.p_kind || 'ask', body: String(b.p_body).trim().slice(0, 500), t: iso(Date.now()), done: null, replies: [] }); return { ok: true }; },
+    help_reply: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; DB.help.forEach(function(p){ if (p.id === b.p_id) p.replies.push({ id: ++DB.id, name: n, body: String(b.p_body).trim().slice(0, 500), t: iso(Date.now()) }); }); return { ok: true }; },
+    help_manage: function(b){ var n = tokName(b.p_token), lead = level(n) === 'lead';
+      if (b.p_action === 'delreply') { DB.help.forEach(function(p){ p.replies = p.replies.filter(function(r){ return !(r.id === b.p_id && (r.name === n || lead)); }); }); return { ok: true }; }
+      if (b.p_action === 'delete') { DB.help = DB.help.filter(function(p){ return !(p.id === b.p_id && (p.name === n || lead)); }); return { ok: true }; }
+      DB.help.forEach(function(p){ if (p.id === b.p_id && (p.name === n || lead)) p.done = b.p_action === 'done' ? iso(Date.now()) : null; }); return { ok: true }; },
+    reminder_info: function(){ return { polls: [], away: false }; },
     polls_list: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var lv = level(n), g = grpOf(n);
       return { ok: true, lv: lv, grp: g && g.role !== 'member' ? g.i : null, items: DB.polls.filter(function(p){ return pollIn(p, n) || lv === 'lead' || p.by === n; })
         .filter(function(p){ return pollOpen(p) || Date.now() - new Date(p.closed_at || p.closes_at) < 30 * DAY; })

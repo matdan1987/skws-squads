@@ -375,3 +375,14 @@ textarea.arc-rem{min-height:0;height:auto}
 .umf-o{position:relative;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:8px 10px;margin-top:6px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .umf-o>*{position:relative;z-index:1}.umf-o span{flex:1}.umf-o b{font-size:13px}.umf-o small{flex-basis:100%;color:var(--muted)}
 .umf-o .umf-bar{position:absolute;z-index:0;left:0;top:0;bottom:0;background:rgba(92,200,255,.14)}
+/* Abwesenheit, Aktivität, Kalender, Allianz-Duell */
+.abs-b{display:inline-block;margin-left:6px;font-size:12px;padding:1px 6px;border-radius:8px;background:rgba(245,185,66,.15);color:#f5b942;white-space:nowrap}
+.abs-row{display:flex;flex-direction:column;gap:6px}.abs-row .chip a{color:var(--err);text-decoration:none;margin-left:4px}
+.abs-add{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.abs-add input{width:auto;flex:1;min-width:120px;margin:0}
+.abs-li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.abs-li a{color:var(--text)}
+.act-t{width:100%;border-collapse:collapse;font-size:13.5px}.act-t th,.act-t td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.act-t th{color:var(--muted);font-weight:600;font-size:12px}.act-t a{color:var(--text)}
+.act-t tr.act-amb td:first-child{border-left:3px solid #f5b942}.act-t tr.act-red td:first-child{border-left:3px solid var(--err)}
+.vs-t input{width:140px;margin:0;padding:6px 8px}
+.vs-days{display:flex;gap:4px;flex-wrap:wrap}.vs-days .mini.on{border-color:var(--accent);color:var(--accent)}

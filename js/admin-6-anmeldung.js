@@ -176,9 +176,12 @@ function evAbsent(kind, id){
   var r = EV.filter(function(x){ return x.id === id; })[0]; if (!r) return;
   var names = Array.prototype.slice.call($('ev_' + kind).querySelectorAll('[data-evabs]')).filter(function(c){ return c.checked; }).map(function(c){ return c.dataset.evabs; });
   var neu = names.filter(function(n){ return (r.absent || []).indexOf(n) < 0; });
+  // wer für die Zeit der Runde abgemeldet war (Abwesenheit), bekommt keinen Malus
+  var excused = typeof absCovers === 'function' ? neu.filter(function(n){ return absCovers(n, r.created_at); }) : [];
+  if (excused.length) neu = neu.filter(function(n){ return excused.indexOf(n) < 0; });
   var vis = ($('evAbsVis_' + kind) || {}).value || 'public';
   var reason = (merCat().reasons.filter(function(x){ return x.k === 'malus' && /nicht erschienen/i.test(x.r); })[0]) || { r:'Angemeldet, aber nicht erschienen', k:'malus', e:'sub', s:'both', n:2 };
-  var giveMalus = neu.length && confirm('Fehlende gespeichert: ' + (names.join(', ') || 'niemand') + '.\n\nFür die neu Markierten (' + neu.join(', ') + ') den Malus „' + reason.r + '“ vergeben (' + MER_EFF[reason.e] + ', ' + (reason.n || 'ohne') + ' Runde(n), sichtbar: ' + MER_VIS[vis].replace(/^\S+ /, '') + ')?\nAbbrechen = nur als fehlend speichern.');
+  var giveMalus = neu.length && confirm('Fehlende gespeichert: ' + (names.join(', ') || 'niemand') + '.' + (excused.length ? '\nKein Malus wegen eingetragener Abwesenheit: ' + excused.join(', ') + '.' : '') + '\n\nFür die neu Markierten (' + neu.join(', ') + ') den Malus „' + reason.r + '“ vergeben (' + MER_EFF[reason.e] + ', ' + (reason.n || 'ohne') + ' Runde(n), sichtbar: ' + MER_VIS[vis].replace(/^\S+ /, '') + ')?\nAbbrechen = nur als fehlend speichern.');
   evNote(kind, '…', true);
   rpc('admin_event', { p_pw: PW, p_action: 'absent', p_data: { id: id, names: names }, p_actor: ACTOR || null }).then(function(){
     if (!giveMalus) return;

@@ -10,8 +10,10 @@ var Funk = (function(){
   function btn(cls, txt, fn){ var b = el('button', cls, txt); b.type = 'button'; b.addEventListener('click', fn); return b; }
   function errText(r){ var E = T().err; return (E[r && r.err] || E.ERR).replace('{left}', r && r.left !== undefined ? r.left : '?'); }
   function when(t){ return new Date(t).toLocaleString(A.lang(), { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }); }
-  function seen(){ try { return JSON.parse(ls('skws_funk_seen') || '{}'); } catch(e){ return {}; } }
-  function setSeen(room, id){ var s = seen(); if (id && (s[room] || 0) < id) { s[room] = id; ls('skws_funk_seen', JSON.stringify(s)); } }
+  // gelesene Räume: zentral je Spieler (auf allen Geräten gleich), das Gerät hält nur eine Kopie
+  function maxMerge(a, b){ var o = {}; Object.keys(a || {}).concat(Object.keys(b || {})).forEach(function(k){ o[k] = Math.max((a || {})[k] || 0, (b || {})[k] || 0); }); return o; }
+  function seen(){ return (window.PState ? PState.get('funk_seen', 'skws_funk_seen', maxMerge) : null) || {}; }
+  function setSeen(room, id){ var s = seen(); if (id && (s[room] || 0) < id) { s[room] = id; if (window.PState) PState.set('funk_seen', s, 'skws_funk_seen'); else ls('skws_funk_seen', JSON.stringify(s)); } }
   function visible(){ return !document.hidden && !$('funkView').classList.contains('hide'); }
   function $(id){ return document.getElementById(id); }
 
@@ -19,7 +21,7 @@ var Funk = (function(){
     body = body || {}; if (S.tok) body.p_token = S.tok;
     return rpc(fn, body).then(function(r){ if (r && r.err === 'ERR_SESSION') drop(); return r || {}; }, function(){ return { ok:false, err:'ERR' }; });
   }
-  function drop(){ S.tok = S.name = S.level = null; S.inbox = S.sent = null; S.items = []; S.unacked = 0; S.rooms = {}; ls('skws_funk', null); badge(); render(); if (A && A.onAuth) A.onAuth(); }
+  function drop(){ if (window.PState) PState.reset(); S.tok = S.name = S.level = null; S.inbox = S.sent = null; S.items = []; S.unacked = 0; S.rooms = {}; ls('skws_funk', null); badge(); render(); if (A && A.onAuth) A.onAuth(); }
 
   /* ---------- Status, Abfrage im Hintergrund ---------- */
   function status(){
@@ -72,7 +74,7 @@ var Funk = (function(){
     box.appendChild(c); box.classList.remove('hide'); document.body.classList.add('fk-lock');
   }
   // Alles Pflichtige erledigt (Nachrichten bestätigt, keine PIN-Änderung offen) → „Neu für dich“ darf erscheinen
-  function settled(){ if (S.tok && S.inbox && !MUST_OPEN && A && A.onSettled) A.onSettled({ tok: S.tok, name: S.name, inbox: S.inbox, rooms: S.rooms, seen: seen() }); }
+  function settled(){ if (S.tok && S.inbox && !MUST_OPEN && A && A.onSettled) (window.PState ? PState.ready : function(f){ f(); })(function(){ if (S.tok) A.onSettled({ tok: S.tok, name: S.name, inbox: S.inbox, rooms: S.rooms, seen: seen() }); }); }
   function giftT(){ return (window.GIFT_I18N && (GIFT_I18N[A.lang()] || GIFT_I18N.en)) || { g:{}, thanks:'OK', got:'{n}' }; }
   // Nachrichtentext; Geschenke als großes Symbol mit Namen und Notiz
   function msgBody(m, c){
@@ -164,7 +166,7 @@ var Funk = (function(){
   }
   // Anmeldung übernehmen (auch von der Neu-Eintragung)
   function adopt(tok, name, level){
-    S.tok = tok; S.name = name; S.level = level || null; S.login = null; S.inbox = null;
+    S.tok = tok; S.name = name; S.level = level || null; S.login = null; S.inbox = null; if (window.PState) PState.load(tok);
     ls('skws_funk', JSON.stringify({ tok: tok, name: name }));
     status().then(function(){ loadInbox(); if (visible()) { loadShouts(); render(); } });
     if (A && A.onAuth) A.onAuth();
@@ -354,7 +356,7 @@ var Funk = (function(){
   return {
     init: function(app){
       A = app;
-      try { var s = JSON.parse(ls('skws_funk') || 'null'); if (s && s.tok) { S.tok = s.tok; S.name = s.name; } } catch(e){}
+      try { var s = JSON.parse(ls('skws_funk') || 'null'); if (s && s.tok) { S.tok = s.tok; S.name = s.name; if (window.PState) PState.load(s.tok); } } catch(e){}
       badge();
       if (S.tok) status().then(function(){ if (S.tok) loadInbox(); });
       setInterval(function(){ if (S.tok && !document.hidden) status(); }, 60000);
