@@ -427,43 +427,45 @@
     $('newBox').classList.toggle('hide', !NEW_MODE);
     if (NEW_MODE) { $('name').value = ''; loadMember(); $('newName').focus(); }
     else { $('newName').value = ''; }
-    setMsg('');
+    setMsg(''); clearBad();
   }
 
+  // Fehler im Formular: Code fürs Logbuch, Text für den Spieler, Feld zum Hinspringen
+  function fail(code, txt, field){ return { code: code, err: txt, f: typeof field === 'string' ? $(field) : field }; }
   function collect(){
     var name = NEW_MODE ? $('newName').value.trim().replace(/\s+/g, ' ') : $('name').value;
     if (NEW_MODE) {
-      if (name.length < 2 || name.length > 40) return { err: t('errNewName') };
+      if (name.length < 2 || name.length > 40) return fail('NEWNAME', t('errNewName'), 'newName');
       var hit = DATA.members.filter(function(m){ return m.toLowerCase() === name.toLowerCase(); })[0];
-      if (hit) return { err: t('errExists') };
+      if (hit) return fail('EXISTS', t('errExists'), 'newName');
     }
-    if (!name) return { err: t('errName') };
+    if (!name) return fail('NAME', t('errName'), 'name');
     var squads = [];
     for (var i = 0; i < DATA.squads; i++){
-      var c = $('sq'+i), type = c.querySelector('.type').value, raw = c.querySelector('.pow').value, p = parsePow(raw);
-      if (p !== null && isNaN(p)) return { err: t('errPower') };
-      if (i < REQ_SQUADS && (!type || p === null)) return { err: t('errTreq', {n: i+1}) };
-      if (!!type !== (p !== null)) return { err: t('errSquad', {n: i+1}) };
+      var c = $('sq'+i), tsel = c.querySelector('.type'), pin_ = c.querySelector('.pow'), type = tsel.value, p = parsePow(pin_.value);
+      if (p !== null && isNaN(p)) return fail('POWER:T' + (i+1), t('errPower'), pin_);
+      if (i < REQ_SQUADS && (!type || p === null)) return fail('TREQ:T' + (i+1), t('errTreq', {n: i+1}), type ? pin_ : tsel);
+      if (!!type !== (p !== null)) return fail('SQUAD:T' + (i+1), t('errSquad', {n: i+1}), type ? pin_ : tsel);
       squads.push({ type: type, power: p === null ? null : (p >= 10000 ? Math.round(p / 1e4) / 100 : p) });
     }
     var hero = parsePow($('hero').value);
-    if (hero === null || isNaN(hero)) return { err: t('errHero') };
+    if (hero === null || isNaN(hero)) return fail('HERO', t('errHero'), 'hero');
     if (hero >= 10000) hero = Math.round(hero / 1e4) / 100;
-    var gtxt = $('gorilla').value.trim(), gor = /^\d{1,3}$/.test(gtxt) ? parseInt(gtxt, 10) : NaN;
-    if (!(gor >= 1)) return { err: t('errGorilla') };
     var stxt = $('gstage').value.trim(), gst = /^\d{1,2}$/.test(stxt) ? parseInt(stxt, 10) : NaN;
-    if (!(gst >= 1 && gst <= 30)) return { err: t('errGstage') };
+    if (!(gst >= 1 && gst <= 30)) return fail('GSTAGE', t('errGstage'), 'gstage');
+    var gtxt = $('gorilla').value.trim(), gor = /^\d{1,3}$/.test(gtxt) ? parseInt(gtxt, 10) : NaN;
+    if (!(gor >= 1)) return fail('GORILLA', t('errGorilla'), 'gorilla');
     var gpw = parsePow($('gpower').value);
-    if (gpw === null || isNaN(gpw)) return { err: t('errGpower') };
+    if (gpw === null || isNaN(gpw)) return fail('GPOWER', t('errGpower'), 'gpower');
     gpw = Math.round(gpw < 10000 ? gpw * 1e6 : gpw);
-    if (gpw > 1e9) return { err: t('errGpower') };
+    if (gpw > 1e9) return fail('GPOWER', t('errGpower'), 'gpower');
     var email = $('email').value.trim();
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { err: t('errEmail') };
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return fail('EMAIL', t('errEmail'), 'email');
     var ex = NEW_MODE ? null : DATA.entries[name];
-    if (!email && !(ex && ex.hasEmail)) return { err: t('errEmailReq') };
+    if (!email && !(ex && ex.hasEmail)) return fail('EMAIL_REQ', t('errEmailReq'), 'email');
     var pin = null;
-    if (NEW_MODE) { pin = $('newPin').value; if (pin.length < 4 || pin.length > 32) return { err: F_().err.ERR_PINLEN }; if (pin !== $('newPin2').value) return { err: F_().pinMismatch }; }
-    else if (!authed(name)) return { err: F_().loginFirst };
+    if (NEW_MODE) { pin = $('newPin').value; if (pin.length < 4 || pin.length > 32) return fail('PINLEN', F_().err.ERR_PINLEN, 'newPin'); if (pin !== $('newPin2').value) return fail('PIN_MISMATCH', F_().pinMismatch, 'newPin2'); }
+    else if (!authed(name)) return fail('LOGIN', F_().loginFirst, null);
     return { data: { pin: pin, name: name, squads: squads, email: email, removeEmail: false, lang: LANG, hero: hero, gorilla: gor, gstage: gst, gpower: gpw } };
   }
 
@@ -493,11 +495,47 @@
     return t('errSave');
   }
 
+  // Server-Fehler → Feld, zu dem der Spieler springen soll
+  function errField(m){
+    m = String(m || '');
+    var sq = m.match(/ERR_(?:SQUAD|TREQ):(\d)/);
+    if (sq) { var c = $('sq' + (sq[1] - 1)); return c ? (c.querySelector('.type').value ? c.querySelector('.pow') : c.querySelector('.type')) : null; }
+    var map = [['ERR_NEWNAME','newName'], ['ERR_EXISTS','newName'], ['ERR_HERO','hero'], ['ERR_GORILLA','gorilla'], ['ERR_GSTAGE','gstage'], ['ERR_GPOWER','gpower'],
+               ['ERR_T1', null], ['ERR_PINLEN','newPin'], ['ERR_PIN','newPin'], ['ERR_EMAIL','email'], ['ERR_POWER', null]];
+    for (var i = 0; i < map.length; i++) if (m.indexOf(map[i][0]) >= 0) return map[i][1] ? $(map[i][1]) : null;
+    return null;
+  }
+  // Feld rot markieren, Hinweis direkt darunter, hinscrollen; verschwindet beim Tippen
+  function clearBad(){
+    var b = document.querySelectorAll('.bad'); for (var i = 0; i < b.length; i++) b[i].classList.remove('bad');
+    var n = document.querySelectorAll('.field-err'); for (var j = 0; j < n.length; j++) n[j].remove();
+  }
+  function markBad(el, txt){
+    clearBad();
+    if (!el || el.offsetParent === null) { var m = $('msg'); if (m && m.scrollIntoView) m.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+    el.classList.add('bad');
+    var note = document.createElement('div'); note.className = 'field-err'; note.textContent = '⚠️ ' + txt;
+    var anchor = el.closest('.row') || el;
+    anchor.parentNode.insertBefore(note, anchor.nextSibling);
+    var off = function(){ el.classList.remove('bad'); if (note.parentNode) note.remove(); el.removeEventListener('input', off); el.removeEventListener('change', off); };
+    el.addEventListener('input', off); el.addEventListener('change', off);
+    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(e){ el.scrollIntoView(); }
+    setTimeout(function(){ try { el.focus({ preventScroll: true }); } catch(e){ el.focus(); } }, 350);
+  }
+  // Fehlversuch fürs Logbuch melden (fire-and-forget, Fehler hier nie anzeigen)
+  function logFail(code, name, isNew){
+    try {
+      rpc('log_form_fail', { p_name: name || null, p_code: String(code || 'UNKNOWN').slice(0, 30), p_new: !!isNew, p_lang: LANG, p_app: !!window.SKWSAndroid }).catch(function(){});
+    } catch(e){}
+  }
+  function formName(){ return NEW_MODE ? $('newName').value.trim().replace(/\s+/g, ' ') : $('name').value; }
+
   function save(){
     if (busy) return;
     if (!NEW_MODE && $('name').value && !authed($('name').value)) { openAuth(); setMsg(F_().loginFirst, 'err'); return; }
     var r = collect();
-    if (r.err) { setMsg(r.err, 'err'); return; }
+    if (r.err) { setMsg(r.err, 'err'); markBad(r.f, r.err); logFail(r.code, formName(), NEW_MODE); return; }
+    clearBad();
     // Heldenkraft wirkt zu klein (z. B. 6,1 statt 106,1 Mio.) → einmal nachfragen
     var t1p = r.data.squads[0] && r.data.squads[0].power;
     if (r.data.hero && r.data.hero < 20 && t1p && t1p > 15) { var XH = XTRA_I18N[LANG] || XTRA_I18N.en; if (!confirm(XH.heroLow.replace('{v}', fmtPow(r.data.hero)))) { $('hero').focus(); return; } }
@@ -522,7 +560,13 @@
         fillNames(); showMeta(); renderOverview();
         setMsg(t('saved'), 'ok');
       })
-      .catch(function(err){ done(); if (String(err && err.message).indexOf('ERR_LOGIN') >= 0 && authed(r.data.name)) Funk.expired(); setMsg(errText(err && err.message), 'err'); });
+      .catch(function(err){
+        done(); var em = String(err && err.message || '');
+        if (em.indexOf('ERR_LOGIN') >= 0 && authed(r.data.name)) Funk.expired();
+        var txt = errText(em); setMsg(txt, 'err'); markBad(errField(em), txt);
+        var code = (em.match(/ERR_[A-Z_0-9:]+/) || [''])[0].replace(/^ERR_/, 'SRV_') || 'SRV_' + (/fetch|network|Failed/i.test(em) ? 'NETWORK' : 'UNKNOWN');
+        logFail(code, r.data.name, isNew);
+      });
     function done(){ busy = false; $('save').disabled = false; $('save').textContent = t('save'); }
   }
 

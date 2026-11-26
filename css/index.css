@@ -84,6 +84,10 @@
   .btn:disabled{opacity:.6;cursor:default}
   .msg{min-height:22px;margin-top:10px;text-align:center;font-weight:600}
   .msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
+  select.bad,input.bad{border-color:var(--err)!important;box-shadow:0 0 0 3px rgba(255,92,122,.28);animation:badShake .35s}
+  .field-err{margin-top:6px;color:var(--err);font-size:13px;font-weight:600;line-height:1.35}
+  @keyframes badShake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+  @media (prefers-reduced-motion:reduce){select.bad,input.bad{animation:none}}
   .hide{display:none!important}
   .stat{display:flex;align-items:center;gap:12px}
   .bar{flex:1;height:8px;border-radius:99px;background:var(--bg2);overflow:hidden}

@@ -13,6 +13,13 @@ function loadLog(more){
   }).catch(function(){ $('logList').innerHTML = '<div class="empty">Logbuch konnte nicht geladen werden.</div>'; })
     .then(function(){ logLoading = false; });
 }
+// Fehlversuche im Spielerformular (log_form_fail): Code → Klartext
+var FAIL_TXT = { NEWNAME:'Name fehlt oder ungültig', EXISTS:'Name steht schon in der Liste', NAME:'kein Name ausgewählt', POWER:'Kampfkraft unlesbar', TREQ:'Truppentyp oder Kampfkraft fehlt',
+  SQUAD:'Truppentyp und Kampfkraft passen nicht zusammen', HERO:'Heldenkraft fehlt', GSTAGE:'Gorilla-Stufe fehlt', GORILLA:'Gorilla-Level fehlt', GPOWER:'Gorilla-Kraft fehlt oder unlesbar',
+  EMAIL:'E-Mail ungültig', EMAIL_REQ:'E-Mail fehlt', PINLEN:'PIN zu kurz/lang', PIN_MISMATCH:'PINs stimmen nicht überein', LOGIN:'nicht angemeldet',
+  SRV_EXISTS:'Server: Name existiert schon', SRV_NEWNAME:'Server: Name ungültig', SRV_RATE:'Server: zu viele Neuanmeldungen gerade', SRV_PIN:'Server: alte PIN passt nicht (Rückkehrer)',
+  SRV_PINLEN:'Server: PIN zu kurz/lang', SRV_EMAIL_RETURN:'Server: E-Mail passt nicht (Rückkehrer)', SRV_EMAIL_TAKEN:'Server: E-Mail schon vergeben', SRV_EMAIL:'Server: E-Mail ungültig',
+  SRV_LOGIN:'Server: Anmeldung abgelaufen', SRV_NETWORK:'keine Verbindung zum Server', SRV_UNKNOWN:'unbekannter Fehler beim Speichern' };
 function who(n){ return n ? '<a data-name="' + esc(n) + '">' + esc(n) + '</a>' : ''; }
 function logText(r){
   var d = r.details, a = r.action;
@@ -27,6 +34,8 @@ function logText(r){
     return { tag:'', label:'Gespeichert', text: who(r.target) + ' hat gespeichert – ohne Änderung', sub: (d.email_changed ? 'E-Mail geändert · ' : '') + 'Gesamt ' + fmt(d.total_new) + ' M' };
   }
   if (a === 'self_join') return { tag:'adm', label:'Beitritt', text: who(r.target) + (d.returned ? ' ist zurück und hat sich selbst wieder eingetragen' : ' hat sich selbst neu eingetragen'), sub: 'Rang ' + (d.rank || 'R1') + ' · bei Bedarf im Tab Mitglieder anpassen' };
+  if (a === 'form_fail') return { tag:'warn', label:'Fehlversuch', text: (r.target ? esc(r.target) : 'Jemand ohne Namen') + (d.new ? ' wollte sich neu eintragen' : ' wollte speichern') + ' – ' + esc(FAIL_TXT[String(d.code || '').replace(/:T\d$/, '')] || d.code || '?') + ((String(d.code || '').match(/:T(\d)$/) || [])[1] ? ' (T' + String(d.code).match(/:T(\d)$/)[1] + ')' : ''),
+    sub: 'nicht gespeichert' + (d.app ? ' · Android-App' : ' · Browser') + (d.lang ? ' · ' + esc(d.lang) : '') };
   if (a === 'unsub') return { tag:'warn', label:'Abgemeldet', text: who(r.target) + ' hat sich von der Mail-Erinnerung abgemeldet', sub: '' };
   if (a === 'avatar_fail') return { tag:'warn', label:'Avatar', text: 'Falsche E-Mail beim Avatar-Ändern für ' + (r.target || ''), sub: 'nach 5 Fehlversuchen pro Stunde gesperrt' };
   if (a === 'avatar') return { tag: d.what === 'admin_remove' ? 'warn' : '', label:'Avatar', text: d.what === 'admin_remove' ? who(r.actor) + ' hat den Avatar von ' + (r.target || '') + ' entfernt' : who(r.actor) + (d.what === 'remove' ? ' hat seinen Avatar entfernt' : ' hat einen neuen Avatar hochgeladen'), sub: '' };
@@ -75,6 +84,7 @@ function logMatch(r){
   if (f === 'admin' && !(a.indexOf('admin_') === 0 && a !== 'admin_login')) return false;
   if (f === 'login' && a !== 'admin_login') return false;
   if (f === 'join' && a !== 'self_join') return false;
+  if (f === 'fail' && a !== 'form_fail') return false;
   if (f === 'unsub' && a !== 'unsub') return false;
   if (f === 'reminder' && a !== 'reminder_sent') return false;
   if (q && ((r.actor || '') + ' ' + (r.target || '') + ' ' + JSON.stringify(r.details)).toLowerCase().indexOf(q) < 0) return false;
@@ -91,6 +101,7 @@ function renderLog(){
   if (view === 'last') {
     var seen = {}, list = [];
     rows.forEach(function(r){
+      if (r.action === 'form_fail') return; // Fehlversuche zählen nicht als „letzte Aktion“
       var person = (r.action === 'save' || r.action === 'unsub') ? r.target : r.actor;
       if (!person || seen[person]) return; seen[person] = 1; list.push(r);
     });
