@@ -59,8 +59,17 @@ function logText(r){
   if (a === 'reminder_sent') return { tag:'', label:'System', text: 'Wöchentliche Erinnerungs-Mail verschickt', sub: (d.count !== undefined ? d.count + ' Empfänger' : '') + (d.errors ? ' · ' + d.errors + ' Fehler' : '') };
   return { tag:'', label: a, text: esc(r.actor || '') + ' ' + esc(r.target || ''), sub: '' };
 }
+// eigene Aktionen: alles, was unter dem eigenen Admin-Namen oder dem eigenen Spielernamen geloggt ist
+function logOwnNames(){ return [ACTOR, ls('skws_name')].filter(Boolean).map(function(x){ return String(x).trim().toLowerCase(); }); }
+function logIsOwn(r){ var a = String(r.actor || '').trim().toLowerCase(); return !!a && logOwnNames().indexOf(a) >= 0; }
+function logOwnUi(){
+  var c = $('logHideOwn'), n = logOwnNames(); if (!c) return;
+  c.disabled = !n.length; if (!n.length) c.checked = false;
+  $('logHideOwnTxt').textContent = n.length ? 'Eigene Aktionen ausblenden (' + (ACTOR || ls('skws_name')) + ')' : 'Eigene Aktionen ausblenden – dazu beim Anmelden im Admin-Bereich deinen Namen eintragen';
+}
 function logMatch(r){
   var f = $('logFilter').value, q = $('logSearch').value.trim().toLowerCase(), a = r.action;
+  if ($('logHideOwn') && $('logHideOwn').checked && logIsOwn(r)) return false;
   if (f === 'save' && a !== 'save') return false;
   if (f === 'changed' && !(a === 'save' && r.details.changed)) return false;
   if (f === 'admin' && !(a.indexOf('admin_') === 0 && a !== 'admin_login')) return false;
@@ -76,6 +85,7 @@ function dayLabel(t){
   return k === today ? 'Heute' : k === yest ? 'Gestern' : new Date(t).toLocaleDateString('de-DE', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
 }
 function renderLog(){
+  logOwnUi();
   if (!LOG) return;
   var view = $('logView').value, rows = LOG.filter(logMatch), h = '';
   if (view === 'last') {

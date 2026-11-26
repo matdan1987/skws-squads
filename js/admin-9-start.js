@@ -87,6 +87,9 @@ $('plAkte').addEventListener('click', function(e){
 $('selSearch').addEventListener('input', renderExport);
 ['logView','logFilter'].forEach(function(id){ $(id).addEventListener('change', renderLog); });
 $('logSearch').addEventListener('input', renderLog);
+// „Eigene Aktionen ausblenden“ bleibt auf diesem Gerät gemerkt
+try { $('logHideOwn').checked = localStorage.getItem('skws_admin_log_hideown') === '1'; } catch(e){}
+$('logHideOwn').addEventListener('change', function(){ try { localStorage.setItem('skws_admin_log_hideown', this.checked ? '1' : '0'); } catch(e){} renderLog(); });
 $('logMore').addEventListener('click', function(){ loadLog(true); });
 $('logList').addEventListener('click', function(e){
   var a = e.target.closest('a[data-name]'); if (!a) return;
