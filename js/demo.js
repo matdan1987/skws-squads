@@ -108,7 +108,7 @@
     db.help.push({ id: ++db.id, name: 'Juno', kind: 'ask', body: 'Welche Helden lohnen sich am Anfang für Panzer am meisten?', t: iso(NOW - DAY / 2), done: null, replies: [{ id: ++db.id, name: 'Orion', body: 'Schau dir die Kombination aus dem Allianz-Guide an – ich erklär’s dir gern im Chat.', t: iso(NOW - DAY / 3) }] });
     db.help.push({ id: ++db.id, name: 'Atlas', kind: 'team', body: 'Suche 2 Leute für Rallyes auf Level-8-Zombies heute ab 21 Uhr.', t: iso(NOW - DAY / 5), done: null, replies: [] });
     db.help.push({ id: ++db.id, name: 'Nova', kind: 'tip', body: 'Vor dem Wüstensturm die Lazarett-Truppen abholen – das spart später viel Zeit.', t: iso(NOW - 2 * DAY), done: iso(NOW - DAY), replies: [] });
-    db.style.Orion = { frame: 'gold', header: 'aurora', bg: 'stars', show: ['a:ds', 'a:bees'], header_img: null, bg_img: null };
+    db.style.Orion = { frame: 'gold', header: 'aurora', bg: 'stars', anim: 'sparkle', show: ['a:ds', 'a:bees'], header_img: null, bg_img: null };
     db.style.Nova = { frame: 'legend', header: 'leader', bg: 'nebula', show: [], header_img: null, bg_img: null };
     db.wallet[ME] = { coins: 140, xp: 160, streak: 4, best: 6, days: 12, last: null }; db.wallet.Orion = { coins: 20, xp: 420, streak: 9, best: 12, days: 31, last: null }; db.wallet.Nova = { coins: 300, xp: 900, streak: 2, best: 20, days: 64, last: null };
     // Umfragen
@@ -127,7 +127,7 @@
     return db;
   }
   function log(db, actor, action, target, details, ago){ db.log.unshift({ id: ++db.id, at: iso(Date.now() - (ago || 0) * MIN), actor: actor, action: action, target: target || null, details: details || {} }); }
-  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 9) { DB = makeDB(); DB.v = 9; }
+  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 10) { DB = makeDB(); DB.v = 10; }
   function save(){ try { oS.call(SS, 'skws_demo_db', JSON.stringify(DB)); } catch(e){} }
   save();
 
@@ -281,14 +281,14 @@
     wallet_me: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; return { ok: true, all: n === 'xX Meister Proper Xx', w: DB.wallet[n] || null, owned: DB.owned[n] || [] }; },
     wallet_pub: function(){ var o = {}; Object.keys(DB.wallet).forEach(function(n){ o[n] = { xp: DB.wallet[n].xp, days: DB.wallet[n].days, best: DB.wallet[n].best }; }); return o; },
     admin_wallet: function(b){ var w = DB.wallet[b.p_name] = DB.wallet[b.p_name] || { coins: 0, xp: 0, streak: 0, best: 0, days: 0, last: null }; w.coins = Math.max(0, w.coins + (+b.p_coins || 0)); return { ok: true, coins: w.coins }; },
-    shop_buy: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var P = { 'frame:neon':100,'frame:emerald':150,'frame:sakura':200,'frame:storm':300,'frame:cosmic':400,'header:cherry':150,'header:cyber':200,'header:volcano':250,'header:arctic':250,'header:skyline':350,'bg:snow':120,'bg:matrix':180,'bg:embers':220,'bg:circuits':300 }[b.p_item];
+    shop_buy: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var P = { 'frame:neon':100,'frame:emerald':150,'frame:sakura':200,'frame:storm':300,'frame:cosmic':400,'header:cherry':150,'header:cyber':200,'header:volcano':250,'header:arctic':250,'header:skyline':350,'bg:snow':120,'bg:matrix':180,'bg:embers':220,'bg:circuits':300,'anim:pulse':150,'anim:sparkle':200,'anim:snow':200,'anim:petals':250,'anim:embers':250,'anim:aurora':300,'anim:spin':350 }[b.p_item];
       if (!P) throw new Error('ERR_ITEM'); var w = DB.wallet[n] = DB.wallet[n] || { coins: 0, xp: 0, streak: 0, best: 0, days: 0, last: null }; if (w.coins < P) throw new Error('ERR_COINS');
       w.coins -= P; (DB.owned[n] = DB.owned[n] || []).push(b.p_item); return { ok: true, coins: w.coins }; },
-    style_get: function(){ var o = {}; Object.keys(DB.style).forEach(function(n){ var x = DB.style[n]; o[n] = { frame: x.frame, header: x.header, bg: x.bg, show: x.show || [], hi: !!x.header_img, bi: !!x.bg_img }; }); return o; },
+    style_get: function(){ var o = {}; Object.keys(DB.style).forEach(function(n){ var x = DB.style[n]; o[n] = { frame: x.frame, header: x.header, bg: x.bg, anim: x.anim || null, show: x.show || [], hi: !!x.header_img, bi: !!x.bg_img }; }); return o; },
     style_img: function(b){ var x = DB.style[b.p_name]; return x ? (b.p_kind === 'header' ? x.header_img : x.bg_img) || null : null; },
     style_assets: function(){ return DB.sassets; },
     style_set: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var d = b.p_data || {}; if ((d.frame === 'legend' || d.header === 'leader') && level(n) !== 'lead') throw new Error('ERR_LOCKED');
-      var x = DB.style[n] = DB.style[n] || {}; x.frame = d.frame; x.header = d.header; x.bg = d.bg; x.show = (d.show || []).slice(0, 3); return { ok: true }; },
+      var x = DB.style[n] = DB.style[n] || {}; x.frame = d.frame; x.header = d.header; x.bg = d.bg; x.anim = d.anim || null; x.show = (d.show || []).slice(0, 3); return { ok: true }; },
     style_upload: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var x = DB.style[n] = DB.style[n] || {};
       if (b.p_kind === 'header') { x.header_img = b.p_data; x.header = b.p_data ? 'own' : (x.header === 'own' ? null : x.header); } else { x.bg_img = b.p_data; x.bg = b.p_data ? 'own' : (x.bg === 'own' ? null : x.bg); } return { ok: true }; },
     admin_style: function(b){ var d = b.p_data || {};
