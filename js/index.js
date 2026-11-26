@@ -373,7 +373,7 @@
 
   /* ---------- Ruhmeshalle (nur Positives) ---------- */
   function renderHof(){
-    var card = $('hofCard'); if (!PROF_STATS) { if (!PROF_BUSY) { PROF_BUSY = true; rpc('profile_stats').then(function(r){ PROF_STATS = r || {}; }).catch(function(){ PROF_STATS = {}; }).then(function(){ PROF_BUSY = false; renderHof(); }); } return; }
+    var card = $('hofCard'); if (!PROF_STATS) { if (!PROF_BUSY) { PROF_BUSY = true; rpc('profile_stats').then(function(r){ PROF_STATS = r || {}; mergePub(); }).catch(function(){ PROF_STATS = {}; }).then(function(){ PROF_BUSY = false; renderHof(); }); } return; }
     var T = HOF_I18N[LANG] || HOF_I18N.en, S = PROF_STATS, names = Object.keys(S), box = $('hofBox'); box.innerHTML = '';
     $('hofTitle').textContent = T.hof;
     function top(f, min){ return names.map(function(n){ return { n: n, v: f(S[n] || {}) }; }).filter(function(x){ return x.v > (min || 0); }).sort(function(a, b){ return b.v - a.v || a.n.localeCompare(b.n); }).slice(0, 5); }
@@ -775,8 +775,8 @@
           send.disabled = true;
           rpc('gift_send', { p_token: s.tok, p_to: n, p_kind: chosen, p_note: note.value }).then(function(r){
             if (r && r.err === 'ERR_SESSION') { Funk.expired(); return; }
-            if (!r || !r.ok) { send.disabled = false; m.textContent = (G.err[r && r.err] || G.err.ERR) + (r && r.left !== undefined ? ' · ' + G.left.replace('{n}', r.left) : ''); m.className = 'msg err'; return; }
-            GIFT_PICK = null; GIFT_MSG = G.sent + ' ' + G.left.replace('{n}', r.left); delete PROF_STK[n]; loadProfile();
+            if (!r || !r.ok) { send.disabled = false; m.textContent = (G.err[r && r.err] || G.err.ERR) + (r && r.left !== undefined && r.left < 999 ? ' · ' + G.left.replace('{n}', r.left) : ''); m.className = 'msg err'; return; }
+            GIFT_PICK = null; GIFT_MSG = G.sent + ' ' + (r.left >= 999 ? G.unl : G.left.replace('{n}', r.left)); delete PROF_STK[n]; loadProfile();
           }, function(){ send.disabled = false; m.textContent = G.err.ERR; m.className = 'msg err'; });
         });
         var row = el('div', 'btnrow'); row.appendChild(send); var cn = el('button', 'ghost', G.cancel); cn.type = 'button'; cn.addEventListener('click', function(){ GIFT_PICK = null; renderProfile(); }); row.appendChild(cn);
@@ -790,7 +790,9 @@
   function openProfile(n){ PROF_VIEW = n === $('name').value ? null : n; showTab('profile'); window.scrollTo(0, 0); }
 
   /* ---------- Profil: Bienchen, Teufelchen, Erfolge ---------- */
-  var PROF_STATS = null, PROF_STK = {}, PROF_BUSY = false;
+  var PROF_STATS = null, PROF_STK = {}, PROF_BUSY = false, WALLET_PUB = null;
+  // Anmeldetage (Taler-Konto) in die Profil-Statistik übernehmen – für den Erfolg „Stammgast“
+  function mergePub(){ if (!PROF_STATS || !WALLET_PUB) return; Object.keys(WALLET_PUB).forEach(function(n){ if (PROF_STATS[n]) PROF_STATS[n].ld = WALLET_PUB[n].days || 0; }); }
   var BEE_T = [0, 1, 3, 6, 10, 15], DEV_T = [0, 1, 2, 4, 6];
   var ACH = [
     { id:'melder', ic:'📝', t:[3, 10, 25], v:function(s){ return s.hn || 0; } },
@@ -806,7 +808,8 @@
     { id:'loyal', ic:'🛡️', t:[30, 90, 365], v:function(s){ var d = s.jd || s.fe; return d ? Math.floor((Date.now() - new Date(d)) / 86400000) : 0; } },
     { id:'mentor', ic:'🎓', t:[1], v:function(s){ return s.role === 'mentor' || s.role === 'r4' ? 1 : 0; } },
     { id:'clean', ic:'😇', t:[1], v:function(s){ var d = s.jd || s.fe; return !s.d && d && (Date.now() - new Date(d)) >= 30 * 86400000 ? 1 : 0; } },
-    { id:'redeemed', ic:'🌅', t:[1], v:function(s){ return s.d > 0 && !s.d90 ? 1 : 0; } }
+    { id:'redeemed', ic:'🌅', t:[1], v:function(s){ return s.d > 0 && !s.d90 ? 1 : 0; } },
+    { id:'login', ic:'📅', t:[7, 30, 100], v:function(s){ return s.ld || 0; } }
   ];
   function avUploader(n, AT){
     var w = document.createElement('div'); w.className = 'avup';
@@ -1079,14 +1082,14 @@
     setupLinks();
     Funk.init({ data: function(){ return DATA; }, lang: function(){ return LANG; }, myName: function(){ return $('name').value; },
       avEl: avEl, loadAvatars: loadAvatars, openProfile: openProfile,
-      onSettled: function(c){ if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }); },
+      onSettled: function(c){ if (window.Stil && Stil.ready()) Stil.claim(); if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }); },
       onNews: function(c){ if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }, true); },
-      onAuth: function(){ if (window.Mehr) Mehr.reset(); MER_FOR = null; GRP = null; GRP_FOR = null; loadMerits(); renderAuth(); renderEv(); loadClaims(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
+      onAuth: function(){ if (window.Mehr) Mehr.reset(); if (window.Stil && Stil.ready()) { Stil.loadWallet(); Stil.claim(); } MER_FOR = null; GRP = null; GRP_FOR = null; loadMerits(); renderAuth(); renderEv(); loadClaims(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
     if (window.Umfragen) Umfragen.init({ lang: function(){ return LANG; }, tok: tok, me: function(){ var n = $('name').value; return n && authed(n) ? n : null; },
       changed: evLabels, expired: function(){ Funk.expired(); } });
     if (window.Mehr) Mehr.init({ lang: function(){ return LANG; }, data: function(){ return DATA; }, sel: function(){ return $('name').value; }, tzWhen: tzWhen, openProfile: openProfile,
       reProfile: function(){ if (!$('profileView').classList.contains('hide')) renderProfile(); }, reload: refreshShared });
-    if (window.Stil) Stil.init({ lang: function(){ return LANG; }, data: function(){ return DATA; },
+    if (window.Stil) Stil.init({ lang: function(){ return LANG; }, data: function(){ return DATA; }, pub: function(p){ WALLET_PUB = p; mergePub(); },
       reProfile: function(){ if (!$('profileView').classList.contains('hide')) renderProfile(); },
       stats: function(n){ var st = (PROF_STATS && PROF_STATS[n]) || {}, d = st.jd || st.fe;
         return { ev: (st.pds || 0) + (st.pcs || 0), ds: st.pds || 0, cs: st.pcs || 0, bees: st.b || 0, days: d ? Math.floor((Date.now() - new Date(d)) / 86400000) : 0,

@@ -247,7 +247,7 @@ var Funk = (function(){
         req.then(function(r){
           sb.disabled = false;
           if (!r.ok) { m.textContent = gift ? ((G.err && (G.err[r.err] || G.err.ERR)) || errText(r)) : errText(r); m.className = 'msg err'; return; }
-          S.compose = null; S.msg = gift ? G.sent + (r.left !== undefined ? ' ' + G.left.replace('{n}', r.left) : '') : L.sent; loadInbox();
+          S.compose = null; S.msg = gift ? G.sent + (r.left !== undefined ? ' ' + (r.left >= 999 ? G.unl : G.left.replace('{n}', r.left)) : '') : L.sent; loadInbox();
         });
       });
       row.appendChild(sb); row.appendChild(btn('ghost', L.cancel, function(){ S.compose = null; render(); }));

@@ -41,7 +41,7 @@
                'Raven','Ember','Pixel','Comet','Nebula','Quasar','Titan','Aurora','Phoenix','Draco','Solara','Luna','Onyx','Cobalt','Indigo','Saffron'];
   function makeDB(){
     var TYPES = ['tank','tank','tank','aircraft','missile','mixed'], db = { id: 1000, members: [], entries: {}, history: [], rounds: [], ds: null, cs: null, merits: [], meritcfg: null, evcfg: {},
-      msgs: [], shouts: [], gifts: [], badges: [], claimEv: [], seasons: [], notes: [], polls: [], pvotes: [], kv: {}, pstate: {}, style: {}, sassets: [], absences: [], cal: [], vs: [], help: [], log: [], avatars: {}, pins: {}, mg: null };
+      msgs: [], shouts: [], gifts: [], badges: [], claimEv: [], seasons: [], notes: [], polls: [], pvotes: [], kv: {}, pstate: {}, style: {}, sassets: [], wallet: {}, owned: {}, absences: [], cal: [], vs: [], help: [], log: [], avatars: {}, pins: {}, mg: null };
     NAMES.forEach(function(n, i){
       var rank = i === 0 ? 'R5' : i < 5 ? 'R4' : ['R3','R3','R2','R1','R2','R3','R1'][i % 7];
       var aj = i % 5 === 3 ? null : iso(NOW - (20 + Math.floor(rnd() * 600)) * DAY).slice(0, 10);
@@ -110,6 +110,7 @@
     db.help.push({ id: ++db.id, name: 'Nova', kind: 'tip', body: 'Vor dem Wüstensturm die Lazarett-Truppen abholen – das spart später viel Zeit.', t: iso(NOW - 2 * DAY), done: iso(NOW - DAY), replies: [] });
     db.style.Orion = { frame: 'gold', header: 'aurora', bg: 'stars', show: ['a:ds', 'a:bees'], header_img: null, bg_img: null };
     db.style.Nova = { frame: 'legend', header: 'leader', bg: 'nebula', show: [], header_img: null, bg_img: null };
+    db.wallet[ME] = { coins: 140, xp: 160, streak: 4, best: 6, days: 12, last: null }; db.wallet.Orion = { coins: 20, xp: 420, streak: 9, best: 12, days: 31, last: null }; db.wallet.Nova = { coins: 300, xp: 900, streak: 2, best: 20, days: 64, last: null };
     // Umfragen
     function poll(o){ o.id = ++db.id; o.at = iso(NOW - (o.ago || 1) * DAY); delete o.ago; db.polls.push(o); return o.id; }
     var p1 = poll({ q: 'Welches Event sollen wir als Nächstes gemeinsam üben?', opts: ['Wüstensturm', 'Schluchtsturm', 'Zombie-Belagerung'], multi: false, other: true, results: 'live', anon: false, ranks: null, grp: null, closes_at: iso(NOW + 3 * DAY), closed_at: null, by: 'Nova', ago: 1 });
@@ -126,7 +127,7 @@
     return db;
   }
   function log(db, actor, action, target, details, ago){ db.log.unshift({ id: ++db.id, at: iso(Date.now() - (ago || 0) * MIN), actor: actor, action: action, target: target || null, details: details || {} }); }
-  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 8) { DB = makeDB(); DB.v = 8; }
+  var DB = memLoad('skws_demo_db'); if (!DB || DB.v !== 9) { DB = makeDB(); DB.v = 9; }
   function save(){ try { oS.call(SS, 'skws_demo_db', JSON.stringify(DB)); } catch(e){} }
   save();
 
@@ -160,7 +161,7 @@
   function latest(kind){ return DB.rounds.filter(function(r){ return r.kind === kind; }).sort(function(a, b){ return b.id - a.id; })[0]; }
   function played(n, kind){ return DB.rounds.filter(function(r){ return r.kind === kind && !r.open && /S$/.test((r.lineup || {})[n] || '') && (r.absent || []).indexOf(n) < 0; }); }
   function err(code){ throw new Error(code); }
-  function giftsLeft(n){ return 5 - DB.gifts.filter(function(g){ return g.from === n && Date.now() - new Date(g.t) < DAY; }).length; }
+  function giftsLeft(n){ if (level(n) === 'lead') return 999; return 5 - DB.gifts.filter(function(g){ return g.from === n && Date.now() - new Date(g.t) < DAY; }).length; }
 
   /* ---------- Antworten auf alle Anfragen ---------- */
   var H = {
@@ -273,6 +274,16 @@
       if (b.p_action === 'delete') { DB.help = DB.help.filter(function(p){ return !(p.id === b.p_id && (p.name === n || lead)); }); return { ok: true }; }
       DB.help.forEach(function(p){ if (p.id === b.p_id && (p.name === n || lead)) p.done = b.p_action === 'done' ? iso(Date.now()) : null; }); return { ok: true }; },
     reminder_info: function(){ return { polls: [], away: false }; },
+    daily_claim: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var w = DB.wallet[n] = DB.wallet[n] || { coins: 0, xp: 0, streak: 0, best: 0, days: 0, last: null }, t = today();
+      if (w.last === t) return { ok: true, claimed: false, coins: w.coins, xp: w.xp, streak: w.streak, days: w.days };
+      w.streak = w.streak + 1; var c = 10 + Math.min(w.streak - 1, 10) * 2 + (w.streak % 7 === 0 ? 25 : 0), x = 10 + Math.min(w.streak - 1, 10);
+      w.coins += c; w.xp += x; w.days++; w.best = Math.max(w.best, w.streak); w.last = t; return { ok: true, claimed: true, gain: c, gainxp: x, coins: w.coins, xp: w.xp, streak: w.streak, days: w.days }; },
+    wallet_me: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; return { ok: true, all: n === 'xX Meister Proper Xx', w: DB.wallet[n] || null, owned: DB.owned[n] || [] }; },
+    wallet_pub: function(){ var o = {}; Object.keys(DB.wallet).forEach(function(n){ o[n] = { xp: DB.wallet[n].xp, days: DB.wallet[n].days, best: DB.wallet[n].best }; }); return o; },
+    admin_wallet: function(b){ var w = DB.wallet[b.p_name] = DB.wallet[b.p_name] || { coins: 0, xp: 0, streak: 0, best: 0, days: 0, last: null }; w.coins = Math.max(0, w.coins + (+b.p_coins || 0)); return { ok: true, coins: w.coins }; },
+    shop_buy: function(b){ var n = tokName(b.p_token); if (!n) return { ok: false, err: 'ERR_SESSION' }; var P = { 'frame:neon':100,'frame:emerald':150,'frame:sakura':200,'frame:storm':300,'frame:cosmic':400,'header:cherry':150,'header:cyber':200,'header:volcano':250,'header:arctic':250,'header:skyline':350,'bg:snow':120,'bg:matrix':180,'bg:embers':220,'bg:circuits':300 }[b.p_item];
+      if (!P) throw new Error('ERR_ITEM'); var w = DB.wallet[n] = DB.wallet[n] || { coins: 0, xp: 0, streak: 0, best: 0, days: 0, last: null }; if (w.coins < P) throw new Error('ERR_COINS');
+      w.coins -= P; (DB.owned[n] = DB.owned[n] || []).push(b.p_item); return { ok: true, coins: w.coins }; },
     style_get: function(){ var o = {}; Object.keys(DB.style).forEach(function(n){ var x = DB.style[n]; o[n] = { frame: x.frame, header: x.header, bg: x.bg, show: x.show || [], hi: !!x.header_img, bi: !!x.bg_img }; }); return o; },
     style_img: function(b){ var x = DB.style[b.p_name]; return x ? (b.p_kind === 'header' ? x.header_img : x.bg_img) || null : null; },
     style_assets: function(){ return DB.sassets; },
