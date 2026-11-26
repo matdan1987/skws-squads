@@ -23,8 +23,10 @@ var Neu = (function(){
   function run(ctx, again){
     if (!ctx.tok || !ctx.name || (DONE[ctx.tok] && !again)) return;
     DONE[ctx.tok] = true;
-    var key = 'skws_neu_' + ctx.name, st = null;
-    try { st = JSON.parse(ls(key) || 'null'); } catch(e){}
+    var key = 'skws_neu_' + ctx.name, st = null, cen = window.PState ? PState.get('neu', key + '_all') : null;
+    // zentral gespeichert (alle Geräte gleich); ältere Stände vom Gerät werden übernommen
+    if (cen && cen.st) st = cen.st; else try { st = JSON.parse(ls(key) || 'null'); } catch(e){}
+    function keep(k, v){ ls(k, JSON.stringify(v)); if (!window.PState) return; var c = PState.get('neu', key + '_all') || {}; if (k === key) c.st = v; else c.last = v; PState.set('neu', c, key + '_all'); }
     var first = !st; st = st || { claims:{}, team:{} };
     var since = first ? Date.now() - 7 * 86400000 : new Date(st.t).getTime();
     function isNew(t){ return t && new Date(t).getTime() > since; }
@@ -84,14 +86,14 @@ var Neu = (function(){
       if (nr) add('💬', L.shout, 'funk');
       var sub = first ? L.first : f(L.since, { d: new Date(since).toLocaleString(ctx.lang, { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) });
       if (!items.length) {
-        ls(key, JSON.stringify(save)); if (!again) return;
-        var last = null; try { last = JSON.parse(ls(key + '_last') || 'null'); } catch(e){}
+        keep(key, save); if (!again) return;
+        var last = (cen && cen.last) || null; if (!last) try { last = JSON.parse(ls(key + '_last') || 'null'); } catch(e){}
         show(last ? last.items : [], L, L.none + (last ? ' ' + f(L.last, { d: new Date(last.t).toLocaleString(ctx.lang, { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) }) : ''), function(to){ if (to) ctx.go(to); });
         return;
       }
-      ls(key + '_last', JSON.stringify({ t: save.t, items: items }));
+      keep(key + '_last', { t: save.t, items: items });
       show(items, L, sub, function(to){
-        ls(key, JSON.stringify(save)); if (to) ctx.go(to);
+        keep(key, save); if (to) ctx.go(to);
       });
     });
   }

@@ -21,6 +21,45 @@ function rpc(fn, body){
   return fetch(SB_URL + fn, { method:'POST', headers:{ apikey: SB_KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body || {}) })
     .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok) throw new Error((j && j.message) || 'ERR'); return j; }); });
 }
+// ---------- Zentrale Ablage (Datenbank „app_kv“): Wüstensturm-/Schluchtsturm-Planung und Kartenbild ----------
+// Fällt nur auf das Gerät zurück, solange die Datenbank-Erweiterung fehlt.
+var KV = {}, KV_OK = false, KV_INFO = {}, KV_T = {}, KV_PEND = {};
+var KV_LOCAL = { ds_state: 'skws_ds', cs_state: 'skws_cs' };
+function kvLoad(){
+  if (Object.keys(KV_PEND).length) return Promise.resolve();          // eigene Änderungen noch unterwegs: nicht überschreiben
+  return rpc('admin_kv', { p_pw: PW, p_action: 'get' }).then(function(r){
+    KV_OK = true; KV = {}; KV_INFO = r.items || {};
+    Object.keys(KV_INFO).forEach(function(k){ KV[k] = KV_INFO[k].data; });
+    kvMigrate();
+  }).catch(function(){ KV_OK = false; });
+}
+function kvLocal(key){ try { if (KV_LOCAL[key]) return JSON.parse(ls(KV_LOCAL[key]) || 'null'); if (key === 'ds_map') { var bg = ls('skws_ds_map'), pos = JSON.parse(ls('skws_ds_pos2') || 'null'); return bg || pos ? { bg: bg || null, pos: pos || null } : null; } } catch(e){} return null; }
+function kvGet(key){ return KV_OK ? (KV[key] === undefined ? null : KV[key]) : kvLocal(key); }
+function kvSend(key){
+  var val = KV[key]; delete KV_T[key];
+  return rpc('admin_kv', { p_pw: PW, p_action: 'set', p_key: key, p_data: val === undefined ? null : val, p_actor: ACTOR || null })
+    .then(function(){ delete KV_PEND[key]; KV_INFO[key] = { at: new Date().toISOString(), by: ACTOR || 'Admin' }; })
+    .catch(function(){ delete KV_PEND[key]; if (typeof toast === 'function') toast('Speichern in der Datenbank fehlgeschlagen – bitte Verbindung prüfen.', false); });
+}
+function kvSet(key, val, now){
+  if (!KV_OK) {                                                          // ohne Datenbank-Erweiterung wie bisher auf dem Gerät
+    if (KV_LOCAL[key]) ls(KV_LOCAL[key], val === null ? null : JSON.stringify(val));
+    else if (key === 'ds_map') { ls('skws_ds_map', val && val.bg || null); ls('skws_ds_pos2', val && val.pos ? JSON.stringify(val.pos) : null); }
+    return;
+  }
+  KV[key] = val; KV_PEND[key] = true; clearTimeout(KV_T[key]);
+  if (now) return kvSend(key);
+  KV_T[key] = setTimeout(function(){ kvSend(key); }, 500);
+}
+// alte Daten vom Gerät einmalig in die Datenbank übernehmen und danach vom Gerät löschen
+function kvMigrate(){
+  ['ds_state', 'cs_state', 'ds_map'].forEach(function(key){
+    var loc = kvLocal(key); if (!loc) return;
+    var done = function(){ if (KV_LOCAL[key]) ls(KV_LOCAL[key], null); else { ls('skws_ds_map', null); ls('skws_ds_pos2', null); } };
+    if (KV[key] === undefined || KV[key] === null) { KV[key] = loc; KV_PEND[key] = true; kvSend(key).then(done); } else done();
+  });
+}
+document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') Object.keys(KV_T).forEach(function(k){ clearTimeout(KV_T[k]); kvSend(k); }); });
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function fmt(n, d){ if (n === null || n === undefined || isNaN(n)) return '–'; return Number(n).toLocaleString('de-DE', {maximumFractionDigits: d === undefined ? 1 : d}); }
 function fmtM(n){ return n ? fmt(n) + ' M' : '–'; }

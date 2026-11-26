@@ -6,7 +6,7 @@
 <title>SKWS – Admin</title>
 <meta name="theme-color" content="#070b14">
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="css/admin.css?v=24">
+<link rel="stylesheet" href="css/admin.css?v=25">
 </head>
 <body>
 <div class="wrap">
@@ -45,11 +45,13 @@
       <button data-tab="mlist">Mitgliederliste</button>
       <button data-tab="pl">Spielerakte</button>
       <button data-tab="acc">Zugänge</button>
+      <button data-tab="akt">Aktivität</button>
       <button data-tab="ov" class="on">Übersicht</button>
       <button data-tab="mem">Trupps</button>
       <button data-tab="dev">Entwicklung</button>
       <button data-tab="hist">Verlauf</button>
       <button data-tab="exp">Export</button>
+      <button data-tab="vs">Allianz-Duell</button>
       <button data-tab="ds">Wüstensturm</button>
       <button data-tab="cs">Schluchtsturm</button>
       <button data-tab="arc">Archiv</button>
@@ -58,12 +60,14 @@
       <button data-tab="mer">Bonus/Malus</button>
       <button data-tab="bdg">Marken</button>
       <button data-tab="umf">Umfragen</button>
+      <button data-tab="kal">Kalender</button>
       <button data-tab="log">Logbuch</button>
       <button data-tab="adm">Datensicherung</button>
     </div>
 
     <!-- Mitgliederliste: alles, was einen Spieler betrifft, beginnt hier -->
     <section id="tab-mlist" class="hide">
+      <div id="absBox"></div>
       <div class="card">
         <h2>Mitglieder (<span id="mlCount">0</span>)</h2>
         <p class="small muted" style="margin:0 0 8px">Spieler antippen öffnet die Spielerakte. Dort änderst du alles an einem Spieler: Rang, Name, Allianzbeitritt, ausgeschieden, Avatar, PIN, Nachricht. Für viele auf einmal „Schnell-Bearbeiten“ einschalten: Rang und Tage in der Allianz direkt in der Liste.</p>
@@ -410,6 +414,9 @@
     </section>
 
     <section id="tab-umf" class="hide"></section>
+    <section id="tab-kal" class="hide"><div id="calAdm"></div></section>
+    <section id="tab-vs" class="hide"><div id="vsAdm"></div></section>
+    <section id="tab-akt" class="hide"><div class="card"><h2>Aktivität</h2><p class="small muted" style="margin-top:0">Wer war lange nicht mehr aktiv? So könnt ihr rechtzeitig nachfragen, bevor jemand still verschwindet. Abwesende (🏖️) sind gekennzeichnet.</p><div id="actBox"></div></div></section>
     <section id="tab-bdg" class="hide">
       <div class="card">
         <h2>Teilnehmermarken aus Events</h2>
@@ -575,26 +582,27 @@
   </div>
 </div>
 
-<script src="js/demo.js?v=7"></script>
-<script src="js/admin-0-sprache.js?v=27"></script>
+<script src="js/demo.js?v=9"></script>
+<script src="js/admin-0-sprache.js?v=28"></script>
 <script src="js/klapp.js?v=18"></script>
 <script src="js/zuschnitt.js?v=19"></script>
-<script src="js/admin-1-core.js?v=18"></script>
+<script src="js/admin-1-core.js?v=19"></script>
 <script src="js/admin-2-ansichten.js?v=18"></script>
 <script src="js/plan-bild.js?v=2"></script>
-<script src="js/admin-3-wuestensturm.js?v=26"></script>
-<script src="js/admin-4-schluchtsturm.js?v=26"></script>
+<script src="js/admin-3-wuestensturm.js?v=27"></script>
+<script src="js/admin-4-schluchtsturm.js?v=27"></script>
 <script src="js/admin-5-logbuch.js?v=18"></script>
-<script src="js/admin-6-anmeldung.js?v=28"></script>
-<script src="js/admin-6b-ablauf.js?v=23"></script>
+<script src="js/admin-6-anmeldung.js?v=29"></script>
+<script src="js/admin-6b-ablauf.js?v=24"></script>
 <script src="js/admin-7-bonusmalus.js?v=18"></script>
 <script src="js/admin-8-mentoren.js?v=18"></script>
 <script src="js/admin-8b-funk.js?v=18"></script>
 <script src="js/admin-8c-zugaenge.js?v=18"></script>
 <script src="js/admin-8d-marken.js?v=18"></script>
 <script src="js/admin-8e-archiv.js?v=19"></script>
-<script src="js/admin-8f-mitglieder.js?v=21"></script>
+<script src="js/admin-8f-mitglieder.js?v=22"></script>
 <script src="js/admin-8g-umfragen.js?v=1"></script>
-<script src="js/admin-9-start.js?v=19"></script>
+<script src="js/admin-8h-mehr.js?v=1"></script>
+<script src="js/admin-9-start.js?v=20"></script>
 </body>
 </html>

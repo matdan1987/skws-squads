@@ -84,6 +84,9 @@
     document.title = DATA.alliance + ' · ' + t('title');
   }
 
+  // nach Änderungen (z. B. Abwesenheit) die gemeinsamen Daten neu holen, ohne die Seite neu aufzubauen
+  function refreshShared(){ rpc('get_init').then(function(res){ if (!DATA) return; DATA.away = res.away || null; DATA.cal = res.cal || null; DATA.ev = res.ev || DATA.ev; DATA.ds = res.ds || null; DATA.cs = res.cs || null;
+    if (!$('profileView').classList.contains('hide')) renderProfile(); if (!$('overviewView').classList.contains('hide')) renderOverview(); renderEv(); }).catch(function(){}); }
   /* ---------- Zeitzonen: Event-Zeiten gelten in deutscher Zeit, Spieler woanders sehen zusätzlich ihre Ortszeit ---------- */
   var TZ_REF = 'Europe/Berlin', TZ_WD = { mo:1, di:2, mi:3, 'do':4, fr:5, sa:6, so:0, mon:1, tue:2, wed:3, thu:4, fri:5, sat:6, sun:0 };
   function tzParts(d, tz){ var o = {}; new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', weekday: 'short' }).formatToParts(d).forEach(function(x){ o[x.type] = x.value; }); return o; }
@@ -257,12 +260,13 @@
     var open = n && ['ds','cs'].some(function(k){ var r = ev[k]; return r && r.open && !(r.signups && r.signups[n]); }) || (window.Umfragen && Umfragen.ready() && Umfragen.pending() > 0);
     $('tabEvents').textContent = X.evTab; if (open) { var d = document.createElement('span'); d.className = 'fk-badge'; d.textContent = '•'; $('tabEvents').appendChild(d); }
     $('evIntro').textContent = X.evIntro.replace('{tab}', t('form'));
-    var any = ['pollBox','evCards','claimCards'].some(function(id){ return $(id).children.length; }) || !$('dsCard').classList.contains('hide') || !$('csCard').classList.contains('hide');
+    var any = ['calBox','pollBox','evCards','claimCards'].some(function(id){ return $(id).children.length; }) || !$('dsCard').classList.contains('hide') || !$('csCard').classList.contains('hide');
     $('evEmptyTxt').textContent = n ? X.evEmpty : X.evPick.replace('{tab}', t('form'));
     $('evEmpty').classList.toggle('hide', any);
   }
   function renderEv(){
     renderEvCards();
+    if (window.Mehr && Mehr.ready()) Mehr.calCard($('calBox'));
     if (window.Umfragen && Umfragen.ready()) { var me = $('name').value; if (Umfragen.who() !== (me && authed(me) ? me : null)) Umfragen.load(); else Umfragen.render(); }
     evLabels();
   }
@@ -540,7 +544,7 @@
     var x = members.length - missing.length, y = members.length;
     $('statTxt').textContent = t('submitted', {x: x, y: y});
     $('ovHint').textContent = (AV_I18N[LANG] || AV_I18N.en).tapName;
-    if (!renderOverview.busy) renderHof();
+    if (!renderOverview.busy) { renderHof(); if (window.Mehr && Mehr.ready()) Mehr.vsOverview($('vsBox')); }
     $('statBar').style.width = (y ? Math.round(x / y * 100) : 0) + '%';
 
     var tb = $('ovBody'); tb.innerHTML = '';
@@ -550,7 +554,7 @@
       var td0 = document.createElement('td'); td0.textContent = r.rank; td0.className = 'typ';
       var td1 = document.createElement('td'), nm = document.createElement('div'); nm.className = 'ovname'; nm.appendChild(avEl(r.name, 44));
       var col = document.createElement('div'); col.className = 'ovcol'; nm.appendChild(col);
-      var ns = document.createElement('span'); ns.className = 'ovn'; ns.textContent = r.name; col.appendChild(ns); td1.appendChild(nm);
+      var ns = document.createElement('span'); ns.className = 'ovn'; ns.textContent = r.name + (DATA.away && DATA.away[r.name] && DATA.away[r.name][0].from <= new Date().toISOString().slice(0, 10) ? ' 🏖️' : ''); col.appendChild(ns); td1.appendChild(nm);
       nm.addEventListener('click', (function(x){ return function(){ openProfile(x); }; })(r.name));
       if (r.hero || r.gorilla) {
         var hs = document.createElement('div'); hs.className = 'typ';
@@ -599,7 +603,7 @@
     $('tabFunk').classList.toggle('on', which === 'funk');
     $('funkView').classList.toggle('hide', which !== 'funk');
     if (which === 'profile') loadProfile();
-    if (which === 'funk') Funk.show();
+    if (which === 'funk') { Funk.show(); if (window.Mehr && Mehr.ready()) Mehr.renderHelp(); }
   }
 
   /* ---------- Avatare ---------- */
@@ -864,7 +868,7 @@
     if (AV[n] && DATA.av && DATA.av[n]) { var pim = el('img'); pim.src = AV[n].d; pim.alt = ''; pav.appendChild(pim); pav.classList.add('zoom'); pav.addEventListener('click', function(){ avBig(n); }); }
     h.appendChild(pav);
     var hn = el('div'); hn.appendChild(el('b', '', n));
-    var sub = []; if (s.jd || s.fe) sub.push(T.since.replace('{d}', fmtD(s.jd || s.fe))); if (s.role) sub.push(T.role[s.role]);
+    var sub = []; if (s.jd || s.fe) sub.push(T.since.replace('{d}', fmtD(s.jd || s.fe))); if (s.role) sub.push(T.role[s.role]); if (window.Mehr && Mehr.ready() && Mehr.awayText(n)) sub.push(Mehr.awayText(n));
     hn.appendChild(el('div', 'hint', sub.join(' · '))); h.appendChild(hn); c.appendChild(h);
     // „Avatar ändern“ direkt unter Bild und Name
     if (own) { var avu = avUploader(n, AT); avu.classList.add('av-under'); c.appendChild(avu); }
@@ -887,6 +891,8 @@
       pmr.appendChild(pmb); c.appendChild(pmr);
     }
     box.appendChild(c);
+    // Erste Schritte (neue Mitglieder), Allianz-Duell, Entwicklung
+    if (window.Mehr && Mehr.ready()) [own ? Mehr.onbCard(n) : null, Mehr.vsCard(n), Mehr.devCard(n)].forEach(function(x){ if (x) box.appendChild(x); });
     // Auszeichnungen: Plaketten, Teilnehmermarken und Erfolge in einer Karte
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, aw = badgeCard(n);
     var all = Object.keys(PROF_STATS), got = 0; ACH.forEach(function(a){ if (achTier(a, s, e).t) got++; });
@@ -928,6 +934,7 @@
     sec.appendChild(info); var gl = el('div', 'sq-h'); gl.appendChild(el('label', 'l', '🎁 ' + G.title)); gl.appendChild(el('span', 'tag', gTot)); sec.appendChild(gl);
     fo.insertBefore(sec, fh.nextSibling); box.appendChild(fo);
     // Meine Mentorengruppe (nur im eigenen Profil nach Anmeldung) – unter den Auszeichnungen
+    if (own && window.Mehr && Mehr.ready()) { var ac = Mehr.awayCard(n); if (ac) box.appendChild(ac); }
     var gc = own ? groupCard(n, el) : null; if (gc) box.appendChild(gc);
     var nc = notesCard(n); if (nc) box.appendChild(nc);
   }
@@ -962,6 +969,7 @@
       var r = el('div', 'grp-row'), a = avEl(m.name, 36); a.style.cursor = 'pointer'; a.addEventListener('click', function(){ openProfile(m.name); }); r.appendChild(a);
       var tx = el('div', 'grp-tx'); var nm = el('b', '', m.name); nm.style.cursor = 'pointer'; nm.addEventListener('click', function(){ openProfile(m.name); }); tx.appendChild(nm);
       if (m.rank) tx.appendChild(el('span', 'grp-rk', ' ' + m.rank));
+      if (GRP.canEdit && window.Mehr && Mehr.ready()) tx.appendChild(Mehr.onbBadge(m.name));
       var bits = [], cls = [];
       bits.push(m.ok ? '✅ ' + X.grpOk : m.at ? '⏳ ' + X.grpOpen.replace('{d}', fmt(m.at)) : '❔ ' + X.grpUnk);
       var en = DATA.entries[m.name], d = en ? Math.floor((Date.now() - new Date(en.updated)) / 86400000) : null;
@@ -1068,9 +1076,11 @@
       avEl: avEl, loadAvatars: loadAvatars, openProfile: openProfile,
       onSettled: function(c){ if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }); },
       onNews: function(c){ if (window.Neu) Neu.run({ tok: c.tok, name: c.name, inbox: c.inbox, rooms: c.rooms, seen: c.seen, lang: LANG, data: DATA, go: neuGo }, true); },
-      onAuth: function(){ MER_FOR = null; GRP = null; GRP_FOR = null; loadMerits(); renderAuth(); renderEv(); loadClaims(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
+      onAuth: function(){ if (window.Mehr) Mehr.reset(); MER_FOR = null; GRP = null; GRP_FOR = null; loadMerits(); renderAuth(); renderEv(); loadClaims(); if (!$('profileView').classList.contains('hide')) renderProfile(); } });
     if (window.Umfragen) Umfragen.init({ lang: function(){ return LANG; }, tok: tok, me: function(){ var n = $('name').value; return n && authed(n) ? n : null; },
       changed: evLabels, expired: function(){ Funk.expired(); } });
+    if (window.Mehr) Mehr.init({ lang: function(){ return LANG; }, data: function(){ return DATA; }, sel: function(){ return $('name').value; }, tzWhen: tzWhen, openProfile: openProfile,
+      reProfile: function(){ if (!$('profileView').classList.contains('hide')) renderProfile(); }, reload: refreshShared });
     // Karten auf- und zuklappen: Profil, Übersicht, Funk und die Info-Karten auf „Eintragen“ (nicht das Eingabeformular)
     if (window.Klapp) Klapp.init({ key: 'skws_zu', ok: function(c){
       if (c.closest('#pollBox')) return false;
@@ -1098,7 +1108,7 @@
   }
   rpc('get_init')
     .then(function(res){
-      init({ alliance: ALLIANCE, members: res.members || [], leaders: res.leaders || [], entries: res.entries || {}, ds: res.ds || null, cs: res.cs || null, ev: res.ev || null, av: res.av || {},
+      init({ alliance: ALLIANCE, members: res.members || [], leaders: res.leaders || [], entries: res.entries || {}, ds: res.ds || null, cs: res.cs || null, ev: res.ev || null, av: res.av || {}, away: res.away || null, cal: res.cal || null,
              troops: ['tank','missile','aircraft','mixed'], squads: 4, langs: LANG_NAMES, i18n: I18N });
     })
     .catch(function(){ $('loadingTxt').textContent = 'Error – please reload / Fehler – bitte neu laden'; });

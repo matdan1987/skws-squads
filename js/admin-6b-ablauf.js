@@ -51,12 +51,14 @@ function ablRender(k){
   var box = $('abl_' + k);
   if (!box) { box = document.createElement('div'); box.className = 'card abl'; box.id = 'abl_' + k; sec.insertBefore(box, sec.firstChild); }
   var s = ablState(k), cur = 0; while (cur < 4 && s[cur].done) cur++;
+  var ki = typeof KV_INFO !== 'undefined' && KV_OK && KV_INFO[k + '_state'];
   box.innerHTML = '<div class="abl-top"><h2>🧭 So läuft eine Runde ab</h2><label class="small abl-tg"><input type="checkbox" data-ablhelp' + (ABL_HELP ? ' checked' : '') + '> Hilfetexte</label></div>' +
     '<ol class="abl-steps">' + s.map(function(x, i){
       var cls = i === cur ? 'now' : x.done ? 'done' : 'todo';
       return '<li class="' + cls + '" data-ablgo="' + i + '"><span class="abl-n">' + (x.done && i !== cur ? '✓' : i + 1) + '</span><div><b>' + x.t + '</b><small>' + x.info + '</small></div><span class="abl-go">›</span></li>';
     }).join('') + '</ol>' +
-    '<div class="abl-now"><b>Jetzt dran – Schritt ' + (cur + 1) + ':</b> ' + s[cur].now + ' <button class="mini" data-ablgo="' + cur + '">Zu Schritt ' + (cur + 1) + ' ›</button></div>';
+    '<div class="abl-now"><b>Jetzt dran – Schritt ' + (cur + 1) + ':</b> ' + s[cur].now + ' <button class="mini" data-ablgo="' + cur + '">Zu Schritt ' + (cur + 1) + ' ›</button></div>' +
+    (ki && ki.at ? '<div class="small muted" style="margin-top:6px">☁️ Planung zentral gespeichert – zuletzt bearbeitet ' + (ki.by ? 'von ' + esc(ki.by) + ' ' : '') + fmtDateTime(new Date(ki.at)) + '. Andere R4/R5 sehen denselben Stand.</div>' : '');
 }
 function ablGo(k, i){
   var C = ablCards(k), el = [C.ev, C.pick, C.tac, C.plan, C.ev][i]; if (!el) return;
