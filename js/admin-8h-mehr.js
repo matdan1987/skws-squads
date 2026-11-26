@@ -147,9 +147,8 @@ function styLoad(){
 function styShrink(file, kind, cb){
   var rd = new FileReader();
   rd.onload = function(){ var im = new Image(); im.onload = function(){
-    var W = kind === 'header' ? 1200 : 1080, H = kind === 'header' ? 400 : Math.round(1080 * im.height / im.width), sx = 0, sy = 0, sw = im.width, sh = im.height;
-    if (kind === 'header') { if (im.width / im.height > 3) { sw = im.height * 3; sx = (im.width - sw) / 2; } else { sh = im.width / 3; sy = (im.height - sh) / 2; } }
-    else if (H > 1600) { H = 1600; W = Math.round(1600 * im.width / im.height); }
+    var W = 1080, H = Math.round(1080 * im.height / im.width), sx = 0, sy = 0, sw = im.width, sh = im.height;
+      if (H > 1600) { H = 1600; W = Math.round(1600 * im.width / im.height); }
     var c = document.createElement('canvas'); c.width = W; c.height = H; c.getContext('2d').drawImage(im, sx, sy, sw, sh, 0, 0, W, H);
     var q = .82, u = c.toDataURL('image/jpeg', q); while (u.length > 380000 && q > .35) { q -= .08; u = c.toDataURL('image/jpeg', q); }
     cb(u.length <= 380000 ? u : null);
@@ -161,8 +160,8 @@ function styRender(){
   if (STY_LIB === false) { b.innerHTML = '<div class="empty">Die Datenbank-Erweiterung „profilstil“ fehlt noch.</div>'; return; }
   if (!STY_LIB) { b.innerHTML = '<div class="empty">Lädt …</div>'; return; }
   function th(u, wide){ return '<span class="sty-th' + (wide ? ' w' : '') + '" style="background-image:url(&quot;' + u + '&quot;)"></span>'; }
-  b.innerHTML = '<div class="card"><h2>Bilder für alle</h2><p class="small muted" style="margin-top:0">Diese Header- und Hintergrundbilder können alle Spieler unter „Profil gestalten“ auswählen. Header werden auf 3:1 zugeschnitten. Dazu gibt es eingebaute Designs; besondere schalten die Spieler durch Event-Teilnahmen, Bienchen, Treue oder Rang frei.</p>' +
-    '<div class="formrow"><div><label for="styKind">Art</label><select id="styKind"><option value="header">Header (breit, 3:1)</option><option value="bg">Hintergrund</option></select></div><div><label for="styLabel">Name</label><input id="styLabel" maxlength="40" placeholder="z. B. Allianz-Logo"></div></div>' +
+  b.innerHTML = '<div class="card"><h2>Bilder für alle</h2><p class="small muted" style="margin-top:0">Diese Header- und Hintergrundbilder können alle Spieler unter „Profil gestalten“ auswählen. Header füllen die ganze Profilkarte (oben ausgerichtet, nach unten abgedunkelt) – Hochformat oder quadratische Bilder passen am besten. Dazu gibt es eingebaute Designs; besondere schalten die Spieler durch Event-Teilnahmen, Bienchen, Treue oder Rang frei.</p>' +
+    '<div class="formrow"><div><label for="styKind">Art</label><select id="styKind"><option value="header">Header (Profilkarte)</option><option value="bg">Hintergrund</option></select></div><div><label for="styLabel">Name</label><input id="styLabel" maxlength="40" placeholder="z. B. Allianz-Logo"></div></div>' +
     '<div class="btnrow"><label class="btn2" style="cursor:pointer">📷 Bild auswählen und hochladen<input type="file" id="styFile" accept="image/*" hidden></label></div>' +
     (STY_LIB.length ? STY_LIB.map(function(a){ return '<div class="abs-li"><span style="display:flex;align-items:center;gap:10px">' + th(a.data, a.kind === 'header') + '<span><b>' + esc(a.label) + '</b> <span class="muted">' + (a.kind === 'header' ? 'Header' : 'Hintergrund') + '</span></span></span><button class="mini danger" data-stydel="' + a.id + '">Löschen</button></div>'; }).join('') : '<div class="empty">Noch keine Bilder.</div>') + '</div>' +
     '<div class="card"><h2>Eigene Bilder der Spieler (' + STY_OWN.length + ')</h2><p class="small muted" style="margin-top:0">Unpassende Bilder könnt ihr hier entfernen – der Spieler sieht dann wieder sein gewähltes Standard-Design.</p>' +
