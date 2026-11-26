@@ -137,3 +137,48 @@ document.addEventListener('click', function(e){
   rpc('admin_vs', { p_pw: PW, p_action: 'set', p_data: { day: day, rows: rows }, p_actor: ACTOR || null }).then(function(){ toast(rows.length + ' Werte gespeichert.', true); return vsLoad(); })
     .catch(function(){ e.target.disabled = false; toast('Fehler beim Speichern.', false); });
 });
+
+/* ---------- Profil-Designs: gemeinsame Bilder und Aufsicht über eigene Bilder ---------- */
+var STY_LIB = null, STY_OWN = null;
+function styLoad(){
+  return Promise.all([rpc('style_assets', {}), rpc('admin_style', { p_pw: PW, p_action: 'own' })])
+    .then(function(r){ STY_LIB = r[0] || []; STY_OWN = r[1].items || []; styRender(); }).catch(function(){ STY_LIB = false; styRender(); });
+}
+function styShrink(file, kind, cb){
+  var rd = new FileReader();
+  rd.onload = function(){ var im = new Image(); im.onload = function(){
+    var W = kind === 'header' ? 1200 : 1080, H = kind === 'header' ? 400 : Math.round(1080 * im.height / im.width), sx = 0, sy = 0, sw = im.width, sh = im.height;
+    if (kind === 'header') { if (im.width / im.height > 3) { sw = im.height * 3; sx = (im.width - sw) / 2; } else { sh = im.width / 3; sy = (im.height - sh) / 2; } }
+    else if (H > 1600) { H = 1600; W = Math.round(1600 * im.width / im.height); }
+    var c = document.createElement('canvas'); c.width = W; c.height = H; c.getContext('2d').drawImage(im, sx, sy, sw, sh, 0, 0, W, H);
+    var q = .82, u = c.toDataURL('image/jpeg', q); while (u.length > 380000 && q > .35) { q -= .08; u = c.toDataURL('image/jpeg', q); }
+    cb(u.length <= 380000 ? u : null);
+  }; im.onerror = function(){ cb(null); }; im.src = rd.result; };
+  rd.readAsDataURL(file);
+}
+function styRender(){
+  var b = $('styAdm'); if (!b) return;
+  if (STY_LIB === false) { b.innerHTML = '<div class="empty">Die Datenbank-Erweiterung „profilstil“ fehlt noch.</div>'; return; }
+  if (!STY_LIB) { b.innerHTML = '<div class="empty">Lädt …</div>'; return; }
+  function th(u, wide){ return '<span class="sty-th' + (wide ? ' w' : '') + '" style="background-image:url(&quot;' + u + '&quot;)"></span>'; }
+  b.innerHTML = '<div class="card"><h2>Bilder für alle</h2><p class="small muted" style="margin-top:0">Diese Header- und Hintergrundbilder können alle Spieler unter „Profil gestalten“ auswählen. Header werden auf 3:1 zugeschnitten. Dazu gibt es eingebaute Designs; besondere schalten die Spieler durch Event-Teilnahmen, Bienchen, Treue oder Rang frei.</p>' +
+    '<div class="formrow"><div><label for="styKind">Art</label><select id="styKind"><option value="header">Header (breit, 3:1)</option><option value="bg">Hintergrund</option></select></div><div><label for="styLabel">Name</label><input id="styLabel" maxlength="40" placeholder="z. B. Allianz-Logo"></div></div>' +
+    '<div class="btnrow"><label class="btn2" style="cursor:pointer">📷 Bild auswählen und hochladen<input type="file" id="styFile" accept="image/*" hidden></label></div>' +
+    (STY_LIB.length ? STY_LIB.map(function(a){ return '<div class="abs-li"><span style="display:flex;align-items:center;gap:10px">' + th(a.data, a.kind === 'header') + '<span><b>' + esc(a.label) + '</b> <span class="muted">' + (a.kind === 'header' ? 'Header' : 'Hintergrund') + '</span></span></span><button class="mini danger" data-stydel="' + a.id + '">Löschen</button></div>'; }).join('') : '<div class="empty">Noch keine Bilder.</div>') + '</div>' +
+    '<div class="card"><h2>Eigene Bilder der Spieler (' + STY_OWN.length + ')</h2><p class="small muted" style="margin-top:0">Unpassende Bilder könnt ihr hier entfernen – der Spieler sieht dann wieder sein gewähltes Standard-Design.</p>' +
+    (STY_OWN.length ? STY_OWN.map(function(o){ return '<div class="abs-li"><span><b>' + esc(o.name) + '</b></span><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">' +
+      (o.header ? th(o.header, true) + '<button class="mini danger" data-styclr="' + esc(o.name) + '" data-kind="header">Header entfernen</button>' : '') +
+      (o.bg ? th(o.bg) + '<button class="mini danger" data-styclr="' + esc(o.name) + '" data-kind="bg">Hintergrund entfernen</button>' : '') + '</span></div>'; }).join('') : '<div class="empty">Noch keine eigenen Bilder.</div>') + '</div>';
+}
+document.addEventListener('change', function(e){
+  if (e.target.id !== 'styFile') return;
+  var f = e.target.files && e.target.files[0], kind = $('styKind').value, label = ($('styLabel').value || '').trim() || (kind === 'header' ? 'Header' : 'Hintergrund'); if (!f) return;
+  styShrink(f, kind, function(u){ e.target.value = ''; if (!u) { toast('Das Bild ist zu groß oder kein Foto.', false); return; }
+    rpc('admin_style', { p_pw: PW, p_action: 'add', p_data: { kind: kind, label: label, data: u }, p_actor: ACTOR || null }).then(function(){ toast('Bild gespeichert.', true); return styLoad(); })
+      .catch(function(){ toast('Fehler – ist die Datenbank-Erweiterung „profilstil“ eingespielt?', false); }); });
+});
+document.addEventListener('click', function(e){
+  var d = e.target.closest('[data-stydel]'), c = e.target.closest('[data-styclr]');
+  if (d && confirm('Bild löschen? Spieler, die es gewählt haben, sehen wieder das Standard-Design.')) rpc('admin_style', { p_pw: PW, p_action: 'del', p_data: { id: +d.dataset.stydel }, p_actor: ACTOR || null }).then(styLoad);
+  if (c && confirm('Bild von ' + c.dataset.styclr + ' entfernen?')) rpc('admin_style', { p_pw: PW, p_action: 'clear', p_data: { name: c.dataset.styclr, kind: c.dataset.kind }, p_actor: ACTOR || null }).then(function(){ toast('Entfernt.', true); return styLoad(); });
+});

@@ -602,7 +602,7 @@
     $('profileView').classList.toggle('hide', which !== 'profile');
     $('tabFunk').classList.toggle('on', which === 'funk');
     $('funkView').classList.toggle('hide', which !== 'funk');
-    if (which === 'profile') loadProfile();
+    if (which === 'profile') loadProfile(); else if (window.Stil && Stil.ready()) Stil.clearBg();
     if (which === 'funk') { Funk.show(); if (window.Mehr && Mehr.ready()) Mehr.renderHelp(); }
   }
 
@@ -622,7 +622,7 @@
   }
   function avEl(name, size){
     var d = document.createElement('span'); d.className = 'av'; d.style.width = d.style.height = size + 'px'; d.style.fontSize = Math.round(size * .45) + 'px';
-    var a = AV[name] && (DATA && DATA.av && DATA.av[name]) ? AV[name].d : null;
+    var a = AV[name] && (DATA && DATA.av && DATA.av[name]) ? AV[name].d : null, fr = window.Stil && Stil.ready() ? Stil.frameOf(name) : ''; if (fr) d.classList.add('fr-s', 'fr-' + fr);
     if (a) { var im = document.createElement('img'); im.src = a; im.alt = ''; d.appendChild(im); }
     else { var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360; d.style.background = 'hsl(' + h + ',60%,62%)'; d.textContent = (name.match(/[A-Za-z0-9À-ž]/) || [name[0] || '?'])[0].toUpperCase(); }
     return d;
@@ -891,6 +891,7 @@
       pmr.appendChild(pmb); c.appendChild(pmr);
     }
     box.appendChild(c);
+    if (window.Stil && Stil.ready()) { Stil.decorate(c, n, pav); if (own) { var se = Stil.editor(n); if (se) box.appendChild(se); } }
     // Erste Schritte (neue Mitglieder), Allianz-Duell, Entwicklung
     if (window.Mehr && Mehr.ready()) [own ? Mehr.onbCard(n) : null, Mehr.vsCard(n), Mehr.devCard(n)].forEach(function(x){ if (x) box.appendChild(x); });
     // Auszeichnungen: Plaketten, Teilnehmermarken und Erfolge in einer Karte
@@ -1081,6 +1082,15 @@
       changed: evLabels, expired: function(){ Funk.expired(); } });
     if (window.Mehr) Mehr.init({ lang: function(){ return LANG; }, data: function(){ return DATA; }, sel: function(){ return $('name').value; }, tzWhen: tzWhen, openProfile: openProfile,
       reProfile: function(){ if (!$('profileView').classList.contains('hide')) renderProfile(); }, reload: refreshShared });
+    if (window.Stil) Stil.init({ lang: function(){ return LANG; }, data: function(){ return DATA; },
+      reProfile: function(){ if (!$('profileView').classList.contains('hide')) renderProfile(); },
+      stats: function(n){ var st = (PROF_STATS && PROF_STATS[n]) || {}, d = st.jd || st.fe;
+        return { ev: (st.pds || 0) + (st.pcs || 0), ds: st.pds || 0, cs: st.pcs || 0, bees: st.b || 0, days: d ? Math.floor((Date.now() - new Date(d)) / 86400000) : 0,
+          mentor: st.role === 'mentor' || st.role === 'r4', lead: !!(DATA && DATA.leaders && DATA.leaders.indexOf(n) >= 0), rank: DATA && DATA.rk ? DATA.rk[n] : null }; },
+      earned: function(n){ var st = (PROF_STATS && PROF_STATS[n]) || {}, e = DATA && DATA.entries[n], T = PROF_I18N[LANG] || PROF_I18N.en, out = [], seen = {};
+        ACH.forEach(function(a){ var r = achTier(a, st, e); if (r.t) out.push({ key: 'a:' + a.id, ic: a.ic, label: T.a[a.id][0] + (a.t.length > 1 ? ' ' + ['I', 'II', 'III'][r.t - 1] : '') }); });
+        (PROF_BADGE[n] || []).forEach(function(b){ if (b.k !== 'x') return; var k = 'm:' + (b.icon || '🎖️') + (b.label || ''); if (seen[k]) return; seen[k] = 1; out.push({ key: k.slice(0, 80), ic: b.icon || '🎖️', label: b.label || '' }); });
+        return out; } });
     // Karten auf- und zuklappen: Profil, Übersicht, Funk und die Info-Karten auf „Eintragen“ (nicht das Eingabeformular)
     if (window.Klapp) Klapp.init({ key: 'skws_zu', ok: function(c){
       if (c.closest('#pollBox')) return false;
@@ -1108,7 +1118,7 @@
   }
   rpc('get_init')
     .then(function(res){
-      init({ alliance: ALLIANCE, members: res.members || [], leaders: res.leaders || [], entries: res.entries || {}, ds: res.ds || null, cs: res.cs || null, ev: res.ev || null, av: res.av || {}, away: res.away || null, cal: res.cal || null,
+      init({ alliance: ALLIANCE, members: res.members || [], leaders: res.leaders || [], entries: res.entries || {}, ds: res.ds || null, cs: res.cs || null, ev: res.ev || null, av: res.av || {}, away: res.away || null, cal: res.cal || null, sty: res.sty || null, rk: res.rk || null,
              troops: ['tank','missile','aircraft','mixed'], squads: 4, langs: LANG_NAMES, i18n: I18N });
     })
     .catch(function(){ $('loadingTxt').textContent = 'Error – please reload / Fehler – bitte neu laden'; });
