@@ -16,20 +16,16 @@
     <a href="./" class="ghost hdrlink" id="toPlayer" title="Zur Spielerseite">👥</a>
     <select id="admLang" class="langsel" aria-label="Sprache"></select>
     <button class="ghost hide" id="reload" title="Neu laden">↻</button>
-    <button class="ghost hide" id="logout">Abmelden</button>
+    <button class="ghost hide" id="logout">Zur Spielerseite</button>
   </header>
 
   <!-- Login -->
   <div id="loginView" class="card login">
     <h2>Admin-Zugang</h2>
-    <form id="loginForm">
-      <input id="actor" type="text" placeholder="Dein Name im Spiel (fürs Logbuch)" maxlength="40" autocomplete="nickname" style="margin-bottom:10px">
-      <input id="pw" type="password" placeholder="Kennwort" autocomplete="current-password" style="margin-bottom:10px">
-      <label style="display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:14px;color:var(--muted);cursor:pointer">
-        <input type="checkbox" id="remember" checked style="width:18px;height:18px;padding:0;accent-color:var(--accent)"> Angemeldet bleiben (auf diesem Gerät)</label>
-      <button class="btn" style="width:100%" type="submit" id="loginBtn">Anmelden</button>
-    </form>
+    <p class="small muted" id="loginInfo" style="margin:0 0 12px">Nur für R4/R5. Du meldest dich auf der Spielerseite mit deinem Namen und deiner eigenen PIN an – ein extra Kennwort gibt es nicht mehr.</p>
     <div class="msg" id="loginMsg"></div>
+    <a class="btn" id="loginGo" href="./" style="display:block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;margin-top:10px">Zur Spielerseite und anmelden</a>
+    <button class="btn hide" style="width:100%;margin-top:10px" type="button" id="loginBtn">Erneut versuchen</button>
     <p class="small muted" style="margin:6px 0 0"><a href="./" style="color:var(--accent)">← zur Eintragsseite</a></p>
   </div>
 
@@ -587,10 +583,10 @@
 </div>
 
 <script src="js/demo.js?v=12"></script>
-<script src="js/admin-0-sprache.js?v=34"></script>
+<script src="js/admin-0-sprache.js?v=35"></script>
 <script src="js/klapp.js?v=18"></script>
 <script src="js/zuschnitt.js?v=19"></script>
-<script src="js/admin-1-core.js?v=19"></script>
+<script src="js/admin-1-core.js?v=20"></script>
 <script src="js/admin-2-ansichten.js?v=18"></script>
 <script src="js/plan-bild.js?v=3"></script>
 <script src="js/admin-3-wuestensturm.js?v=27"></script>
@@ -607,6 +603,6 @@
 <script src="js/admin-8f-mitglieder.js?v=23"></script>
 <script src="js/admin-8g-umfragen.js?v=1"></script>
 <script src="js/admin-8h-mehr.js?v=5"></script>
-<script src="js/admin-9-start.js?v=23"></script>
+<script src="js/admin-9-start.js?v=24"></script>
 </body>
 </html>

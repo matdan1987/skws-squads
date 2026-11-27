@@ -44,8 +44,9 @@ function load(pw, silent){
   $('loginBtn').disabled = true; $('loginMsg').textContent = '';
   return rpc('admin_data', { p_pw: pw }).then(function(raw){
     DS_PUB = raw.ds || null; CS_PUB = raw.cs || null;
-    var first = !PW && !silent;
-    PW = pw; store('skws_admin_pw', pw); if (!silent) { if ($('remember').checked) ls('skws_admin_pw_keep', pw); else ls('skws_admin_pw_keep', null); }
+    // Admin-Anmeldung einmal pro Browser-Sitzung ins Logbuch (nicht bei jedem Neuladen)
+    var first = !PW && !silent && !store('skws_admin_logged');
+    PW = pw; if (first) store('skws_admin_logged', '1');
     D = prep(raw); mgInit(raw); EV = raw.ev || []; EVCFG = raw.evcfg || {}; MER = raw.merits || []; MERCFG = raw.meritcfg || null;
     $('who').textContent = ACTOR ? ACTOR : 'R4/R5';
     if (first) rpc('admin_login', { p_pw: pw, p_actor: ACTOR || null }).catch(function(){});
@@ -53,18 +54,27 @@ function load(pw, silent){
     $('reload').classList.remove('hide'); $('logout').classList.remove('hide');
     Promise.all([kvLoad(), absLoad()]).then(function(){ renderAll(); avLoad(); psLoad(); fkLoad(); exLoad(); });
   }).catch(function(err){
-    if (String(err && err.message).indexOf('ERR_AUTH') >= 0) forgetPw();
-    if (!silent) $('loginMsg').textContent = String(err && err.message).indexOf('ERR_AUTH') >= 0 ? 'Kennwort falsch.' : 'Laden fehlgeschlagen – bitte erneut versuchen.';
+    var auth = String(err && err.message).indexOf('ERR_AUTH') >= 0;
+    if (!silent) loginState(auth ? 'denied' : 'error');
   }).then(function(){ $('loginBtn').disabled = false; });
 }
-
-$('actor').value = ACTOR;
-$('loginForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  ACTOR = $('actor').value.trim() || ls('skws_name') || ''; ls('skws_admin_actor', ACTOR || null);
-  load($('pw').value);
-});
-$('logout').addEventListener('click', function(){ forgetPw(); location.reload(); });
+// Anmeldeseite: kein Kennwort, sondern Hinweis auf die Spieler-Anmeldung
+function loginState(kind){
+  var m = $('loginMsg'), go = $('loginGo'), again = $('loginBtn');
+  $('loginView').classList.remove('hide'); $('app').classList.add('hide');
+  m.className = 'msg err'; go.classList.remove('hide'); again.classList.add('hide');
+  if (kind === 'none') { m.className = 'msg'; m.textContent = 'Du bist auf diesem Gerät nicht angemeldet. Melde dich auf der Spielerseite mit deinem Namen und deiner PIN an und tippe dann oben auf 🔒.'; }
+  else if (kind === 'denied') m.textContent = 'Kein Zugang für „' + (ACTOR || '?') + '“: Der Admin-Bereich ist nur für aktive R4/R5. Falls du R4/R5 bist, ist deine Anmeldung vermutlich abgelaufen – melde dich auf der Spielerseite neu an.';
+  else { m.textContent = 'Laden fehlgeschlagen – bitte erneut versuchen.'; again.classList.remove('hide'); }
+}
+function startLogin(){
+  var s = playerSession(); ACTOR = s ? s.name : '';
+  if (!s) { loginState('none'); return; }
+  $('loginMsg').className = 'msg'; $('loginMsg').textContent = 'Anmelden als „' + s.name + '“ …';
+  load(s.tok);
+}
+$('loginBtn').addEventListener('click', startLogin);
+$('logout').addEventListener('click', function(){ location.href = './'; });
 $('reload').addEventListener('click', function(){ if (PW) load(PW, true); });
 $('navg').addEventListener('click', function(e){ var b = e.target.closest('button[data-g]'); if (!b) return; var g = b.dataset.g, last = store('skws_admin_tab_' + g); showTab(last && NAV[g].indexOf(last) >= 0 ? last : NAV[g][0]); window.scrollTo(0, 0); });
 $('tabs').addEventListener('click', function(e){ var b = e.target.closest('button'); if (b) showTab(b.dataset.tab); });
@@ -180,8 +190,7 @@ var rt, rw = window.innerWidth; window.addEventListener('resize', function(){ cl
   if (!D || window.innerWidth === rw) return; rw = window.innerWidth;
   var a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.nodeName)) return;
   showTab(store('skws_admin_tab') || 'ov'); }, 200); });
-var saved = savedPw();
-if (saved) load(saved, true);
+startLogin();
 
 /* ---------- Datensicherung ---------- */
 $('bkDl').addEventListener('click', function(){

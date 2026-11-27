@@ -218,11 +218,10 @@
   function F_(){ return FUNK_I18N[LANG] || FUNK_I18N.en; }
   function authed(n){ var s = window.Funk && Funk.session(); return !!(s && n && s.name === n); }
   function tok(){ var s = window.Funk && Funk.session(); return s ? s.tok : null; }
-  // Schnellzugang zum Admin-Bereich für R4/R5 (oder wenn das Admin-Kennwort auf dem Gerät gemerkt ist)
+  // Schnellzugang zum Admin-Bereich für R4/R5 – der Admin-Bereich nutzt dieselbe Anmeldung (Name + PIN)
   function adminLink(){
-    var keep = false; try { keep = !!localStorage.getItem('skws_admin_pw_keep'); } catch(e){}
     var n = $('name').value, lead = !!(DATA && DATA.leaders && n && DATA.leaders.indexOf(n) >= 0);
-    $('hdrAdmin').classList.toggle('hide', !(keep || lead)); $('hdrAdmin').title = (XTRA_I18N[LANG] || XTRA_I18N.en).admin;
+    $('hdrAdmin').classList.toggle('hide', !lead); $('hdrAdmin').title = (XTRA_I18N[LANG] || XTRA_I18N.en).admin;
   }
   function renderAuth(){
     adminLink();
@@ -244,8 +243,6 @@
     }
     // nicht angemeldet: erst nur ein Knopf, das PIN-Feld öffnet sich beim Antippen (oder beim Speichern)
     var X = XTRA_I18N[LANG] || XTRA_I18N.en, h = document.createElement('div'); h.className = 'hint'; h.textContent = X.viewOk; box.appendChild(h);
-    var keep = false; try { keep = !!localStorage.getItem('skws_admin_pw_keep'); } catch(e){}
-    if (keep) { var ah = document.createElement('div'); ah.className = 'hint'; ah.textContent = X.adminPin; box.appendChild(ah); }
     var inner = document.createElement('div'); box.appendChild(inner);
     if (AUTH_OPEN === n) { Funk.authBox(inner, n, null); return; }
     var b = document.createElement('button'); b.type = 'button'; b.className = 'ghost auth-open'; b.textContent = X.pinBtn;
