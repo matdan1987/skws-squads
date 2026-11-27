@@ -11,10 +11,14 @@ var DAY = 86400000, STALE_DAYS = 7;
 var $ = function(id){ return document.getElementById(id); };
 var PW = null, D = null, curPlayer = null, ACTOR = '';
 function ls(k, v){ try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch(e){ return null; } }
-// Name fürs Logbuch: eigener Admin-Name, sonst der auf der Eintragsseite gewählte Spielername
-ACTOR = ls('skws_admin_actor') || ls('skws_name') || '';
-function savedPw(){ return ls('skws_admin_pw_keep') || store('skws_admin_pw'); }
-function forgetPw(){ ls('skws_admin_pw_keep', null); store('skws_admin_pw', null); }
+// Anmeldung: Der Admin-Bereich nutzt die Spieler-Anmeldung (Name + eigene PIN) der Spielerseite.
+// Deren Sitzungs-Token geht als p_pw an alle admin_*-Funktionen; die Datenbank lässt nur aktive R4/R5 durch
+// und trägt im Logbuch selbst den Namen aus der Sitzung ein. Ein gemeinsames Kennwort gibt es nicht mehr.
+function playerSession(){ try { var s = JSON.parse(ls('skws_funk') || 'null'); return s && s.tok ? s : null; } catch(e){ return null; } }
+ACTOR = (playerSession() || {}).name || '';
+// Altlasten vom früheren gemeinsamen Kennwort von diesem Gerät entfernen
+function forgetPw(){ ls('skws_admin_pw_keep', null); ls('skws_admin_actor', null); try { sessionStorage.removeItem('skws_admin_pw'); } catch(e){} }
+forgetPw();
 
 function store(k, v){ try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch(e){ return null; } }
 function rpc(fn, body){
