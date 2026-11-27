@@ -153,7 +153,7 @@
   function planLib(cb){
     if (typeof dstDraw === 'function') return cb(true);
     if (PB_WAIT) { PB_WAIT.push(cb); return; }
-    PB_WAIT = [cb]; var sc = document.createElement('script'); sc.src = 'js/plan-bild.js?v=3';
+    PB_WAIT = [cb]; var sc = document.createElement('script'); sc.src = 'js/plan-bild.js?v=4';
     function fin(ok){ var l = PB_WAIT; PB_WAIT = null; if (!ok) sc.remove(); l.forEach(function(f){ f(ok); }); }
     sc.onload = function(){ fin(typeof dstDraw === 'function'); }; sc.onerror = function(){ fin(false); };
     document.head.appendChild(sc);

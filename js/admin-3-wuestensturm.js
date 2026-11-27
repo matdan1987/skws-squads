@@ -83,7 +83,7 @@ function dsBuild(stIn){
     // Bereichs-Taktik: jeder Ersatz bekommt einen festen Bereich (reihum)
     if (TC.sectors) { var sk = Object.keys(TC.sectors); plan.teams[t].ss = subs.map(function(p, j){ return sk[j % sk.length]; }); }
   });
-  return { plan: plan, warn: warn, by: by };
+  return { plan: plan, warn: warn, by: by, st: st };
 }
 // Verteilung in Stufen: erste Stufe = die Stärksten, letzte = die Schwächsten (bei weniger Spielern zuerst gefüllt),
 // mittlere Stufe bekommt den Rest im Zickzack, damit kein Bereich nur die Stärkeren oder nur die Schwächeren hat.
@@ -139,7 +139,7 @@ function dsRun(example){
   $('dsResult').innerHTML = h;
   $('dsActions').classList.toggle('hide', !Object.keys(P.teams).length);
   $('dsPublish').disabled = !!r.example; $('dsPublish').style.opacity = r.example ? .4 : '';
-  ['A','B'].forEach(function(t){ ['dsCopy','dsImg','dsPic'].forEach(function(id){ $(id + t).classList.toggle('hide', !P.teams[t]); }); $('dsPic' + t + 'de').classList.toggle('hide', !P.teams[t]); });
+  ['A','B'].forEach(function(t){ ['dsCopy','dsImg','dsPic','dsPic{t}de','dslPic','dslPic{t}de'].forEach(function(id){ $(id.indexOf('{t}') >= 0 ? id.replace('{t}', t) : id + t).classList.toggle('hide', !P.teams[t]); }); });
   $('dsmOut').innerHTML = '';
   $('dsMsg').textContent = ''; $('dsMsg').className = 'note';
   if (example !== true) evSaveLineup('ds', dsState().assign);
@@ -154,7 +154,15 @@ function dsChat(t){
     });
     if (x.g.steps[0][0] === 'watch') out.push('- ' + x.names.join(', ') + ': Eingreiftruppe, helft dort, wo wir unter Druck sind.');
   });
-  if (T.tac === 'moon') {
+  if (T.tac === 'team4') {
+    var C4 = DS_TACTICS.team4.colors, CN = { B:'Schwarz', R:'Rot', G:'Grün', U:'Blau' };
+    out.push('- Farbteams: Schwarz = Raffinerie I + Lazarett I, Rot = Lazarett II + Raffinerie II, Grün = Infozentrum + Lazarett IV, Blau = Lazarett III + Tech-Zentrum.');
+    var yel = ['B','R','G','U'].map(function(k){ var n = T.m.filter(function(x){ return x[1] === C4[k].y; }).map(function(x){ return x[0]; }); return n.length ? n[0] + ' (' + CN[k] + ')' : ''; }).filter(Boolean);
+    if (yel.length) out.push('- Gelb: ' + yel.join(', ') + ' - zuerst die eigene Farbe unterstützen, ab 9:30 sammeln, um 10:00 zusammen aufs Atomsilo.');
+    out.push('- Unterstützer gehören zu Beginn ganz zu ihrem Farbteam. Alle dürfen sich im eigenen Farbbereich frei bewegen.');
+    out.push('- Waffenlager und Söldnerfabrik nur, wenn das Silo sicher ist.');
+    if (T.s.length) out.push('- Ersatz in dieser Reihenfolge: ' + T.s.join(', ') + '. Ersatz übernimmt die Aufgabe dessen, der ausfällt.');
+  } else if (T.tac === 'moon') {
     out.push('- Bereiche: Schwarz = Raffinerie I + Lazarett I, Rot = Raffinerie II + Lazarett IV, Grün = Infozentrum + Lazarett III, Blau = Tech-Zentrum + Lazarett II.');
     out.push('- Gelb bleibt immer zusammen und kommt nur auf Ruf des Einsatzleiters. Am Silo höchstens 2 gemeinsame Versuche, sonst geschlossen auf eine gegnerische Raffinerie.');
     out.push('- Halter: Gebäude halten, Angriffe sofort melden, keine unnötigen Kämpfe. Unterstützer: eigenen Bereich verteidigen und zurückerobern, andere Bereiche nur auf Anweisung.');
@@ -297,6 +305,7 @@ function dsmEditor(){
   });
   $('dsmClearBg').addEventListener('click', function(){ dsmPut({ bg: null }); dsmLoadBg(dsmEditor); });
   $('dsmReset').addEventListener('click', function(){ dsmPut({ pos: null }); dsmEditor(); });
+  ['A','B'].forEach(function(t){ ['', 'de'].forEach(function(sfx){ $('dslPic' + t + sfx).addEventListener('click', function(){ if (DS_LAST && DS_LAST.plan.teams[t]) dslRender(t, this.dataset.lang); }); }); });
   $('dsmToggle').addEventListener('click', function(){ var w = $('dsmWrap'); w.classList.toggle('hide'); if (!w.classList.contains('hide')) dsmLoadBg(dsmEditor); });
   ['A','B'].forEach(function(t){ ['', 'de'].forEach(function(sfx){ $('dsPic' + t + sfx).addEventListener('click', function(){ var lang = this.dataset.lang; if (!DS_LAST || !DS_LAST.plan.teams[t]) return; if (dsmMap().bg) dsmLoadBg(function(){ dsmRender(t); }); else dstLoad(t, function(){ if (DST_IMG) dstRender(t, lang); else dsmLoadBg(function(){ dsmRender(t); }); }); }); }); });
 })();
@@ -385,9 +394,23 @@ function dsmRender(t){
   dsmShow(url, t);
 }
 
+// 4-Team-Aufstellung: nutzt den Plan, wenn das Team schon Taktik „team4“ hat, sonst dieselben Spieler nach team4 neu verteilt
+function dslTeam(t){
+  var T = DS_LAST.plan.teams[t]; if (T.tac === 'team4') return { T: T, other: false };
+  var st = JSON.parse(JSON.stringify(DS_LAST.st || dsState())); st.tac[t] = 'team4';
+  var r = dsBuild(st); return { T: r.plan.teams[t], other: true };
+}
+function dslRender(t, lang){
+  dslLoad(function(im){
+    var x = dslTeam(t); if (!x.T) return;
+    var url = dslDraw(x.T, t, lang, im); DSM_LASTURL = url; dsmShow(url, t, lang, '4Teams');
+    if (x.other) $('dsmOut').insertAdjacentHTML('afterbegin', '<p class="note">Hinweis: Team ' + t + ' hat oben eine andere Taktik. Die Aufstellung wurde für dieses Bild nach „4 Farbteams + Gelb“ neu verteilt – Chat-Text und Spielerseite folgen weiter der gewählten Taktik.</p>');
+    if (!im) $('dsmOut').insertAdjacentHTML('afterbegin', '<p class="note err">Kartenbild konnte nicht geladen werden – die Tabelle ist trotzdem vollständig.</p>');
+  });
+}
 function dstRender(t, lang){ var url = dstDraw(DS_LAST.plan.teams[t], lang); DSM_LASTURL = url; dsmShow(url, t, lang); }
-function dsmShow(url, t, lang){
-  var name = 'SKWS-Wuestensturm-Team-' + t + (lang ? '-' + lang.toUpperCase() : '') + '-' + fileDate() + '.png', A = window.SKWSAndroid, h = '<img src="' + url + '" alt="Plan Team ' + t + '">';
+function dsmShow(url, t, lang, tag){
+  var name = 'SKWS-Wuestensturm-' + (tag ? tag + '-' : '') + 'Team-' + t + (lang ? '-' + lang.toUpperCase() : '') + '-' + fileDate() + '.png', A = window.SKWSAndroid, h = '<img src="' + url + '" alt="Plan Team ' + t + '">';
   if (A && A.saveImage) h += '<button class="btn" id="dsmSave" style="width:100%;margin-top:8px">Bild in der Galerie speichern</button>';
   else if (A) h += '<p class="small" style="color:var(--warn)">Zum Speichern in der App bitte die neue App-Version 1.2 installieren (im Handy-Browser öffnen: matdan1987.github.io/skws-squads/SKWS-Squads.apk) – oder die Admin-Seite im Browser öffnen.</p>';
   else h += '<a class="btn" style="display:block;text-align:center;text-decoration:none;margin-top:8px" download="' + name + '" href="' + url + '">Bild herunterladen</a>';
