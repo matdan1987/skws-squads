@@ -110,6 +110,39 @@ DS_TACTICS.moon = {
     { k:'hSci',  n:1, label:'Halter Blau',     steps:[['keep','sci'],['hold','sci'],['hold','sci']] }
   ]
 };
+// 4 Farbteams (Vorlage „Desert Storm – 4-Team Lineup“): je Farbe 2 Gebäudehalter + 2 Unterstützer + 1 Gelber.
+// Die 4 Gelben (die Stärksten) unterstützen zuerst ihre Farbe und gehen nach der Öffnung gemeinsam aufs Atomsilo (J).
+// Zuordnung laut Vorlagen-Karte: Schwarz B/C, Rot F/G, Grün A/E, Blau D/H.
+DS_TACTICS.team4 = {
+  name: '4 Farbteams + Gelb – Aufstellung nach Stärke',
+  desc: 'Vier Farbteams (Schwarz links, Rot rechts, Grün oben, Blau unten) mit je 2 Gebäudehaltern, 2 Unterstützern und einem der 4 Stärksten (Gelb). Die Gelben helfen zu Beginn ihrer Farbe und gehen nach der Öffnung gemeinsam aufs Atomsilo. Waffenlager und Söldnerfabrik nur, wenn das Silo sicher ist. Die Teams werden nach Stärke ausgeglichen verteilt; alle dürfen sich im eigenen Farbbereich frei bewegen.',
+  when: 'Wenn ihr klare Zuständigkeiten wollt und die Teams gleich stark sein sollen. Passt zur Tafel „4-Team-Aufstellung“.',
+  pro: 'Alle 8 Außengebäude ab Start besetzt, jede Farbe gleich stark, die Stärksten bündeln sich fürs Silo.',
+  con: 'Nach der Öffnung fehlt jeder Farbe ihr stärkster Spieler – Unterstützer müssen dann mehr abfangen.',
+  en: 'Four color teams (Black left, Red right, Green north, Blue south), each with 2 building holders, 2 supporters and one of the 4 strongest (Yellow). The Yellow players first support their color and move into the Nuclear Silo together after it opens. Arsenal and Mercenary Factory only if the silo is secure. Teams are balanced by strength; everyone may move freely within their color area.',
+  ph: ['p0','p10','p13'],
+  // Gelb: die 4 Stärksten (je Farbe einer); Unterstützer und Halter im Zickzack, damit jede Farbe gleich stark ist
+  tiers: [['yB','yR','yG','yU'], ['sU','sG','sR','sB'], ['hB1','hR1','hG1','hU1','hU2','hG2','hR2','hB2']],
+  colors: { B:{ sec:'secL', h:['hB1','hB2'], s:'sB', y:'yB' }, R:{ sec:'secR', h:['hR2','hR1'], s:'sR', y:'yR' }, G:{ sec:'secN', h:['hG2','hG1'], s:'sG', y:'yG' }, U:{ sec:'secS', h:['hU1','hU2'], s:'sU', y:'yU' } },
+  groups: [
+    { k:'yB',  n:1, label:'Gelb (Schwarz)',        steps:[['sup','secL'],['rally','silo'],['hold','silo']] },
+    { k:'yR',  n:1, label:'Gelb (Rot)',            steps:[['sup','secR'],['rally','silo'],['hold','silo']] },
+    { k:'yG',  n:1, label:'Gelb (Grün)',           steps:[['sup','secN'],['rally','silo'],['hold','silo']] },
+    { k:'yU',  n:1, label:'Gelb (Blau)',           steps:[['sup','secS'],['rally','silo'],['hold','silo']] },
+    { k:'sB',  n:2, label:'Unterstützer Schwarz',  steps:[['sup','secL'],['sup','secL'],['sup','secL']] },
+    { k:'sR',  n:2, label:'Unterstützer Rot',      steps:[['sup','secR'],['sup','secR'],['sup','secR']] },
+    { k:'sG',  n:2, label:'Unterstützer Grün',     steps:[['sup','secN'],['sup','secN'],['sup','secN']] },
+    { k:'sU',  n:2, label:'Unterstützer Blau',     steps:[['sup','secS'],['sup','secS'],['sup','secS']] },
+    { k:'hB1', n:1, label:'Schwarz – Ölraffinerie I',  steps:[['keep','ref1'],['hold','ref1'],['hold','ref1']] },
+    { k:'hB2', n:1, label:'Schwarz – Feldlazarett I',  steps:[['keep','hosp1'],['holdh','hosp1'],['holdh','hosp1']] },
+    { k:'hR1', n:1, label:'Rot – Ölraffinerie II',     steps:[['keep','ref2'],['hold','ref2'],['hold','ref2']] },
+    { k:'hR2', n:1, label:'Rot – Feldlazarett II',     steps:[['keep','hosp2'],['holdh','hosp2'],['holdh','hosp2']] },
+    { k:'hG1', n:1, label:'Grün – Feldlazarett IV',    steps:[['keep','hosp4'],['holdh','hosp4'],['holdh','hosp4']] },
+    { k:'hG2', n:1, label:'Grün – Infozentrum',        steps:[['keep','info'],['hold','info'],['hold','info']] },
+    { k:'hU1', n:1, label:'Blau – Feldlazarett III',   steps:[['keep','hosp3'],['holdh','hosp3'],['holdh','hosp3']] },
+    { k:'hU2', n:1, label:'Blau – Tech-Zentrum',       steps:[['keep','sci'],['hold','sci'],['hold','sci']] }
+  ]
+};
 var DS_SEC = { secL:{ de:'Schwarz', en:'Black', col:'#111827' }, secR:{ de:'Rot', en:'Red', col:'#b91c1c' }, secN:{ de:'Grün', en:'Green', col:'#15803d' }, secS:{ de:'Blau', en:'Blue', col:'#1d4ed8' } };
 var DS_B = { secL:'Bereich Schwarz (links)', secR:'Bereich Rot (rechts)', secN:'Bereich Grün (oben)', secS:'Bereich Blau (unten)', ref1:'Ölraffinerie I', ref2:'Ölraffinerie II', hosp1:'Feldlazarett I', hosp2:'Feldlazarett II', hosp3:'Feldlazarett III', hosp4:'Feldlazarett IV', sci:'Tech-Zentrum', info:'Infozentrum', arsenal:'Waffenlager', merc:'Söldnerfabrik', silo:'Atomsilo', wells:'Ölquellen' };
 var DS_B_EN = { secL:'Black area (left)', secR:'Red area (right)', secN:'Green area (top)', secS:'Blue area (bottom)', ref1:'Oil Refinery I', ref2:'Oil Refinery II', hosp1:'Field Hospital I', hosp2:'Field Hospital II', hosp3:'Field Hospital III', hosp4:'Field Hospital IV', sci:'Science Hub', info:'Info Center', arsenal:'Arsenal', merc:'Mercenary Factory', silo:'Nuclear Silo', wells:'Oil Wells' };
@@ -559,4 +592,116 @@ function csDrawBoard(T, t, lang, IMG, me, loc){
   g.fillStyle = '#e6f1ff'; g.font = '500 ' + fs + 'px system-ui, sans-serif';
   var yy = y0 + 30 + (fs + 8) * 1.7; lines.forEach(function(l){ yy += lh(l); if (l) g.fillText(l, PADX, yy); });
   return c.toDataURL(me ? 'image/jpeg' : 'image/png', .88);
+}
+
+/* ---------- Wüstensturm: „4-Team-Aufstellung“ (zusätzliche Variante, Vorlage von Moon/Meister Proper) ----------
+   Tabelle je Farbteam (2 Gebäude, Unterstützer, gelber Spieler), Ersatz, Mitte, darunter die Karte ds-lineup-map.jpg (1300×1262).
+   Erwartet einen Team-Plan mit Taktik „team4“ (DS_TACTICS.team4). Die alten Plan-Bilder bleiben unverändert. */
+var DSL_IMG = null;
+function dslLoad(cb){
+  if (DSL_IMG) return cb(DSL_IMG);
+  var im = new Image(); im.onload = function(){ DSL_IMG = im; cb(im); }; im.onerror = function(){ cb(null); }; im.src = 'ds-lineup-map.jpg?v=1';
+}
+var DSL_TXT = {
+  en: { title:'DESERT STORM – 4-TEAM LINEUP', sub:'Support players initially belong entirely to their color team', supp:'Support Players', subs:'SUBSTITUTES',
+        center:'CENTER – AFTER THE OPENING', opt:'optional', onlyJ:'only if J is secure', guide:'STARTING LINEUP = GUIDANCE, NO FIXED BUILDING ASSIGNMENT',
+        free:'All players may move freely within their colored area. Starting players should occupy the listed buildings whenever possible, but move together wherever it makes tactical sense.',
+        yel:'Yellow: support your color first, gather at 9:30 and move into J together at 10:00.', vs:'vs', none:'–',
+        team:{ B:'TEAM BLACK – LEFT', R:'TEAM RED – RIGHT', G:'TEAM GREEN – NORTH', U:'TEAM BLUE – SOUTH' },
+        b:{ ref1:'Oil Refinery I', hosp1:'Field Hospital I', hosp2:'Field Hospital II', ref2:'Oil Refinery II', info:'Information Center', hosp4:'Field Hospital IV', hosp3:'Field Hospital III', sci:'Tech Center', silo:'Nuclear Missile Silo', arsenal:'Arsenal', merc:'Mercenary Factory' } },
+  de: { title:'WÜSTENSTURM – 4-TEAM-AUFSTELLUNG', sub:'Unterstützer gehören zu Beginn ganz zu ihrem Farbteam', supp:'Unterstützer', subs:'ERSATZ',
+        center:'MITTE – NACH DER ÖFFNUNG', opt:'optional', onlyJ:'nur wenn J sicher ist', guide:'STARTAUFSTELLUNG = ORIENTIERUNG, KEINE FESTE GEBÄUDEZUTEILUNG',
+        free:'Alle Spieler dürfen sich in ihrem Farbbereich frei bewegen. Startspieler besetzen nach Möglichkeit die genannten Gebäude, bewegen sich aber gemeinsam, wo es taktisch sinnvoll ist.',
+        yel:'Gelb: zuerst die eigene Farbe unterstützen, ab 9:30 sammeln und um 10:00 gemeinsam auf J.', vs:'gegen', none:'–',
+        team:{ B:'TEAM SCHWARZ – LINKS', R:'TEAM ROT – RECHTS', G:'TEAM GRÜN – NORDEN', U:'TEAM BLAU – SÜDEN' },
+        b:{ ref1:'Ölraffinerie I', hosp1:'Feldlazarett I', hosp2:'Feldlazarett II', ref2:'Ölraffinerie II', info:'Infozentrum', hosp4:'Feldlazarett IV', hosp3:'Feldlazarett III', sci:'Tech-Zentrum', silo:'Atomsilo', arsenal:'Waffenlager', merc:'Söldnerfabrik' } }
+};
+// Buchstaben laut Karte; Farbe der Kopfzeile und Schrift
+var DSL_LET = { info:'A', ref1:'B', hosp1:'C', hosp3:'D', hosp4:'E', hosp2:'F', ref2:'G', sci:'H', arsenal:'I', silo:'J', merc:'K' };
+var DSL_COL = { B:['#14171f','#ffffff'], R:['#e31b23','#ffffff'], G:['#8bc34a','#14321a'], U:['#1aa3dc','#ffffff'] };
+function dslDraw(T, t, lang, IMG, me, loc){
+  var X = DSL_TXT[lang === 'de' ? 'de' : 'en'], TC = DS_TACTICS.team4, CO = TC.colors;
+  T = Object.assign({ s: [], m: [] }, T);
+  var by = {}; T.m.forEach(function(x){ (by[x[1]] = by[x[1]] || []).push(x[0]); });
+  function grp(k){ return by[k] || []; }
+  function bOf(k){ var gg = TC.groups.filter(function(x){ return x.k === k; })[0]; return gg.steps[0][1]; }
+  var W = 1440, PAD = 0, C1 = 96, C2 = 400, C3 = 470, C4 = W - C1 - C2 - C3;
+  var HDR = 92, SUB = 62, BAR = 56, ROW = 72;
+  var mc = document.createElement('canvas').getContext('2d');
+  // Ersatz-Zeile und Hinweistext umbrechen (Höhe vorab berechnen)
+  mc.font = '600 26px system-ui, sans-serif';
+  var subsTxt = T.s.length ? T.s.join(' · ') : X.none, subsL = dsmWrap(mc, subsTxt, W - 40);
+  var freeParts = [X.free, X.yel]; if (loc) freeParts.unshift(loc); if (T.note) freeParts.push(T.note);
+  mc.font = '700 24px system-ui, sans-serif';
+  var freeL = []; freeParts.forEach(function(p){ dsmWrap(mc, p, W - 80).forEach(function(l){ freeL.push(l); }); });
+  var subsH = subsL.length * 36 + 24, freeH = freeL.length * 34 + 30;
+  var MW = W, MH = IMG ? Math.round(IMG.naturalHeight * W / IMG.naturalWidth) : 0;
+  var H = HDR + SUB + 4 * (BAR + 3 * ROW) + BAR + subsH + BAR + 3 * ROW + BAR + freeH + MH;
+  var c = document.createElement('canvas'); c.width = W; c.height = H;
+  var g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
+  g.textBaseline = 'middle';
+  function fit(txt, w, size, weight){ var f = size; do { g.font = weight + ' ' + f + 'px system-ui, sans-serif'; f -= 1; } while (g.measureText(txt).width > w && f > 12); return f + 1; }
+  function text(txt, x, y, w, size, weight, col, align){ fit(txt, w, size, weight); g.fillStyle = col; g.textAlign = align || 'left'; g.fillText(txt, align === 'center' ? x + w / 2 : x, y); }
+  function bar(y, h, bg, txt, col, size){ g.fillStyle = bg; g.fillRect(0, y, W, h); text(txt, 20, y + h / 2 + 1, W - 40, size || 30, '800', col, 'center'); }
+  function cell(x, y, w, h, bg){ g.fillStyle = bg; g.fillRect(x, y, w, h); g.strokeStyle = '#c9cdd3'; g.lineWidth = 2; g.strokeRect(x + 1, y + 1, w - 2, h - 2); }
+  function names(arr, x, y, w, h, bg, col, weight){
+    cell(x, y, w, h, bg); var s = arr.length ? arr.join(' · ') : X.none;
+    if (me && arr.indexOf(me) >= 0) { g.fillStyle = '#facc15'; g.fillRect(x + 4, y + 4, w - 8, h - 8); }
+    text(s, x + 18, y + h / 2 + 1, w - 36, 28, weight || '500', arr.length ? col : '#9aa1ab');
+  }
+  var y = 0;
+  // Kopf
+  g.fillStyle = '#1e4d3b'; g.fillRect(0, 0, W, HDR);
+  text(X.title, 200, HDR / 2 + 2, W - 400, 46, '800', '#ffffff', 'center');
+  text('TEAM ' + t, W - 190, HDR / 2 + 2, 170, 28, '800', '#ffffff', 'left');
+  y = HDR;
+  g.fillStyle = '#e5f0dc'; g.fillRect(0, y, W, SUB);
+  var subLine = [T.time, T.opp ? X.vs + ' ' + T.opp : ''].filter(Boolean).join(' · ');
+  g.font = 'italic 500 26px system-ui, sans-serif';
+  text('· ' + X.sub + (subLine ? '   |   ' + subLine : ''), 20, y + SUB / 2 + 1, W - 40, 26, 'italic 500', '#3d6b2e', 'left');
+  y += SUB;
+  // Farbteams
+  ['B','R','G','U'].forEach(function(k){
+    var cc = CO[k], col = DSL_COL[k];
+    bar(y, BAR, col[0], X.team[k], col[1]); y += BAR;
+    cc.h.forEach(function(hk){
+      var b = bOf(hk);
+      cell(0, y, C1, ROW, '#f3f4f6'); text(DSL_LET[b], 18, y + ROW / 2 + 1, C1 - 30, 30, '800', '#111827');
+      cell(C1, y, C2, ROW, '#f3f4f6'); text(X.b[b], C1 + 16, y + ROW / 2 + 1, C2 - 32, 28, '500', '#1f2937');
+      names(grp(hk), C1 + C2, y, C3, ROW, '#ffffff', '#1f2937');
+      cell(C1 + C2 + C3, y, C4, ROW, '#ffffff');
+      y += ROW;
+    });
+    cell(0, y, C1, ROW, '#eceef1');
+    cell(C1, y, C2, ROW, '#eceef1'); text(X.supp, C1 + 16, y + ROW / 2 + 1, C2 - 32, 28, '800', '#111827');
+    names(grp(cc.s), C1 + C2, y, C3, ROW, '#eceef1', '#1f2937');
+    names(grp(cc.y), C1 + C2 + C3, y, C4, ROW, '#fde60a', '#111827', '800');
+    y += ROW;
+  });
+  // Ersatz
+  bar(y, BAR, '#253547', X.subs, '#ffffff'); y += BAR;
+  g.fillStyle = '#f7f8fa'; g.fillRect(0, y, W, subsH);
+  g.font = '600 26px system-ui, sans-serif'; g.fillStyle = '#111827'; g.textAlign = 'left';
+  subsL.forEach(function(l, i){ g.fillText(l, 20, y + 12 + 18 + i * 36); });
+  y += subsH;
+  // Mitte
+  bar(y, BAR, '#f6d70b', X.center, '#3b2f00'); y += BAR;
+  var yel = ['yB','yR','yG','yU'].map(function(k){ return grp(k)[0]; }).filter(Boolean);
+  [['silo', yel.slice(0, 2), yel.slice(2)], ['arsenal'], ['merc']].forEach(function(r){
+    var silo = r[0] === 'silo', bg = silo ? '#fdf6d2' : '#ffffff';
+    cell(0, y, C1, ROW, bg); text(DSL_LET[r[0]], 18, y + ROW / 2 + 1, C1 - 30, 30, '800', '#111827');
+    cell(C1, y, C2, ROW, bg); text(X.b[r[0]], C1 + 16, y + ROW / 2 + 1, C2 - 32, 28, silo ? '800' : '500', '#1f2937');
+    if (silo) { names(r[1], C1 + C2, y, C3, ROW, bg, '#1f2937'); names(r[2], C1 + C2 + C3, y, C4, ROW, bg, '#111827', '800'); }
+    else { cell(C1 + C2, y, C3, ROW, bg); text(X.opt, C1 + C2 + 18, y + ROW / 2 + 1, C3 - 36, 28, '500', '#374151');
+           cell(C1 + C2 + C3, y, C4, ROW, bg); text(X.onlyJ, C1 + C2 + C3 + 18, y + ROW / 2 + 1, C4 - 36, 28, '500', '#374151'); }
+    y += ROW;
+  });
+  // Hinweis
+  bar(y, BAR, '#4677c8', X.guide, '#ffffff', 28); y += BAR;
+  g.fillStyle = '#e5f0dc'; g.fillRect(0, y, W, freeH);
+  g.font = '700 24px system-ui, sans-serif'; g.fillStyle = '#2f5d27'; g.textAlign = 'center';
+  freeL.forEach(function(l, i){ g.fillText(l, W / 2, y + 15 + 17 + i * 34); });
+  y += freeH;
+  if (IMG) g.drawImage(IMG, 0, y, MW, MH);
+  return c.toDataURL(me ? 'image/jpeg' : 'image/png', .9);
 }
