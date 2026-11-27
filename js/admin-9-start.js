@@ -63,7 +63,7 @@ function loginState(kind){
   var m = $('loginMsg'), go = $('loginGo'), again = $('loginBtn');
   $('loginView').classList.remove('hide'); $('app').classList.add('hide');
   m.className = 'msg err'; go.classList.remove('hide'); again.classList.add('hide');
-  if (kind === 'none') { m.className = 'msg'; m.textContent = 'Du bist auf diesem Gerät nicht angemeldet. Melde dich auf der Spielerseite mit deinem Namen und deiner PIN an und tippe dann oben auf 🔒.'; }
+  if (kind === 'none') { m.className = 'msg'; m.textContent = 'Du bist auf diesem Gerät nicht angemeldet. Wähle auf der Spielerseite deinen Namen und melde dich mit deiner PIN an – noch keine PIN? Dann legst du dort direkt eine fest (bestätigt mit deiner hinterlegten E-Mail). Danach oben auf 🔒 tippen.'; }
   else if (kind === 'denied') m.textContent = 'Kein Zugang für „' + (ACTOR || '?') + '“: Der Admin-Bereich ist nur für aktive R4/R5. Falls du R4/R5 bist, ist deine Anmeldung vermutlich abgelaufen – melde dich auf der Spielerseite neu an.';
   else { m.textContent = 'Laden fehlgeschlagen – bitte erneut versuchen.'; again.classList.remove('hide'); }
 }
